@@ -7,7 +7,7 @@ from PIL import ImageTk
 
 import sys
 
-WINDOW_TITLE = "W.E.N.D.E. - Test"
+WINDOW_TITLE = "W.E.N.D.E."
 CAMERA_COUNT = 2
 #CAMERA_SIZE = (1024, 768)
 CAMERA_SIZE = (800, 600)
