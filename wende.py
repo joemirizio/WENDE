@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import gui
-from camera import Camera
-from camera import processImage
+from image_sources import Camera
+from image_sources import ImageFile
+from processors import ImageProcessor
 
 WINDOW_TITLE = "W.E.N.D.E."
 CAMERA_COUNT = 1
@@ -9,28 +10,27 @@ CAMERA_COUNT = 1
 CAMERA_SIZE = (800, 600)
 
 def init():
-	for i, camera in enumerate(cameras):
-		camera.avg_frame = camera.read()
 	main()
 
 def main():
 	# Get next frame from camera
-	for i, camera in enumerate(cameras):
-		frame = camera.read()
-		frame, camera.avg_frame = processImage(frame, camera.avg_frame)
-		ui.updateCamera(camera.name, frame)
+	for img_proc in image_processors:
+		frame = img_proc.process()
+		ui.updateView(img_proc.img_source.name, frame)
 
-	ui.update(main);
+	ui.update(main)
 
 
 if __name__ == "__main__":
-	# Setup cameras
-	cameras = []
+	# Setup processors
+	image_processors = []
 	for cap_index in range(CAMERA_COUNT):
 		camera = Camera('Cam' + str(cap_index), cap_index, CAMERA_SIZE)
-		cameras.append(camera)
+		image_processors.append(ImageProcessor(camera))
+		#img = ImageFile('../camview.jpg')
+		#image_processors.append(ImageProcessor(img))
 
-	ui = gui.Tkinter(WINDOW_TITLE, cameras)
-	#ui = gui.HighGUI(WINDOW_TITLE, cameras)
+	ui = gui.Tkinter(WINDOW_TITLE, image_processors)
+	#ui = gui.HighGUI(WINDOW_TITLE, image_processors)
 
 	ui.start(init)

@@ -8,19 +8,16 @@ BW_THRESHOLD = 20
 frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 selected_frame = frame_types[0]
 
-class Camera(object):
-	def __init__(self, name, cap_index, size):
-		self.capture = getCapture(cap_index)
-		self.name = name
-		self.width = size[0]
-		self.height = size[1]
+class ImageProcessor(object):
+	def __init__(self, img_source):
+		self.img_source = img_source
 		self.__avg_frame = None
-		self.capture.set(3, self.width)
-		self.capture.set(4, self.height)
-
-	def read(self):
-		_, frame = self.capture.read()
-		frame = cv.flip(frame, 1)
+	
+	def process(self):
+		frame = self.img_source.read()
+		if self.avg_frame is None:
+			self.avg_frame = frame
+		frame, self.avg_frame = processImage(frame, self.avg_frame)
 		return frame
 
 	@property
@@ -33,10 +30,7 @@ class Camera(object):
 		else:
 			self.__avg_frame = frame
 
-
-def getCapture(cap_index):
-	return cv.VideoCapture(cap_index)
-
+	
 def processImage(frame, avg_frame):
 	# Blur and average with previous frames
 	src_frame = cv.GaussianBlur(frame, (19, 19), 0)
@@ -68,6 +62,3 @@ def processImage(frame, avg_frame):
 	out_frame = frames[selected_frame]
 
 	return (out_frame, avg_frame)
-
-
-

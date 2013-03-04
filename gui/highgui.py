@@ -10,8 +10,8 @@ class HighGUI:
 	def update(self, update_func):
 		update_func()
 
-	def addCamera(self, camera):
-		cv.namedWindow(self.name + camera.name, cv.CV_WINDOW_AUTOSIZE)
+	def addView(self, name):
+		cv.namedWindow(self.name + name, cv.CV_WINDOW_AUTOSIZE)
 
-	def updateCamera(self, name, frame):
+	def updateView(self, name, frame):
 		cv.imshow(self.name + name, frame)
