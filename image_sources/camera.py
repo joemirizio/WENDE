@@ -22,13 +22,15 @@ class Camera:
 		#frame = cv.pyrDown(frame)
 		return frame
 
-	def save(self, filename=""):
+	def save(self, filename="", frame=None):
 		if not filename:
 			time_stamp = datetime.datetime.fromtimestamp(
 					time.time()).strftime('%Y-%m-%d_%H-%M-%S')
 			filename = "".join([DEFAULT_OUTPUT_DIR, self.name, "_", time_stamp, 
 						".", DEFAULT_IMG_EXT])
-		cv.imwrite(filename, self.read())
+		if frame is None:
+			frame = self.read()
+		cv.imwrite(filename, frame)
 
 
 def getCapture(cap_index):

@@ -51,8 +51,14 @@ class Tkinter:
 		self.labels[name] = label
 
 	def updateView(self, name, frame):
-		img = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+		# Check frame dimensions if Gray or BGR and convert to RGB
+		if len(frame.shape) == 2:
+			img = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+		else:
+			img = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+		# Convert to PIL
 		pil_img = Image.fromarray(img)
 		photo = ImageTk.PhotoImage(pil_img)
+		# Set PIL to label's image
 		self.labels[name]['image'] = photo
 		self.labels[name].photo = photo

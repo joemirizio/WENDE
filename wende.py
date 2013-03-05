@@ -17,11 +17,12 @@ def init():
 
 	# Key bindings
 	#TODO: Clean up syntax, implement dynamic frame types
-	ui.addKeyEvent("p", lambda: map(lambda ip: ip.img_source.save(), image_processors))
+	ui.addKeyEvent("p", lambda: map(lambda ip: ip.saveFrame(), image_processors))
 	#for i in range(len(ImageProcessor.frame_types)):
 		#ui.addKeyEvent(str(i), lambda: map(((lambda iv: lambda ip: ip.setFrameType(iv))(i)), image_processors))
 	ui.addKeyEvent("0", lambda: map(lambda ip: ip.setFrameType(0), image_processors))
 	ui.addKeyEvent("1", lambda: map(lambda ip: ip.setFrameType(1), image_processors))
+	ui.addKeyEvent("2", lambda: map(lambda ip: ip.setFrameType(2), image_processors))
 
 def main():
 	# Get next frame from camera
