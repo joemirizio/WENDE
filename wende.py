@@ -8,13 +8,20 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 WINDOW_TITLE = "W.E.N.D.E."
-CAMERA_COUNT = 1
+CAMERA_COUNT = 2
 #CAMERA_SIZE = (1024, 768)
 CAMERA_SIZE = (800, 600)
 
 def init():
 	main()
-	ui.addKeyEvent("p", lambda: image_processors[0].img_source.save())
+
+	# Key bindings
+	#TODO: Clean up syntax, implement dynamic frame types
+	ui.addKeyEvent("p", lambda: map(lambda ip: ip.img_source.save(), image_processors))
+	#for i in range(len(ImageProcessor.frame_types)):
+		#ui.addKeyEvent(str(i), lambda: map(((lambda iv: lambda ip: ip.setFrameType(iv))(i)), image_processors))
+	ui.addKeyEvent("0", lambda: map(lambda ip: ip.setFrameType(0), image_processors))
+	ui.addKeyEvent("1", lambda: map(lambda ip: ip.setFrameType(1), image_processors))
 
 def main():
 	# Get next frame from camera

@@ -4,20 +4,21 @@ import numpy as np
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
 
-# Define frames to conditionally display
-frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
-selected_frame = frame_types[0]
 
 class ImageProcessor(object):
-	def __init__(self, img_source):
+	# Frames to conditionally display
+	frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
+
+	def __init__(self, img_source, frame_type=0):
 		self.img_source = img_source
 		self.__avg_frame = None
+		self.frame_type = self.frame_types[frame_type]
 	
 	def process(self):
 		frame = self.img_source.read()
 		if self.avg_frame is None:
 			self.avg_frame = frame
-		frame, self.avg_frame = processImage(frame, self.avg_frame)
+		frame, self.avg_frame = processImage(frame, self.avg_frame, self.frame_type)
 		return frame
 
 	@property
@@ -30,8 +31,17 @@ class ImageProcessor(object):
 		else:
 			self.__avg_frame = frame
 
+	def setFrameType(self, frame_type):
+		if isinstance(frame_type, basestring):
+			if frame_type in self.frame_types:
+				self.frame_type = frame_type
+			else:
+				raise Exception("Invalid frame type '%s'" % frame_type)
+		else:
+			self.frame_type = self.frame_types[frame_type]
+
 	
-def processImage(frame, avg_frame):
+def processImage(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 	# Blur and average with previous frames
 	src_frame = cv.GaussianBlur(frame, (19, 19), 0)
 	cv.accumulateWeighted(src_frame, avg_frame, AVG_WEIGHT)
@@ -58,7 +68,7 @@ def processImage(frame, avg_frame):
 	cv.drawContours(main_frame, contours, -1, (0, 255, 0), -1)
 
 	# Select desired frame to display
-	frames = dict(zip(frame_types, (main_frame, frame, src_frame, conv_frame, gray_frame, bw_frame)))
-	out_frame = frames[selected_frame]
+	frames = dict(zip(ImageProcessor.frame_types, (main_frame, frame, src_frame, conv_frame, gray_frame, bw_frame)))
+	out_frame = frames[frame_type]
 
 	return (out_frame, avg_frame)
