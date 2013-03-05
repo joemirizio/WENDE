@@ -4,6 +4,9 @@ from image_sources import Camera
 from image_sources import ImageFile
 from processors import ImageProcessor
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 WINDOW_TITLE = "W.E.N.D.E."
 CAMERA_COUNT = 1
 #CAMERA_SIZE = (1024, 768)
@@ -11,6 +14,7 @@ CAMERA_SIZE = (800, 600)
 
 def init():
 	main()
+	ui.addKeyEvent("p", lambda: image_processors[0].img_source.save())
 
 def main():
 	# Get next frame from camera

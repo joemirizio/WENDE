@@ -8,6 +8,7 @@ class Tkinter:
 		self.root = Tk()
 		self.root.title(name)
 		self.labels = {}
+		self.key_events = {}
 
 		pos = {'x':0, 'y':0}
 		for img_proc in image_processors:
@@ -22,9 +23,21 @@ class Tkinter:
 		self.root.attributes('-topmost', True)
 
 		self.root.focus_set()
+
 		self.root.bind("<Escape>", lambda e: e.widget.quit())
 
+	def addKeyEvent(self, key, event):
+		if key in self.key_events:
+			raise Exception("Callback already registered to %s" % key)
+		self.key_events[key] = event
+
+	def keyPress(self, event):
+		for key, callback in self.key_events.iteritems():
+			if event.char == key:
+				callback()
+
 	def start(self, init_func):
+		self.root.bind("<Key>", self.keyPress)
 		self.root.after(0, init_func)
 		self.root.mainloop()
 	
