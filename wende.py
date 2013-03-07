@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import gui
+import display.gui
 from image_sources import Camera
 from image_sources import ImageFile
 from processors import ImageProcessor
@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 WINDOW_TITLE = "W.E.N.D.E."
-CAMERA_COUNT = 2
+CAMERA_COUNT = 1
 #CAMERA_SIZE = (1024, 768)
 CAMERA_SIZE = (800, 600)
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 		#img = ImageFile('../camview.jpg')
 		#image_processors.append(ImageProcessor(img))
 
-	ui = gui.Tkinter(WINDOW_TITLE, image_processors)
+	ui = display.gui.Tkinter(WINDOW_TITLE, image_processors)
 	#ui = gui.HighGUI(WINDOW_TITLE, image_processors)
 
 	ui.start(init)
