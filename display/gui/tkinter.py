@@ -1,11 +1,11 @@
 import cv2 as cv
-from Tkinter import *
+import Tkinter as tk
 from PIL import Image
 from PIL import ImageTk
 
 class Tkinter:
 	def __init__(self, name, image_processors={}):
-		self.root = Tk()
+		self.root = tk.Tk()
 		self.root.title(name)
 		self.labels = {}
 		self.key_events = {}
@@ -46,7 +46,7 @@ class Tkinter:
 		self.root.after(0, update_func)
 
 	def addView(self, name, pos={'x':0, 'y':0}):
-		label = Label(self.root)
+		label = tk.Label(self.root)
 		label.place(**pos)
 		self.labels[name] = label
 
