@@ -1,6 +1,8 @@
 import cv2 as cv
 import numpy as np
 
+from data import DataProcessor
+
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
 
@@ -14,13 +16,18 @@ class ImageProcessor(object):
 		self.last_frame = None
 		self.__avg_frame = None
 		self.frame_type = self.frame_types[frame_type]
+
+		self.data_proc = DataProcessor()
 	
 	def process(self):
 		self.last_frame = self.img_source.read()
 		if self.avg_frame is None:
 			self.avg_frame = self.last_frame
 		#self.last_frame, self.avg_frame = processImage(self.last_frame, self.avg_frame, self.frame_type)
-		self.last_frame, self.avg_frame = findObjects(self.last_frame, self.avg_frame, self.frame_type)
+		self.last_frame, self.avg_frame, img_data = findObjects(self.last_frame, self.avg_frame, self.frame_type)
+
+		self.data_proc.process(img_data)
+
 		return self.last_frame
 
 	@property
@@ -70,7 +77,7 @@ def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 	out_frame = frames[frame_type]
 
 
-	return (out_frame, avg_frame)
+	return (out_frame, avg_frame, contours)
 	
 def processImage(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 	# Blur and average with previous frames
