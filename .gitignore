@@ -36,3 +36,6 @@ nosetests.xml
 
 # Mac files
 *.DS_Store
+
+# Config file
+config.ini
