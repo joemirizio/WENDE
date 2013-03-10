@@ -3,8 +3,8 @@ import Tkinter
 
 class TacticalDisplay(object):
 	
-	def __init__(self, gui):
-		self.gui = gui
+	def __init__(self, display):
+		self.display = display
 		self.targets = {}
 
 	def addTarget(self, target):

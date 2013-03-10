@@ -3,6 +3,8 @@ import display.gui
 from image_sources import Camera
 from image_sources import ImageFile
 from processors import ImageProcessor
+from processors import DataProcessor
+from display.tactical import TacticalDisplay
 
 import sys
 from ConfigParser import SafeConfigParser
@@ -14,6 +16,7 @@ class App(object):
 		self.config = config
 
 		# Setup processors
+		self.data_processor = DataProcessor()
 		self.image_processors = []
 		if (config.get('main', 'image_source') == 'CAMERA'):
 			cam_offset = config.getint('camera', 'camera_offset')
@@ -22,12 +25,14 @@ class App(object):
 						config.getint('camera', 'camera_size_y'))
 			for cap_index in range(cam_offset, cam_offset + cam_count):
 				camera = Camera('Cam' + str(cap_index), cap_index, cam_size)
-				self.image_processors.append(ImageProcessor(camera))
+				img_proc = ImageProcessor(camera, data_proc=self.data_processor)
+				self.image_processors.append(img_proc)
 		else:
 			img_files = config.get('image_file', 'image_files').split(',')
 			for img_file in img_files:
 				img = ImageFile(img_file)
-				self.image_processors.append(ImageProcessor(img))
+				img_proc = ImageProcessor(img, data_proc=self.data_processor)
+				self.image_processors.append(img_proc)
 
 		# Setup GUI
 		window_title = config.get('gui', 'window_title')
@@ -38,6 +43,9 @@ class App(object):
 			logging.warning('HighGUI implementation is incomplete.')
 			self.ui = gui.HighGUI(window_title, image_processors)
 
+		# Tactical display
+		tactical = TacticalDisplay(self.ui.tactical_frame)
+		
 		# Key bindings
 		#TODO Clean up syntax, implement dynamic frame types
 		self.ui.addKeyEvent("p", lambda: map(lambda ip: ip.saveFrame(), self.image_processors))
