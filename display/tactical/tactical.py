@@ -1,30 +1,22 @@
 import logging
-import Tkinter
+import Tkinter as tk
 
 class TacticalDisplay(object):
 	
-	def __init__(self, display):
+	def __init__(self, display, data_proc):
 		self.display = display
-		self.targets = {}
-
-	def addTarget(self, target):
-		self.targets[target.name] = target
+		self.data_proc = data_proc
+		self.canvas = tk.Canvas(self.display, bg="blue", height=250, width=300)
+		self.canvas.pack()
 
 	def displayTarget(self, target):
-		logging.info("displayTarget: %s @ %s" % (target.name, target.pos))
+		logging.info("displayTarget: %s" % target)
 		#TODO Add display logic here - dots that follow the target - tracer	
 
 	def update(self):
-                #initialize - background things
-                top = Tkinter.Tk()
-                C = Tkinter.Canvas(top, bg="blue", height=250, width=300)
+		# Initialize - background things
+		coord = [10, 50, 240, 210]
+		self.canvas.create_arc(coord, start=0, extent=150, fill="red")
 
-                coord = 10, 50, 240, 210
-                C.create_arc(coord, start=0, extent=150, fill="red")
-
-                C.pack()
-                top.mainloop()
-                
-		for target in self.targets:
+		for target in self.data_proc.targets:
 			self.displayTarget(target)
-
