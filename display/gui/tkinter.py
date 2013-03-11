@@ -2,6 +2,7 @@ import cv2 as cv
 import Tkinter as tk
 from PIL import Image
 from PIL import ImageTk
+import logging
 
 class Tkinter:
 	def __init__(self, name, image_processors={}):
@@ -45,10 +46,15 @@ class Tkinter:
 		self.root.update()
 		self.root.after(0, update_func)
 
-	def addView(self, name, pos={'x':0, 'y':0}):
-		label = tk.Label(self.root)
-		label.place(**pos)
-		self.labels[name] = label
+	def addView(self, name, pos={'x':0, 'y':0}, size=(0, 0)):
+		label = tk.Label(self.frame)
+		if 'x' in pos:
+			label.place(**pos)
+		else:
+			label.grid(column=pos[0], row=pos[1])
+		self.viewports[name] = Viewport(name, label, pos, size)
+		self.viewports[name].view.bind('<Button-1>', lambda e: self.viewports[name].addPerspectivePoint([e.x, e.y]))
+		self.viewports[name].view.bind('<Button-2>', lambda e: self.viewports[name].clearPerspectivePoints())
 
 	def updateView(self, name, frame):
 		# Check frame dimensions if Gray or BGR and convert to RGB
@@ -56,9 +62,39 @@ class Tkinter:
 			img = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
 		else:
 			img = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+		
+		if len(viewport.quad_points) > 1:
+			cv.fillPoly(img, np.array([viewport.quad_points], np.int32), (0, 0, 255))
+		if viewport.perspective is not None:
+			img = cv.warpPerspective(img, viewport.perspective, img.shape[0:2][::-1])
+
 		# Convert to PIL
 		pil_img = Image.fromarray(img)
 		photo = ImageTk.PhotoImage(pil_img)
 		# Set PIL to label's image
-		self.labels[name]['image'] = photo
-		self.labels[name].photo = photo
+		viewport.view['image'] = photo
+		viewport.view.photo = photo
+
+class Viewport(object):
+	def __init__(self, name, view, pos={'x':0, 'y':0}, size=[0, 0]):
+		self.name = name
+		self.view = view
+		self.pos = pos
+		self.size = size
+		self.quad_points = []
+		self.perspective = None
+		self.full_perspective = [
+				[0, 0], [self.size[0], 0], 
+				self.size, [0, self.size[1]]]
+	
+	def addPerspectivePoint(self, point):
+		self.quad_points.append(point)
+		if len(self.quad_points) == 4:
+			self.perspective = cv.getPerspectiveTransform(
+					np.array(self.quad_points, np.float32), 
+					np.array(self.full_perspective, np.float32))
+			self.quad_points = []
+
+	def clearPerspectivePoints(self):
+		self.quad_points = []
+		self.perspective = None
