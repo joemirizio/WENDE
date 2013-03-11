@@ -11,13 +11,16 @@ class ImageProcessor(object):
 	# Frames to conditionally display
 	frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
-	def __init__(self, img_source, frame_type=0):
+	def __init__(self, img_source, frame_type=0, data_proc=None):
 		self.img_source = img_source
 		self.last_frame = None
 		self.__avg_frame = None
 		self.frame_type = self.frame_types[frame_type]
 
-		self.data_proc = DataProcessor()
+		if data_proc is None:
+			self.data_proc = DataProcessor()
+		else:
+			self.data_proc = data_proc
 	
 	def process(self):
 		self.last_frame = self.img_source.read()

@@ -1,20 +1,20 @@
 import cv2 as cv
 import Tkinter as tk
+import numpy as np
 from PIL import Image
 from PIL import ImageTk
 import logging
 
-class Tkinter:
+DEFAULT_VIEWPORT_SIZE = (400, 300)
+VIEWPORT_PADDING = 10
+TACTICAL_SIZE = (500, 500)
+
+class Tkinter(object):
 	def __init__(self, name, image_processors={}):
 		self.root = tk.Tk()
 		self.root.title(name)
-		self.labels = {}
+		self.viewports = {}
 		self.key_events = {}
-
-		pos = {'x':0, 'y':0}
-		for img_proc in image_processors:
-			self.addView(img_proc.img_source.name, pos)
-			pos['x'] += img_proc.img_source.width
 
 		# Fullscreen
 		w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
@@ -22,8 +22,23 @@ class Tkinter:
 		#self.root.wm_state('zoomed')
 		#self.root.overrideredirect(True)
 		self.root.attributes('-topmost', True)
-
 		self.root.focus_set()
+
+		# Main frame
+		self.frame = tk.Frame(self.root)
+		self.frame.grid(columnspan=2, rowspan=2, sticky=(tk.N, tk.S))
+
+		# Tactical frame
+		self.tactical_frame = tk.Frame(self.frame, width=TACTICAL_SIZE[0], height=TACTICAL_SIZE[1])
+		self.tactical_frame.grid(column=1, row=0, rowspan=2)
+
+		size = DEFAULT_VIEWPORT_SIZE
+		#pos = {'x':0, 'y':0}
+		pos = [0, 0]
+		for img_proc in image_processors:
+			self.addView(img_proc.img_source.name, pos, size)
+			#pos['x'] += size[0] + VIEWPORT_PADDING
+			pos[1] = pos[1] + 1
 
 		self.root.bind("<Escape>", lambda e: e.widget.quit())
 
@@ -57,6 +72,8 @@ class Tkinter:
 		self.viewports[name].view.bind('<Button-2>', lambda e: self.viewports[name].clearPerspectivePoints())
 
 	def updateView(self, name, frame):
+		viewport = self.viewports[name]
+		frame = cv.resize(frame, viewport.size)
 		# Check frame dimensions if Gray or BGR and convert to RGB
 		if len(frame.shape) == 2:
 			img = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
