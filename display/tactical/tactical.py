@@ -13,7 +13,7 @@ class TacticalDisplay(object):
 		self.display = display
 		self.data_proc = data_proc
 		self.tracks = {}
-		self.canvas = tk.Canvas(self.display, bg="blue",
+		self.canvas = tk.Canvas(self.display, bg="#CCCCCC",
 				width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING, 
 				height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING)
 		self.canvas.grid()
