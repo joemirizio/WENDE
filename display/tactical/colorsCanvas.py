@@ -19,27 +19,48 @@ def setColor(newcolor):
     global color
     color = newcolor
 
+#def callback(event):
+#    canvas = event.widget
+#    x = canvas.canvasx(event.x)
+#    y = canvas.canvasy(event.y)
+#    print canvas.find_closest(x, y)
+    
 top = Tkinter.Tk()
-C = Tkinter.Canvas(top, bg="blue", height=250, width=300)
+x=500
+y=250
 
-coord = 10, 50, 240, 210
-C.create_arc(coord, start=0, extent=150, fill="red")
+#this doesnt work but should change the coordinate system
+#def callback(event):
+#    h = Tkinter.Canvas.canvasy(event.x)
+#    w = Tkinter.Canvas.canvasyx(event.y)
+    
+C = Tkinter.Canvas(top, bg="white", height=y, width=x)
+
+predictionTx = 0
+predictionTy = 0
+predictionBx = 500
+predictionBy = 500
+
+alertTx = 50
+alertTy = 50
+alertBx = 450
+alertBy = 450
+
+safeTx = 100
+safeTy = 100
+safeBx = 400
+safeBy = 400
+#coord = topLeftx, topLefty, bottomRx, bottomRy
+#currently set so the point of wedge at 250
+coordPre = predictionTx, predictionTy, predictionBx, predictionBy
+coordAlert = alertTx, alertTy, alertBx, alertBy
+coordSafe = safeTx, safeTy, safeBx, safeBy
+Pre = C.create_arc(coordPre, start = 30, extent = 120, fill="yellow")
+Alert = C.create_arc(coordAlert, start=30, extent=120, fill="red")
+Safe = C.create_arc(coordSafe, start=30, extent=120, fill="green")
+
+#tracking circle
+C.create_oval(225, 125, 235, 135, fill="black")
 
 C.pack()
 top.mainloop()
-
-#id = create_rectangle((10, 10, 30, 30), fill="red")
-#tag_bind(id, "<Button-1>", lambda x: setColor("red"))
-
-#root = Tk()
-#root.columnconfigure(0, weight=1)
-#root.rowconfigure(0, weight=1)
-
-#canvas = Canvas(root)
-#canvas.grid(column=0, row=0)
-#canvas.bind("<Button-1>", xy)
-#canvas.bind("<B1-Motion>", addline)
-
-canvas.create_line(10, 10, 200, 50, fill='red', width=2)
-
-root.mainloop()
