@@ -55,12 +55,13 @@ safeBy = 400
 coordPre = predictionTx, predictionTy, predictionBx, predictionBy
 coordAlert = alertTx, alertTy, alertBx, alertBy
 coordSafe = safeTx, safeTy, safeBx, safeBy
-Pre = C.create_arc(coordPre, start = 30, extent = 120, fill="yellow")
-Alert = C.create_arc(coordAlert, start=30, extent=120, fill="red")
-Safe = C.create_arc(coordSafe, start=30, extent=120, fill="green")
+Pre = C.create_arc(coordPre, start = 30, extent = 120, fill="#33B5E5")
+Alert = C.create_arc(coordAlert, start=30, extent=120, fill="#FF4444")
+Safe = C.create_arc(coordSafe, start=30, extent=120, fill="#99CC00")
 
 #tracking circle
-C.create_oval(225, 125, 235, 135, fill="black")
+C.create_oval(225, 125, 230, 130, fill="black")
+C.create_line(225, 127, 250, 127, fill="black")
 
 C.pack()
 top.mainloop()

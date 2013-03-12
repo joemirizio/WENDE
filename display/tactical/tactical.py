@@ -61,6 +61,6 @@ class TacticalDisplay(object):
 		safe_points = self.getBoundingBox(5.0)
 
 		# Currently set so the point of wedge at 250
-		pred_zone = self.canvas.create_arc(pred_points, start=start_angle, extent=sweep_angle, fill="yellow", width=0, outline="")
-		alrt_zone = self.canvas.create_arc(alrt_points, start=start_angle, extent=sweep_angle, fill="red", width=0, outline="")
-		safe_zone = self.canvas.create_arc(safe_points, start=start_angle, extent=sweep_angle, fill="green", width=0, outline="")
+		pred_zone = self.canvas.create_arc(pred_points, start=start_angle, extent=sweep_angle, fill="#33B5E5", width=0, outline="")
+		alrt_zone = self.canvas.create_arc(alrt_points, start=start_angle, extent=sweep_angle, fill="#FF4444", width=0, outline="")
+		safe_zone = self.canvas.create_arc(safe_points, start=start_angle, extent=sweep_angle, fill="#99CC00", width=0, outline="")
