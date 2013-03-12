@@ -5,9 +5,10 @@ from PIL import Image
 from PIL import ImageTk
 import logging
 
+from display.tactical import TacticalDisplay
+
 DEFAULT_VIEWPORT_SIZE = (400, 300)
 VIEWPORT_PADDING = 10
-TACTICAL_SIZE = (500, 500)
 
 class Tkinter(object):
 	def __init__(self, name, image_processors={}):
@@ -29,7 +30,9 @@ class Tkinter(object):
 		self.frame.grid(columnspan=2, rowspan=2, sticky=(tk.N, tk.S))
 
 		# Tactical frame
-		self.tactical_frame = tk.Frame(self.frame, width=TACTICAL_SIZE[0], height=TACTICAL_SIZE[1])
+		self.tactical_frame = tk.Frame(self.frame, 
+				width=TacticalDisplay.WIDTH, 
+				height=TacticalDisplay.HEIGHT)
 		self.tactical_frame.grid(column=1, row=0, rowspan=2)
 
 		size = DEFAULT_VIEWPORT_SIZE

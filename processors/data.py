@@ -5,7 +5,7 @@ import math
 from target import Target
 
 AREA_THRESHOLD = 1100
-DIST_THRESHOLD = 10
+DIST_THRESHOLD = 50
 
 class DataProcessor(object):
 	
@@ -17,6 +17,7 @@ class DataProcessor(object):
 		for tgt in self.targets:
 			if dist(target.pos, tgt.pos) < DIST_THRESHOLD:
 				isPresent = True
+				tgt.pos = target.pos
 		if not isPresent:
 			self.targets.append(target)
 			#logging.debug(target)
