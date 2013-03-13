@@ -5,7 +5,8 @@ import math
 from target import Target
 
 AREA_THRESHOLD = 1100
-DIST_THRESHOLD = 50
+DETECT_THRESHOLD = 50
+TRACK_THRESHOLD = 5
 
 class DataProcessor(object):
 	
@@ -15,8 +16,11 @@ class DataProcessor(object):
 	def addTarget(self, target):
 		isPresent = False
 		for tgt in self.targets:
-			if dist(target.pos, tgt.pos) < DIST_THRESHOLD:
+			dist = distance(target.pos, tgt.pos)
+			if dist < DETECT_THRESHOLD:
 				isPresent = True
+				#if dist > TRACK_THRESHOLD:
+				tgt.recordPosition()
 				tgt.pos = target.pos
 		if not isPresent:
 			self.targets.append(target)
@@ -29,5 +33,9 @@ class DataProcessor(object):
 				center, radius = cv.minEnclosingCircle(contour)
 				self.addTarget(Target(center))
 
-def dist(p1, p2):
+	def clearTargetData(self):
+		self.targets = []
+
+
+def distance(p1, p2):
 	return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
