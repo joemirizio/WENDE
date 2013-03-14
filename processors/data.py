@@ -1,12 +1,12 @@
 import cv2 as cv
-import logging
 import math
+import logging
 
 from target import Target
 
 AREA_THRESHOLD = 1100
-DETECT_THRESHOLD = 50
-TRACK_THRESHOLD = 5
+DETECT_THRESHOLD = 0.75
+TRACK_THRESHOLD = 0.075
 
 class DataProcessor(object):
 	
@@ -24,14 +24,17 @@ class DataProcessor(object):
 				tgt.pos = target.pos
 		if not isPresent:
 			self.targets.append(target)
-			#logging.debug(target)
 
-	def process(self, data):
+	def process(self, data, img_proc):
 		for contour in data:
 			area = cv.contourArea(contour)
 			if area > AREA_THRESHOLD:
 				center, radius = cv.minEnclosingCircle(contour)
-				self.addTarget(Target(center))
+				# Compute offset
+				pos = ([float(center[0]) / float(img_proc.img_source.width) * img_proc.offset[0],
+						float(center[1]) / float(img_proc.img_source.height) * img_proc.offset[1]])
+
+				self.addTarget(Target(pos))
 
 	def clearTargetData(self):
 		self.targets = []

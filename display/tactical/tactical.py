@@ -1,14 +1,15 @@
-import logging
 import Tkinter as tk
-import collections
+import math
+import logging
 
 class TacticalDisplay(object):
 	
 	PADDING = 5
 	WIDTH = 800
-	HEIGHT = WIDTH
+	HEIGHT = WIDTH / 2
 	SIZE = (WIDTH, HEIGHT)
-	MAX_LEN = 12
+	MAX_RANGE = 12
+	MAX_WIDTH = MAX_RANGE * math.cos(math.radians(30))
 
 	def __init__(self, display, data_proc):
 		self.display = display
@@ -16,7 +17,7 @@ class TacticalDisplay(object):
 		self.tgtTracks = {}
 		self.canvas = tk.Canvas(self.display, bg="#FEFEFE",
 				width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING, 
-				height=TacticalDisplay.HEIGHT / 2 + TacticalDisplay.PADDING)
+				height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING)
 		self.canvas.grid()
 
 		self.drawBackground()
@@ -27,36 +28,53 @@ class TacticalDisplay(object):
 		self.canvas.bind("<Button-2>", lambda e: self.clearTargetData())
 
 	def displayTarget(self, target):
+		# Remap target position
+		#logging.debug("Mapped pos: (%d, %d)" % (target_pos[0], target_pos[1]))
+		target_pos = self.remapPosition(target.pos)
+		target_pos_points = self.getBoundingBox(0.3, target_pos)
+
+		# Display target and track
 		if target not in self.tgtTracks:
 			#logging.info("displayTarget: %s" % target)
 			tgtTrack = TargetTrack(target)
-			points = self.getBoundingBox(0.3, target.pos)
-			tgtTrack.icon = self.canvas.create_oval(points, fill="#AA66CC", outline="#9933CC", width=4)
+			tgtTrack.icon = self.canvas.create_oval(target_pos_points, fill="#AA66CC", outline="#9933CC", width=4)
 			self.tgtTracks[target] = tgtTrack
 		else:
-			tgtTrack = self.tgtTracks[target] 
 			# Draw track lines
+			tgtTrack = self.tgtTracks[target] 
 			if len(tgtTrack.target.tracks) > 2:
-				points = tgtTrack.getTrackPoints()
+				# Remap track positions
+				track_pts = tgtTrack.target.tracks
+				track_points = []
+				for point in track_pts:
+					track_points.append(self.remapPosition(point))
+				# Flatten and add padding
+				track_points = flattenArray(track_points)
+				track_points = [coord + TacticalDisplay.PADDING for coord in track_points]
+
 				if not tgtTrack.track:
-					tgtTrack.track = self.canvas.create_line(*points, fill="#FFBB33", width=2, capstyle="round")
+					tgtTrack.track = self.canvas.create_line(*track_points, fill="#FFBB33", width=2, capstyle="round")
 				else:
-					self.canvas.coords(tgtTrack.track, *points)
+					self.canvas.coords(tgtTrack.track, *track_points)
+
 			# Draw target icon
-			points = self.getBoundingBox(0.3, tgtTrack.target.pos)
-			self.canvas.coords(tgtTrack.icon, *points)
+			self.canvas.coords(tgtTrack.icon, *target_pos_points)
 			self.canvas.tag_raise(tgtTrack.icon)
+
+	def remapPosition(self, pos):
+		return [pos[0] / TacticalDisplay.MAX_WIDTH * TacticalDisplay.WIDTH, 
+				pos[1] / TacticalDisplay.MAX_RANGE * TacticalDisplay.HEIGHT]
 
 	def update(self):
 		for target in self.data_proc.targets:
 			self.displayTarget(target)
 
-	def getBoundingBox(self, length, pos=[WIDTH / 2, HEIGHT / 2]):
-		max_len = TacticalDisplay.MAX_LEN
+	def getBoundingBox(self, length, pos=[WIDTH / 2, HEIGHT]):
+		max_len = TacticalDisplay.MAX_RANGE
 		pad = TacticalDisplay.PADDING
 
 		extent_x = TacticalDisplay.WIDTH * (length / max_len) / 2
-		extent_y = TacticalDisplay.HEIGHT * (length / max_len) / 2
+		extent_y = TacticalDisplay.HEIGHT * (length / max_len)
 
 		# points = [topLeftx, topLefty, bottomRx, bottomRy]
 		points = [-extent_x + pos[0] + pad, -extent_y + pos[1] + pad, 
@@ -90,11 +108,10 @@ class TargetTrack(object):
 		self.icon = None
 		self.track = None
 	
-	def getTrackPoints(self):
-		pad = TacticalDisplay.PADDING
-		# Flatten points in array
-		return [item + pad for sublist in self.target.tracks for item in sublist]
-
 	def removeDisplayObjects(self, canvas):
 		canvas.delete(self.icon)
 		canvas.delete(self.track)
+
+def flattenArray(arr):
+	# Flatten points in array
+	return [item for sublist in arr for item in sublist]

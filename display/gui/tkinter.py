@@ -73,7 +73,7 @@ class Tkinter(object):
 			label.grid(column=pos[0], row=pos[1])
 		self.viewports[name] = Viewport(name, label, pos, size)
 		self.viewports[name].view.bind('<Button-1>', lambda e: self.viewports[name].addPerspectivePoint([e.x, e.y]))
-		#self.viewports[name].view.bind('<Button-2>', lambda e: self.viewports[name].clearPerspectivePoints())
+		self.viewports[name].view.bind('<Button-2>', lambda e: self.viewports[name].clearPerspectivePoints())
 
 	def updateView(self, name, frame):
 		viewport = self.viewports[name]
@@ -125,10 +125,10 @@ class InputDialog(tkSimpleDialog.Dialog):
 
 	def __init__(self, parent, title=None, labels=['Value']):
 		self.labels = labels
+		self.data = {}
 		tkSimpleDialog.Dialog.__init__(self, parent, title)
 
 	def body(self, root):
-		self.data = {}
 		for i, label in enumerate(self.labels):
 			tk.Label(root, text=label).grid(row=i)
 			val = tk.Entry(root)
@@ -138,4 +138,7 @@ class InputDialog(tkSimpleDialog.Dialog):
 		return self.data[self.labels[0]]
 
 	def apply(self):
-		self.result = self.data
+		result = {}
+		for label, val in self.data.iteritems():
+			result[label] = val.get()
+		self.result = result

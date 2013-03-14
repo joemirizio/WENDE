@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import logging
 
 from data import DataProcessor
 from display.gui.tkinter import InputDialog
@@ -31,7 +32,7 @@ class ImageProcessor(object):
 		#self.last_frame, self.avg_frame = processImage(self.last_frame, self.avg_frame, self.frame_type)
 		self.last_frame, self.avg_frame, img_data = findObjects(self.last_frame, self.avg_frame, self.frame_type)
 
-		self.data_proc.process(img_data)
+		self.data_proc.process(img_data, self)
 
 		return self.last_frame
 
@@ -58,7 +59,10 @@ class ImageProcessor(object):
 			self.frame_type = self.frame_types[frame_type]
 	
 	def setOffset(self, root):
-		self.offset = InputDialog(root, ('%s Offset' % self.img_source.name), ['Distance x: ', 'Distance y:'])
+		labels = ['Distance X: ', 'Distance Y:']
+		data = InputDialog(root, ('%s Offset' % self.img_source.name), labels).result
+		self.offset = [float(data[labels[0]]), float(data[labels[1]])]
+		logging.info("New offset: %s" % self.offset)
 
 
 BLUE_MIN = np.array([90, 50, 50], np.uint8)
