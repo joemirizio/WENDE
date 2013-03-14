@@ -54,6 +54,7 @@ class App(object):
 		self.ui.addKeyEvent("0", lambda: map(lambda ip: ip.setFrameType(0), self.image_processors))
 		self.ui.addKeyEvent("1", lambda: map(lambda ip: ip.setFrameType(1), self.image_processors))
 		self.ui.addKeyEvent("2", lambda: map(lambda ip: ip.setFrameType(2), self.image_processors))
+		self.ui.addKeyEvent("d", lambda: map(lambda ip: ip.setOffset(self.ui.root), self.image_processors))
 
 	def run(self):
 		self.ui.start(self.main)

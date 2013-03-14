@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 
 from data import DataProcessor
+from display.gui.tkinter import InputDialog
 
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
@@ -16,6 +17,7 @@ class ImageProcessor(object):
 		self.last_frame = None
 		self.__avg_frame = None
 		self.frame_type = self.frame_types[frame_type]
+		self.offset = (10, 12)
 
 		if data_proc is None:
 			self.data_proc = DataProcessor()
@@ -54,6 +56,9 @@ class ImageProcessor(object):
 				raise Exception("Invalid frame type '%s'" % frame_type)
 		else:
 			self.frame_type = self.frame_types[frame_type]
+	
+	def setOffset(self, root):
+		self.offset = InputDialog(root, ('%s Offset' % self.img_source.name), ['Distance x: ', 'Distance y:'])
 
 
 BLUE_MIN = np.array([90, 50, 50], np.uint8)

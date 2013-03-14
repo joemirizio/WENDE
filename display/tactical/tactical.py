@@ -6,7 +6,7 @@ class TacticalDisplay(object):
 	
 	PADDING = 5
 	WIDTH = 800
-	HEIGHT = 800
+	HEIGHT = WIDTH
 	SIZE = (WIDTH, HEIGHT)
 	MAX_LEN = 12
 
@@ -16,7 +16,7 @@ class TacticalDisplay(object):
 		self.tgtTracks = {}
 		self.canvas = tk.Canvas(self.display, bg="#FEFEFE",
 				width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING, 
-				height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING)
+				height=TacticalDisplay.HEIGHT / 2 + TacticalDisplay.PADDING)
 		self.canvas.grid()
 
 		self.drawBackground()

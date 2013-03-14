@@ -1,5 +1,6 @@
 import cv2 as cv
 import Tkinter as tk
+import tkSimpleDialog
 import numpy as np
 from PIL import Image
 from PIL import ImageTk
@@ -72,7 +73,7 @@ class Tkinter(object):
 			label.grid(column=pos[0], row=pos[1])
 		self.viewports[name] = Viewport(name, label, pos, size)
 		self.viewports[name].view.bind('<Button-1>', lambda e: self.viewports[name].addPerspectivePoint([e.x, e.y]))
-		self.viewports[name].view.bind('<Button-2>', lambda e: self.viewports[name].clearPerspectivePoints())
+		#self.viewports[name].view.bind('<Button-2>', lambda e: self.viewports[name].clearPerspectivePoints())
 
 	def updateView(self, name, frame):
 		viewport = self.viewports[name]
@@ -118,3 +119,23 @@ class Viewport(object):
 	def clearPerspectivePoints(self):
 		self.quad_points = []
 		self.perspective = None
+
+
+class InputDialog(tkSimpleDialog.Dialog):
+
+	def __init__(self, parent, title=None, labels=['Value']):
+		self.labels = labels
+		tkSimpleDialog.Dialog.__init__(self, parent, title)
+
+	def body(self, root):
+		self.data = {}
+		for i, label in enumerate(self.labels):
+			tk.Label(root, text=label).grid(row=i)
+			val = tk.Entry(root)
+			val.grid(row=i, column=1)
+			self.data[label] = val
+
+		return self.data[self.labels[0]]
+
+	def apply(self):
+		self.result = self.data
