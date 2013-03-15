@@ -9,7 +9,8 @@ class TacticalDisplay(object):
 	HEIGHT = WIDTH / 2
 	SIZE = (WIDTH, HEIGHT)
 	MAX_RANGE = 12
-	MAX_WIDTH = MAX_RANGE * math.cos(math.radians(30))
+	MAX_WIDTH = MAX_RANGE * math.cos(math.radians(30)) * 2
+	LABEL_OFFSET = [0, -15]
 
 	def __init__(self, display, data_proc):
 		self.display = display
@@ -32,12 +33,21 @@ class TacticalDisplay(object):
 		#logging.debug("Mapped pos: (%d, %d)" % (target_pos[0], target_pos[1]))
 		target_pos = self.remapPosition(target.pos)
 		target_pos_points = self.getBoundingBox(0.3, target_pos)
+		label_pos = [
+				target_pos[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
+				target_pos[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
+		real_pos = self.convertToRealPosition(target.pos)
+		label_text = "(%.2f, %.2f)" % (real_pos[0], real_pos[1])
 
 		# Display target and track
 		if target not in self.tgtTracks:
-			#logging.info("displayTarget: %s" % target)
+			# Create target icon
 			tgtTrack = TargetTrack(target)
 			tgtTrack.icon = self.canvas.create_oval(target_pos_points, fill="#AA66CC", outline="#9933CC", width=4)
+			# Create label
+			tgtTrack.label = self.canvas.create_text(*label_pos, anchor="s")
+			# Add label_toggle
+			self.canvas.tag_bind(tgtTrack.icon, "<Button-1>", lambda e: tgtTrack.toggleLabelVisibility())
 			self.tgtTracks[target] = tgtTrack
 		else:
 			# Draw track lines
@@ -53,28 +63,37 @@ class TacticalDisplay(object):
 				track_points = [coord + TacticalDisplay.PADDING for coord in track_points]
 
 				if not tgtTrack.track:
-					tgtTrack.track = self.canvas.create_line(*track_points, fill="#FFBB33", width=2, capstyle="round")
+					tgtTrack.track = self.canvas.create_line(*track_points, fill="#FFBB33", width=2, capstyle="round", smooth=1)
 				else:
 					self.canvas.coords(tgtTrack.track, *track_points)
 
 			# Draw target icon
 			self.canvas.coords(tgtTrack.icon, *target_pos_points)
 			self.canvas.tag_raise(tgtTrack.icon)
+			# Update target label
+			if not tgtTrack.display_label:
+				label_text = ""
+			self.canvas.coords(tgtTrack.label, *label_pos)
+			self.canvas.itemconfigure(tgtTrack.label, text=label_text)
 
 	def remapPosition(self, pos):
-		return [pos[0] / TacticalDisplay.MAX_WIDTH * TacticalDisplay.WIDTH, 
-				pos[1] / TacticalDisplay.MAX_RANGE * TacticalDisplay.HEIGHT]
+		return [float(pos[0]) / float(TacticalDisplay.MAX_WIDTH) * TacticalDisplay.WIDTH, 
+				float(pos[1]) / float(TacticalDisplay.MAX_RANGE) * TacticalDisplay.HEIGHT]
+	
+	def convertToRealPosition(self, pos):
+		return [pos[1] - (float(TacticalDisplay.MAX_WIDTH) / 2.0), 
+				TacticalDisplay.MAX_RANGE - pos[1]]
 
 	def update(self):
 		for target in self.data_proc.targets:
 			self.displayTarget(target)
 
-	def getBoundingBox(self, length, pos=[WIDTH / 2, HEIGHT]):
+	def getBoundingBox(self, length, pos=[float(WIDTH) / 2.0, HEIGHT]):
 		max_len = TacticalDisplay.MAX_RANGE
 		pad = TacticalDisplay.PADDING
 
-		extent_x = TacticalDisplay.WIDTH * (length / max_len) / 2
-		extent_y = TacticalDisplay.HEIGHT * (length / max_len)
+		extent_x = TacticalDisplay.WIDTH * (float(length) / float(max_len)) / 2.0
+		extent_y = TacticalDisplay.HEIGHT * (float(length) / float(max_len))
 
 		# points = [topLeftx, topLefty, bottomRx, bottomRy]
 		points = [-extent_x + pos[0] + pad, -extent_y + pos[1] + pad, 
@@ -107,10 +126,16 @@ class TargetTrack(object):
 		self.target = target
 		self.icon = None
 		self.track = None
+		self.label = None
+		self.display_label = False
 	
 	def removeDisplayObjects(self, canvas):
 		canvas.delete(self.icon)
 		canvas.delete(self.track)
+		canvas.delete(self.label)
+
+	def toggleLabelVisibility(self):
+		self.display_label = not self.display_label
 
 def flattenArray(arr):
 	# Flatten points in array

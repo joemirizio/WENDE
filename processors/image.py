@@ -18,7 +18,7 @@ class ImageProcessor(object):
 		self.last_frame = None
 		self.__avg_frame = None
 		self.frame_type = self.frame_types[frame_type]
-		self.offset = (10, 12)
+		self.offset = (20.7, 12)
 
 		if data_proc is None:
 			self.data_proc = DataProcessor()
