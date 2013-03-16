@@ -8,6 +8,8 @@ from display.gui.tkinter import InputDialog
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
 
+DETECT_MIN = np.array([90, 100, 100], np.uint8)
+DETECT_MAX = np.array([120, 255, 255], np.uint8)
 
 class ImageProcessor(object):
 	# Frames to conditionally display
@@ -18,7 +20,7 @@ class ImageProcessor(object):
 		self.last_frame = None
 		self.__avg_frame = None
 		self.frame_type = self.frame_types[frame_type]
-		self.offset = (20.7, 12)
+		self.offset = (21, 12)
 
 		if data_proc is None:
 			self.data_proc = DataProcessor()
@@ -64,13 +66,10 @@ class ImageProcessor(object):
 		self.offset = [float(data[labels[0]]), float(data[labels[1]])]
 		logging.info("New offset: %s" % self.offset)
 
-
-BLUE_MIN = np.array([90, 50, 50], np.uint8)
-BLUE_MAX = np.array([120, 255, 255], np.uint8)
 def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
 	hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
-	thresh_frame = cv.inRange(hsv_frame, BLUE_MIN, BLUE_MAX)
+	thresh_frame = cv.inRange(hsv_frame, DETECT_MIN, DETECT_MAX)
 
 	# Calculate contours
 	bw_copy = thresh_frame.copy()

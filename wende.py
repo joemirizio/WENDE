@@ -5,6 +5,7 @@ from image_sources import ImageFile
 from processors import ImageProcessor
 from processors import DataProcessor
 from display.tactical import TacticalDisplay
+from display.gui.tkinter import ColorDialog
 
 import sys
 from ConfigParser import SafeConfigParser
@@ -55,6 +56,7 @@ class App(object):
 		self.ui.addKeyEvent("1", lambda: map(lambda ip: ip.setFrameType(1), self.image_processors))
 		self.ui.addKeyEvent("2", lambda: map(lambda ip: ip.setFrameType(2), self.image_processors))
 		self.ui.addKeyEvent("d", lambda: map(lambda ip: ip.setOffset(self.ui.root), self.image_processors))
+		self.ui.addKeyEvent("c", lambda: ColorDialog(self.ui.root))
 
 	def run(self):
 		self.ui.start(self.main)

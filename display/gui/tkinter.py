@@ -23,7 +23,7 @@ class Tkinter(object):
 		self.root.geometry("%dx%d+0+0" % (w, h))
 		#self.root.wm_state('zoomed')
 		#self.root.overrideredirect(True)
-		self.root.attributes('-topmost', True)
+		#self.root.attributes('-topmost', True)
 		self.root.focus_set()
 
 		# Main frame
@@ -142,3 +142,35 @@ class InputDialog(tkSimpleDialog.Dialog):
 		for label, val in self.data.iteritems():
 			result[label] = val.get()
 		self.result = result
+
+class ColorDialog(tkSimpleDialog.Dialog):
+
+	def body(self, root):
+		from processors.image import DETECT_MIN, DETECT_MAX
+		hue_range = [0, 180]
+		sat_range = [0, 255]
+		val_range = [0, 255]
+
+		self.color_ranges = [DETECT_MIN, DETECT_MAX]
+		self.colors = []
+		logging.debug("Pre Colors: %s" % self.color_ranges)
+		for i in range(2):
+			h = self.color_ranges[i][0].tolist()
+			hue = tk.Scale(root, variable=h, from_=hue_range[0], to=hue_range[1])
+			hue.grid(row=0, column=i)
+			s = self.color_ranges[i][1].tolist()
+			sat = tk.Scale(root, variable=s, from_=sat_range[0], to=sat_range[1])
+			sat.grid(row=1, column=i)
+			v = self.color_ranges[i][2].tolist()
+			val = tk.Scale(root, variable=v, from_=val_range[0], to=val_range[1])
+			val.grid(row=2, column=i)
+			logging.debug("HSV (%d %d %d)" % (h, s, v))
+			self.colors.append([hue, sat, val])
+	
+	def apply(self):
+		for ref, color in zip(self.color_ranges, self.colors):
+			ref[0] = color[0].get()
+			ref[1] = color[1].get()
+			ref[2] = color[2].get()
+
+		logging.debug("Post Colors: %s" % self.color_ranges)

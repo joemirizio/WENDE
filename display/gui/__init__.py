@@ -1,2 +1,2 @@
-from tkinter import *
-from highgui import *
+from tkinter import Tkinter
+from highgui import HighGUI
