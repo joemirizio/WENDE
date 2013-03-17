@@ -87,7 +87,12 @@ class Tkinter(object):
 		if len(viewport.quad_points) > 1:
 			cv.fillPoly(img, np.array([viewport.quad_points], np.int32), (0, 0, 255))
 		if viewport.perspective is not None:
-			img = cv.warpPerspective(img, viewport.perspective, img.shape[0:2][::-1])
+			#img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+			#cv.cornerSubPix(img, np.array(viewport.quad_points, np.float32), (11, 11), (-1, -1),
+				#(cv.TERM_CRITERIA_MAX_ITER | cv.TERM_CRITERIA_EPS, 30, 0.01))
+			#viewport.perspective[2][2] = 5
+			img = cv.warpPerspective(img, viewport.perspective, img.shape[0:2][::-1],
+					flags=cv.INTER_LINEAR | cv.WARP_INVERSE_MAP)
 
 		# Convert to PIL
 		pil_img = Image.fromarray(img)
@@ -112,8 +117,8 @@ class Viewport(object):
 		self.quad_points.append(point)
 		if len(self.quad_points) == 4:
 			self.perspective = cv.getPerspectiveTransform(
-					np.array(self.quad_points, np.float32), 
-					np.array(self.full_perspective, np.float32))
+					np.array(self.full_perspective, np.float32),
+					np.array(self.quad_points, np.float32))
 			self.quad_points = []
 
 	def clearPerspectivePoints(self):
@@ -123,19 +128,21 @@ class Viewport(object):
 
 class InputDialog(tkSimpleDialog.Dialog):
 
-	def __init__(self, parent, title=None, labels=['Value']):
-		self.labels = labels
+	def __init__(self, parent, title=None, inputs={'Value':0}):
+		self.inputs = inputs
 		self.data = {}
 		tkSimpleDialog.Dialog.__init__(self, parent, title)
 
 	def body(self, root):
-		for i, label in enumerate(self.labels):
+		for i, (label, def_val) in enumerate(self.inputs.iteritems()):
 			tk.Label(root, text=label).grid(row=i)
 			val = tk.Entry(root)
+			val.insert(0, def_val)
 			val.grid(row=i, column=1)
 			self.data[label] = val
 
-		return self.data[self.labels[0]]
+		# Set focus on first input
+		return self.data[self.inputs.keys()[0]]
 
 	def apply(self):
 		result = {}
@@ -153,18 +160,16 @@ class ColorDialog(tkSimpleDialog.Dialog):
 
 		self.color_ranges = [DETECT_MIN, DETECT_MAX]
 		self.colors = []
-		logging.debug("Pre Colors: %s" % self.color_ranges)
 		for i in range(2):
-			h = self.color_ranges[i][0].tolist()
-			hue = tk.Scale(root, variable=h, from_=hue_range[0], to=hue_range[1])
+			hue = tk.Scale(root, from_=hue_range[0], to=hue_range[1])
+			hue.set(self.color_ranges[i][0].tolist())
 			hue.grid(row=0, column=i)
-			s = self.color_ranges[i][1].tolist()
-			sat = tk.Scale(root, variable=s, from_=sat_range[0], to=sat_range[1])
+			sat = tk.Scale(root, from_=sat_range[0], to=sat_range[1])
+			sat.set(self.color_ranges[i][1].tolist())
 			sat.grid(row=1, column=i)
-			v = self.color_ranges[i][2].tolist()
-			val = tk.Scale(root, variable=v, from_=val_range[0], to=val_range[1])
+			val = tk.Scale(root, from_=val_range[0], to=val_range[1])
+			val.set(self.color_ranges[i][2].tolist())
 			val.grid(row=2, column=i)
-			logging.debug("HSV (%d %d %d)" % (h, s, v))
 			self.colors.append([hue, sat, val])
 	
 	def apply(self):
@@ -173,4 +178,4 @@ class ColorDialog(tkSimpleDialog.Dialog):
 			ref[1] = color[1].get()
 			ref[2] = color[2].get()
 
-		logging.debug("Post Colors: %s" % self.color_ranges)
+		logging.debug("Colors: %s" % self.color_ranges)

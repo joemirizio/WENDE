@@ -20,7 +20,8 @@ class ImageProcessor(object):
 		self.last_frame = None
 		self.__avg_frame = None
 		self.frame_type = self.frame_types[frame_type]
-		self.offset = (21, 12)
+		self.coverage_size = [17, 10]
+		self.coverage_offset = [0, 0]
 
 		if data_proc is None:
 			self.data_proc = DataProcessor()
@@ -60,11 +61,19 @@ class ImageProcessor(object):
 		else:
 			self.frame_type = self.frame_types[frame_type]
 	
-	def setOffset(self, root):
-		labels = ['Distance X: ', 'Distance Y:']
-		data = InputDialog(root, ('%s Offset' % self.img_source.name), labels).result
-		self.offset = [float(data[labels[0]]), float(data[labels[1]])]
-		logging.info("New offset: %s" % self.offset)
+	def setCoverageOffset(self, root):
+		inputs = {'Coverage Offset X:': self.coverage_offset[0], 'Coverage Offset Y:': self.coverage_offset[1]}
+		data = InputDialog(root, ('%s Coverage Offset' % self.img_source.name), inputs).result
+		if data:
+			self.coverage_offset = [float(data['Coverage Offset X:']), float(data['Coverage Offset Y:'])]
+			logging.info("Coverage offset: %s" % self.coverage_offset)
+
+	def setCoverageSize(self, root):
+		inputs = {'Coverage Width:': self.coverage_size[0], 'Coverage Range:': self.coverage_size[1]}
+		data = InputDialog(root, ('%s Coverage Size' % self.img_source.name), inputs).result
+		if data:
+			self.coverage_size = [float(data['Coverage Width:']), float(data['Coverage Range:'])]
+			logging.info("Coverage size: %s" % self.coverage_size)
 
 def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
