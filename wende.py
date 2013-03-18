@@ -4,6 +4,7 @@ from image_sources import Camera
 from image_sources import ImageFile
 from processors import ImageProcessor
 from processors import DataProcessor
+from processors.calibration import Calibrator
 from display.tactical import TacticalDisplay
 from display.gui.tkinter import ColorDialog
 
@@ -35,6 +36,9 @@ class App(object):
 				img_proc = ImageProcessor(img, data_proc=self.data_processor)
 				self.image_processors.append(img_proc)
 
+		# Setup calibrator
+		self.calibrator = Calibrator()
+
 		# Setup GUI
 		window_title = config.get('gui', 'window_title')
 		if config.get('gui', 'gui_type') == "TKINTER":
@@ -58,6 +62,7 @@ class App(object):
 		self.ui.addKeyEvent("o", lambda: map(lambda ip: ip.setCoverageOffset(self.ui.root), self.image_processors))
 		self.ui.addKeyEvent("s", lambda: map(lambda ip: ip.setCoverageSize(self.ui.root), self.image_processors))
 		self.ui.addKeyEvent("y", lambda: map(lambda ip: ip.setPolynomials(self.ui.root), self.image_processors))
+		self.ui.addKeyEvent("d", lambda: self.calibrator.calibrateImageProcessors(self.image_processors))
 		self.ui.addKeyEvent("c", lambda: ColorDialog(self.ui.root))
 
 	def run(self):

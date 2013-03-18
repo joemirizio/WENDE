@@ -141,3 +141,8 @@ def processImage(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 	out_frame = frames[frame_type]
 
 	return (out_frame, avg_frame)
+
+	def __string__(self):
+		return 'Image Processor{%r}' % self.image_source
+	def __repr__(self):
+		return self.__string__()

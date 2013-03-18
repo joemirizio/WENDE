@@ -12,3 +12,8 @@ class ImageFile:
 
 	def read(self):
 		return self.image
+
+	def __string__(self):
+		return '%s{%s (%d, %d)}' % (self.__class__, self.name, self.width, self.height)
+	def __repr__(self):
+		return self.__string__()

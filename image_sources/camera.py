@@ -31,6 +31,11 @@ class Camera:
 		if frame is None:
 			frame = self.read()
 		cv.imwrite(filename, frame)
+	
+	def __string__(self):
+		return '%s{%s (%d, %d)}' % (self.__class__, self.name, self.width, self.height)
+	def __repr__(self):
+		return self.__string__()
 
 
 def getCapture(cap_index):
