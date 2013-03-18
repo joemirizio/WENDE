@@ -4,9 +4,10 @@ import logging
 
 from target import Target
 
-AREA_THRESHOLD = 1100
+AREA_THRESHOLD = 200
 DETECT_THRESHOLD = 0.75
 TRACK_THRESHOLD = 0.075
+POS_THRESHOLD = 0.05
 
 class DataProcessor(object):
 	
@@ -20,8 +21,10 @@ class DataProcessor(object):
 			if area > AREA_THRESHOLD:
 				center, radius = cv.minEnclosingCircle(contour)
 				# Compute offset
+				y = float(center[1]) / float(img_proc.img_source.height) * img_proc.coverage_size[1] 
+				y = img_proc.A + (img_proc.B * y) + (img_proc.C * y**2)
 				pos = ([float(center[0]) / float(img_proc.img_source.width) * img_proc.coverage_size[0] - (img_proc.coverage_size[0] / 2) + img_proc.coverage_offset[0],
-						img_proc.coverage_size[1] - float(center[1]) / float(img_proc.img_source.height) * img_proc.coverage_size[1] + img_proc.coverage_offset[1]])
+						img_proc.coverage_size[1] - y + img_proc.coverage_offset[1]])
 
 				self.addTarget(Target(pos))
 		self.addCoverage(img_proc)
@@ -32,9 +35,10 @@ class DataProcessor(object):
 			dist = distance(target.pos, tgt.pos)
 			if dist < DETECT_THRESHOLD:
 				isPresent = True
-				#if dist > TRACK_THRESHOLD:
-				tgt.recordPosition()
-				tgt.pos = target.pos
+				if dist > TRACK_THRESHOLD:
+					tgt.recordPosition()
+				if dist > POS_THRESHOLD:
+					tgt.pos = target.pos
 		if not isPresent:
 			#logging.info("Adding target")
 			self.targets.append(target)

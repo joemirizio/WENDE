@@ -8,8 +8,8 @@ from display.gui.tkinter import InputDialog
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
 
-DETECT_MIN = np.array([90, 100, 100], np.uint8)
-DETECT_MAX = np.array([120, 255, 255], np.uint8)
+DETECT_MIN = np.array([0, 154, 109], np.uint8)
+DETECT_MAX = np.array([37, 255, 255], np.uint8)
 
 class ImageProcessor(object):
 	# Frames to conditionally display
@@ -22,6 +22,10 @@ class ImageProcessor(object):
 		self.frame_type = self.frame_types[frame_type]
 		self.coverage_size = [17, 10]
 		self.coverage_offset = [0, 0]
+		# Temporary polynomial variables
+		self.A = 0.4386 #0.1916
+		self.B = 1.6007 #1.7223
+		self.C = -0.0615 #-0.0754
 
 		if data_proc is None:
 			self.data_proc = DataProcessor()
@@ -74,6 +78,13 @@ class ImageProcessor(object):
 		if data:
 			self.coverage_size = [float(data['Coverage Width:']), float(data['Coverage Range:'])]
 			logging.info("Coverage size: %s" % self.coverage_size)
+	
+	def setPolynomials(self, root):
+		inputs = {'A': self.A, 'B': self.B, 'C': self.C}
+		data = InputDialog(root, ('%s Polynomial Vars' % self.img_source.name), inputs).result
+		if data:
+			[self.A, self.B, self.C] = [float(data['A']), float(data['B']), float(data['C'])]
+			logging.info("Polynomials: %d + %dx + %dx^2" % (self.A, self.B, self.C))
 
 def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)

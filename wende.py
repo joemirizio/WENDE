@@ -57,6 +57,7 @@ class App(object):
 		self.ui.addKeyEvent("2", lambda: map(lambda ip: ip.setFrameType(2), self.image_processors))
 		self.ui.addKeyEvent("o", lambda: map(lambda ip: ip.setCoverageOffset(self.ui.root), self.image_processors))
 		self.ui.addKeyEvent("s", lambda: map(lambda ip: ip.setCoverageSize(self.ui.root), self.image_processors))
+		self.ui.addKeyEvent("y", lambda: map(lambda ip: ip.setPolynomials(self.ui.root), self.image_processors))
 		self.ui.addKeyEvent("c", lambda: ColorDialog(self.ui.root))
 
 	def run(self):
