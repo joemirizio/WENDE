@@ -4,6 +4,7 @@ from image_sources import Camera
 from image_sources import ImageFile
 from processors import ImageProcessor
 
+#initialize number of cameras and image resolution
 WINDOW_TITLE = "W.E.N.D.E."
 CAMERA_COUNT = 1
 #CAMERA_SIZE = (1024, 768)
@@ -30,6 +31,7 @@ if __name__ == "__main__":
 		#img = ImageFile('../camview.jpg')
 		#image_processors.append(ImageProcessor(img))
 
+        #GUI window setup        
 	ui = gui.Tkinter(WINDOW_TITLE, image_processors)
 	#ui = gui.HighGUI(WINDOW_TITLE, image_processors)
 

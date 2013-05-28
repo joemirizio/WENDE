@@ -33,11 +33,13 @@ class Tkinter:
 		self.root.after(0, update_func)
 
 	def addView(self, name, pos={'x':0, 'y':0}):
+                #label the target with its x and y coordinates
 		label = Label(self.root)
 		label.place(**pos)
 		self.labels[name] = label
 
 	def updateView(self, name, frame):
+                #set view with color scheme, grab images
 		img = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
 		pil_img = Image.fromarray(img)
 		photo = ImageTk.PhotoImage(pil_img)

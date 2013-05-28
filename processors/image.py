@@ -10,11 +10,14 @@ selected_frame = frame_types[0]
 
 class ImageProcessor(object):
 	def __init__(self, img_source):
+                #define and name image sources
 		self.img_source = img_source
 		self.__avg_frame = None
 	
 	def process(self):
+                #read in image data
 		frame = self.img_source.read()
+		#set average frame if not already defined
 		if self.avg_frame is None:
 			self.avg_frame = frame
 		frame, self.avg_frame = processImage(frame, self.avg_frame)
@@ -22,9 +25,11 @@ class ImageProcessor(object):
 
 	@property
 	def avg_frame(self):
+                #define average frame property to be used in process
 		return self.__avg_frame
 	@avg_frame.setter
 	def avg_frame(self, frame):
+                #set average frame using numpy float 
 		if self.__avg_frame is None:
 			self.__avg_frame = np.float32(frame)
 		else:

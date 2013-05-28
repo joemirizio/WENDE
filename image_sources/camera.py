@@ -3,6 +3,7 @@ import numpy as np
 
 class Camera:
 	def __init__(self, name, cap_index, size):
+                #initialize camera source capture with a name and size of window
 		self.capture = getCapture(cap_index)
 		self.name = name
 		self.width = size[0]
@@ -11,6 +12,7 @@ class Camera:
 		self.capture.set(4, self.height)
 
 	def read(self, flip=True):
+                #NEED to add comment - why do we need to flip
 		_, frame = self.capture.read()
 		if flip:
 			frame = cv.flip(frame, 1)
