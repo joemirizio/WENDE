@@ -53,7 +53,6 @@ class Camera:
 
     def record(self, frame):
         if (self.video_writer.isOpened()):
-            print "Recorded frame"
             self.video_writer.write(frame)
     
     def __string__(self):
