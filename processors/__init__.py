@@ -1,1 +1,2 @@
-from image import *
+from image import ImageProcessor
+from data import DataProcessor
