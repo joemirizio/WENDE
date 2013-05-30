@@ -3,7 +3,7 @@ import numpy as np
 import logging
 
 from data import DataProcessor
-from display.gui.tkinter import InputDialog
+from display.gui.tkinter_gui import InputDialog
 
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20

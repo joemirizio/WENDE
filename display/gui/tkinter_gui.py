@@ -11,7 +11,7 @@ from display.tactical import TacticalDisplay
 DEFAULT_VIEWPORT_SIZE = (400, 300)
 VIEWPORT_PADDING = 10
 
-class Tkinter(object):
+class Tkinter_gui(object):
 	def __init__(self, name, image_processors={}):
 		self.root = tk.Tk()
 		self.root.title(name)

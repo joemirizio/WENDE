@@ -7,7 +7,7 @@ from processors import ImageProcessor
 from processors import DataProcessor
 from processors.calibration import Calibrator
 from display.tactical import TacticalDisplay
-from display.gui.tkinter import ColorDialog
+from display.gui.tkinter_gui import ColorDialog
 from net.server import ImageServer
 
 import sys
@@ -53,7 +53,7 @@ class App(object):
         # Setup GUI
         window_title = config.get('gui', 'window_title')
         if config.get('gui', 'gui_type') == "TKINTER":
-            self.ui = display.gui.Tkinter(window_title, self.image_processors)
+            self.ui = display.gui.Tkinter_gui(window_title, self.image_processors)
         else:
             #TODO Fully implement HighGUI
             logging.warning('HighGUI implementation is incomplete.')
