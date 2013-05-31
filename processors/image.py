@@ -12,6 +12,10 @@ DETECT_MIN = np.array([0, 154, 109], np.uint8)
 DETECT_MAX = np.array([37, 255, 255], np.uint8)
 
 class ImageProcessor(object):
+	# Frames to conditionally display
+	frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
+
+	def __init__(self, img_source, frame_type=0, data_proc=None):
 		self.img_source = img_source
 		self.last_frame = None
 		self.__avg_frame = None
@@ -29,6 +33,7 @@ class ImageProcessor(object):
 			self.data_proc = data_proc
 	
 	def process(self):
+		self.last_frame = self.img_source.read()
 		if self.avg_frame is None:
 			self.avg_frame = self.last_frame
 		#self.last_frame, self.avg_frame = processImage(self.last_frame, self.avg_frame, self.frame_type)
@@ -44,7 +49,7 @@ class ImageProcessor(object):
 		return self.__avg_frame
 	@avg_frame.setter
 	def avg_frame(self, frame):
-                #set average frame using numpy float 
+                #set average frame using numpy float
 		if self.__avg_frame is None:
 			self.__avg_frame = np.float32(frame)
 		else:
