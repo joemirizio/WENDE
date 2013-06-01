@@ -1,14 +1,31 @@
 import cv2 as cv
+import numpy as np
 import itertools as it
 import logging
+from math import sin, cos, pi
 
 FLANN_INDEX_KDTREE = 1
 FLANN_INDEX_LSH = 6
+
+SCALE = 12 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
+DISTS = (6, 10, 12)
+
+# Constant values for calibration points with zero offset
+LEFT_PTS = [[dist * SCALE * x for x in (-1 * cos(pi/3), sin(pi/3))] for dist in DISTS]
+CENTER_PTS = [
+	[0, 6],
+	[0, 10],
+	[0, 12]
+	]
+RIGHT_PTS = [[dist * scale * x for x in (cos(pi/3), sin(pi/3))] for dist in DISTS]
 
 class Calibrator(object):
 
 	def __init__(self, image_processors=None):
 		self.calibrations = {}
+		self.leftPts = []
+		self.centerPts = []
+		self.rightPts = []
 		if image_processors:
 			self.calibrateImageProcessors(image_processors)
 
@@ -108,12 +125,14 @@ def calcDistortionMaps(camera):
 	camera.map1, camera.map2 = cv.initUndistortRectifyMap(camera.intrinsic, camera.distortion, None, newCameraMatrix, size, cv.CV_32FC1)
 
 
-### TODO -- Implement object detection from image
-def getExtrinsicParams(camera): 
+### TODO -- Implement object detection from images to get imgPoints
+def getExtrinsicParams(camera, xOffset, yOffset): 
 	""" Collects images and calculates extrinsic parameters, storing them in camera object
 	
 	Arguments: 
 		camera -- Camera object
+		xOffset -- Distance offset in x direction, specified in inches
+		yOffset -- Distance offset in y direction, specified in inches
 
 	"""
 	
@@ -121,10 +140,15 @@ def getExtrinsicParams(camera):
 	objectPoints = []
 	imagePoints = []
 	
+	# Add necessary offset for global coordinate system (there should be no negative numbers...)
+	leftPts = [[xOffset + point[0], yOffset + point[1]] for point in LEFT_POINTS]
+	centerPts = [[xOffset + point[0], yOffset + point[1]] for point in CENTER_POINTS]
+	rightPts = [[xOffset + point[0], yOffset + point[1]] for point in RIGHT_POINTS]
+	
 	if camera.position == left:
-		objPtsArray = np.array( (CENTER_PTS + LEFT_PTS), np.float32 )
+		objPtsArray = np.array( (centerPts + leftPts), np.float32 )
 	else:
-		objPtsArray = np.array( (CENTER_PTS + RIGHT_PTS), np.float32 )
+		objPtsArray = np.array( (centerPts + rightPts), np.float32 )
 	objectPoints.append(objPtsArray)
 	
 	# Capture Image
@@ -134,7 +158,7 @@ def getExtrinsicParams(camera):
 	# Detect calibration points and put into list ([ [x, y], [x, y], [x, y] ])
 	# Filter Color 2 (left/right)
 	# Detect calibration points and put into list ([ [x, y], [x, y], [x, y] ])
-	imgPtsArray = np.array( (PtsCenter + PtsSide), np.float32 )
+	imgPtsArray = np.array( (imgPtsCenter + imgPtsSide), np.float32 )
 	imagePoints.append(imgPtsArray)
 	
 	# Calculate extrinsic parameters
