@@ -77,3 +77,106 @@ def match_flann(desc1, desc2, r_threshold=0.6):
     idx1 = np.arange(len(desc1))
     pairs = np.int32( zip(idx1, idx2[:,0]) )
     return pairs[mask]
+   
+   
+def loadIntrinsicParams(camera):
+	""" Loads intrinsic matrix and distortion coefficients from xml files into camera object, and calculates distortion map
+	
+	Arguments:
+		camera -- Camera object
+	
+	"""
+
+	camera.intrinsic = cv.Load("Intrinsics.xml")
+	camera.distortion = cv.Load("Distortion.xml")
+	
+	
+def calcDistortionMaps(camera):
+	""" Calculates distortion maps 
+	
+	Arguments:
+		camera -- Camera object
+		
+	"""
+	
+	size = camera.height, camera.width
+	
+	# Calculate newCameraMatrix
+	newCameraMatrix, newExtents = cv.getOptimalNewCameraMatrix(camera.intrinsic, camera.distortion, size, 0.0)
+	
+	# Calculate Distortion Maps
+	camera.map1, camera.map2 = cv.initUndistortRectifyMap(camera.intrinsic, camera.distortion, None, newCameraMatrix, size, cv.CV_32FC1)
+
+
+### TODO -- Implement object detection from image
+def getExtrinsicParams(camera): 
+	""" Collects images and calculates extrinsic parameters, storing them in camera object
+	
+	Arguments: 
+		camera -- Camera object
+
+	"""
+	
+	# Some local variables...
+	objectPoints = []
+	imagePoints = []
+	
+	if camera.position == left:
+		objPtsArray = np.array( (CENTER_PTS + LEFT_PTS), np.float32 )
+	else:
+		objPtsArray = np.array( (CENTER_PTS + RIGHT_PTS), np.float32 )
+	objectPoints.append(objPtsArray)
+	
+	# Capture Image
+	height, width = image.shape[:2]
+	
+	# Filter Color 1 (center)
+	# Detect calibration points and put into list ([ [x, y], [x, y], [x, y] ])
+	# Filter Color 2 (left/right)
+	# Detect calibration points and put into list ([ [x, y], [x, y], [x, y] ])
+	imgPtsArray = np.array( (PtsCenter + PtsSide), np.float32 )
+	imagePoints.append(imgPtsArray)
+	
+	# Calculate extrinsic parameters
+	cv2.calibrateCamera(objectPoints, imagePoints, camera.intrinsic, camera.distortion, rvec, tvec)
+	cv2.Rodriguez(rvec,rotation)
+	translation = tvec
+	
+	# Store in camera object
+	camera.rotation = rotation
+	camera.translation = translation
+	
+	
+def undistortImage(camera, image):
+	""" Removes distortion from image by applying intrinsic matrix and distortion coefficients
+	
+	Note: Camera must have intrinsic parameters already loaded
+	Arguments:
+		camera -- Camera object
+		image -- Input image (distorted)
+		
+	Returns undistorted image
+	
+	"""
+	
+	return cv.remap(image, camera.map1, camera.map2, cv.INTER_LINEAR)
+
+
+def convertToGlobal(camera, input):
+	""" Converts x and y coordinates to global coordinates, according to calibration parameters
+	
+	Arguments:
+		camera -- Camera object
+		input -- x and y coordinates of input point in a list
+		
+	Returns a 3D point in with coordinates in an array
+
+	"""
+	
+	imgPoint = np.array( input.reshape(2, 1), np.float32 )
+	leftMat = np.linalg.inv(camera.rotation) * np.linalg.inv(camera.intrinsic) * imgPoint
+	rightMat = np.linalg.inv(camera.rotation) * camera.translation
+	s = rightMat[2,0]
+	s /= leftMat[2,0]
+	
+	return np.linalg.inv(camera.rotation) * ( s * np.linalg.inv(camera.intrinsic) * imgPoint - translation )
