@@ -3,6 +3,7 @@ import numpy as np
 import itertools as it
 import logging
 from math import sin, cos, pi
+from image import ImageProcessor
 
 SCALE = 12 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
 DISTS = (6, 10, 12)
@@ -19,16 +20,25 @@ RIGHT_PTS = [[dist * SCALE * x for x in (cos(pi/3), sin(pi/3))] for dist in DIST
 class Calibrator(object):
 
 	def __init__(self, image_processors=None):
-		self.leftPts = []
-		self.centerPts = []
-		self.rightPts = []
+		self.leftPts = None
+		self.centerPts = None
+		self.rightPts = None
 		
 		if image_processors:
 			self.calibrateImageProcessors(image_processors)
 
+
 	def calibrateImageProcessors(self, image_processors):
+		""" Calibrates input ImageProcessors
 		
-		pass
+		Arguments:
+			image_processors -- Image Processor objects
+			
+		"""
+		
+		for imageProc in image_processors:
+			self.calcExtrinsicParams(imageProc, imageProc.x_offset, imageProc.y_offset)
+			
 
 	def getCalibration(self, img_proc1, img_proc2=None):
 		""" Returns calibration data from image processors
@@ -40,54 +50,58 @@ class Calibrator(object):
 		"""
 		
 		if not img_proc2:
-			return img_proc1.calData
+			return img_proc1.cal_data
 		else:
-			return (img_proc1.calData, img_proc2.calData)
+			return (img_proc1.cal_data, img_proc2.cal_data)
    
 
-### TODO -- Implement object detection from images to get imgPoints
-def calcExtrinsicParams(imageProc, xOffset, yOffset): 
-	""" Collects images and calculates extrinsic parameters, storing them in camera object
+	### TODO -- Implement object detection from images to get imgPoints
+	def calcExtrinsicParams(self, imageProc, xOffset, yOffset): 
+		""" Collects images and calculates extrinsic parameters, storing them in ImageProcessor object
+		
+		Arguments: 
+			imageProc -- ImageProcessor object
+			xOffset -- Distance offset in x direction, specified in inches
+			yOffset -- Distance offset in y direction, specified in inches
 	
-	Arguments: 
-		imageProc -- ImageProcessor object
-		xOffset -- Distance offset in x direction, specified in inches
-		yOffset -- Distance offset in y direction, specified in inches
-
-	"""
-	
-	# Some local variables...
-	objectPoints = []
-	imagePoints = []
-	
-	# Add necessary offset for global coordinate system (there should be no negative numbers...)
-	leftPts = [[xOffset + point[0], yOffset + point[1]] for point in LEFT_POINTS]
-	centerPts = [[xOffset + point[0], yOffset + point[1]] for point in CENTER_POINTS]
-	rightPts = [[xOffset + point[0], yOffset + point[1]] for point in RIGHT_POINTS]
-	
-	# Append object points to array
-	if imageProc.position == left:
-		objPtsArray = np.array( (centerPts + leftPts), np.float32 )
-	else:
-		objPtsArray = np.array( (centerPts + rightPts), np.float32 )
-	objectPoints.append(objPtsArray)
-	
-	# Capture Image
-	height, width = image.shape[:2]
-	
-	# Filter Color 1 (center)
-	# Detect calibration points and put into list ([ [x, y], [x, y], [x, y] ])
-	# Filter Color 2 (left/right)
-	# Detect calibration points and put into list ([ [x, y], [x, y], [x, y] ])
-	imgPtsArray = np.array( (imgPtsCenter + imgPtsSide), np.float32 )
-	imagePoints.append(imgPtsArray)
-	
-	# Calculate extrinsic parameters
-	cv2.calibrateCamera(objectPoints, imagePoints, imageProc.intrinsic, imageProc.distortion, rvec, tvec)
-	cv2.Rodriguez(rvec,rotation)
-	translation = tvec
-	
-	# Store in camera object
-	imageProc.rotation = rotation
-	imageProc.translation = translation
-	
+		"""
+		
+		# Add offset and scaling to global coordinates if not already done
+		if not self.leftPts:
+			# Add necessary offset for global coordinate system (there should be no negative numbers...)
+			self.leftPts = [[xOffset + point[0], yOffset + point[1]] for point in LEFT_POINTS]
+			self.centerPts = [[xOffset + point[0], yOffset + point[1]] for point in CENTER_POINTS]
+			self.rightPts = [[xOffset + point[0], yOffset + point[1]] for point in RIGHT_POINTS]
+		
+		# Append object points to array
+		if imageProc.position == left:
+			objectPoints = np.array( (self.centerPts + self.leftPts), np.float32 )
+		else:
+			objectPoints = np.array( (self.centerPts + self.rightPts), np.float32 )
+		
+		# Capture Image
+		frame = imageProc.img_source.read()
+		avg_frame = frame
+		height, width = frame.shape[:2]
+		
+		# Find centers of calibration points
+		calCenters = []
+		for color in colors: ### TODO : IMPLEMENT SUCH THAT WE FILTER DIFFERENT COLORS FOR CENTER/SIDE
+			# Get Contours
+			_, _, contours = findObjects(frame, avg_frame, imageProc.frame_type) # TODO : USE OPTIONAL ARGUMENTS HERE FOR COLOR FILTERING
+			
+			# Get center points (Should get three, TODO : ADD EXCEPTION AND RETRY IF DIFFERENT)
+			center, radius = cv.minEnclosingCircle(contours)
+			calCenters.append(center)
+		
+		imagePoints = np.array( calCenters, np.float32 )
+		
+		# Calculate extrinsic parameters
+		cv2.calibrateCamera(objectPoints, imagePoints, imageProc.cal_data.intrinsic, imageProc.cal_data.distortion, rvec, tvec)
+		cv2.Rodriguez(rvec, rotation)
+		translation = tvec
+		
+		# Store in camera object
+		imageProc.cal_data.rotation = rotation
+		imageProc.cal_data.translation = translation
+		

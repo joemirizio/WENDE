@@ -16,7 +16,7 @@ class ImageProcessor(object):
 	# Frames to conditionally display
 	frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
-	def __init__(self, img_source, frame_type=0, data_proc=None, position=None):
+	def __init__(self, img_source, frame_type=0, data_proc=None, position=None, x_offset=0, y_offset=0):
 		self.img_source = img_source
 		self.last_frame = None
 		self.__avg_frame = None
@@ -24,7 +24,9 @@ class ImageProcessor(object):
 		self.coverage_size = [17, 10]
 		self.coverage_offset = [0, 0]
 		self.position = position
-		self.calData = calibrationData()
+		self.x_offset = x_offset
+		self.y_offset = y_offset
+		self.cal_data = calibrationData()
 		
 		# Temporary polynomial variables
 		self.A = 0.4386 #0.1916
@@ -174,8 +176,8 @@ def loadIntrinsicParams(imageProc):
 	"""
 
 	### TODO : UPDATE PATH FOR INTRINSIC/DISTORTION FILES
-	imageProc.intrinsic = cv.Load("Intrinsics.xml")
-	imageProc.distortion = cv.Load("Distortion.xml")
+	imageProc.cal_data.intrinsic = cv.Load("Intrinsics.xml")
+	imageProc.cal_data.distortion = cv.Load("Distortion.xml")
 	
 	
 def calcDistortionMaps(imageProc):
@@ -189,8 +191,8 @@ def calcDistortionMaps(imageProc):
 	size = imageProc.img_source.height, imageProc.img_source.width
 	
 	# Calculate newCameraMatrix
-	newCameraMatrix, newExtents = cv.getOptimalNewCameraMatrix(imageProc.intrinsic, imageProc.distortion, size, 0.0)
+	newCameraMatrix, newExtents = cv.getOptimalNewCameraMatrix(imageProc.cal_data.intrinsic, imageProc.cal_data.distortion, size, 0.0)
 	
 	# Calculate Distortion Maps
-	imageProc.map1, imageProc.map2 = cv.initUndistortRectifyMap(imageProc.intrinsic, imageProc.distortion, None, newCameraMatrix, size, cv.CV_32FC1)
+	imageProc.cal_data.map1, imageProc.cal_data.map2 = cv.initUndistortRectifyMap(imageProc.cal_data.intrinsic, imageProc.cal_data.distortion, None, newCameraMatrix, size, cv.CV_32FC1)
 
