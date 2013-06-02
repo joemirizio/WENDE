@@ -16,12 +16,6 @@ class Camera:
         self.capture.set(4, self.height)
         self.video_writer = None
         self.recording = False
-        self.intrinsic = []
-        self.distortion = []
-        self.rotation = []
-        self.translation = []
-        self.undistortMap = []
-        self.position = None
 
     def read(self, flip=False):
         _, frame = self.capture.read()

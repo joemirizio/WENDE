@@ -52,3 +52,38 @@ class DataProcessor(object):
 
 def distance(p1, p2):
 	return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+
+def undistortImage(imageProc, image):
+	""" Removes distortion from image by applying intrinsic matrix and distortion coefficients
+	
+	Note: ImageProcessor must have intrinsic parameters already loaded
+	Arguments:
+		imageProc -- ImageProcessor object
+		image -- Input image (distorted)
+		
+	Returns undistorted image
+	
+	"""
+	
+	return cv.remap(image, imageProc.map1, imageProc.map2, cv.INTER_LINEAR)
+
+
+def convertToGlobal(imageProc, input):
+	""" Converts x and y coordinates to global coordinates, according to calibration parameters
+	
+	Arguments:
+		imageProc -- ImageProcessor object
+		input -- x and y coordinates of input point in a list
+		
+	Returns a 3D point in with coordinates in an array
+
+	"""
+	
+	imgPoint = np.array( input.reshape(2, 1), np.float32 )
+	leftMat = np.linalg.inv(imageProc.rotation) * np.linalg.inv(imageProc.intrinsic) * imgPoint
+	rightMat = np.linalg.inv(imageProc.rotation) * imageProc.translation
+	s = rightMat[2,0]
+	s /= leftMat[2,0]
+	
+	return np.linalg.inv(imageProc.rotation) * ( s * np.linalg.inv(imageProc.intrinsic) * imgPoint - imageProc.translation )
+

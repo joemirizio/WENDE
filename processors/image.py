@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import logging
+from processors.structs import calibrationData
 
 from data import DataProcessor
 from display.gui.tkinter_gui import InputDialog
@@ -15,13 +16,16 @@ class ImageProcessor(object):
 	# Frames to conditionally display
 	frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
-	def __init__(self, img_source, frame_type=0, data_proc=None):
+	def __init__(self, img_source, frame_type=0, data_proc=None, position=None):
 		self.img_source = img_source
 		self.last_frame = None
 		self.__avg_frame = None
 		self.frame_type = self.frame_types[frame_type]
 		self.coverage_size = [17, 10]
 		self.coverage_offset = [0, 0]
+		self.position = position
+		self.calData = calibrationData()
+		
 		# Temporary polynomial variables
 		self.A = 0.4386 #0.1916
 		self.B = 1.6007 #1.7223
@@ -87,11 +91,22 @@ class ImageProcessor(object):
 		if data:
 			[self.A, self.B, self.C] = [float(data['A']), float(data['B']), float(data['C'])]
 			logging.info("Polynomials: %d + %dx + %dx^2" % (self.A, self.B, self.C))
+			
+	def setPosition(self, position):
+		""" Sets position according to corresponding camera placement
+		
+		Arguments:
+			position -- camera position (left OR right)
+			
+		"""
+		
+		self.position = position
+		
 
-def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
+def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0], detectMin=DETECT_MIN, detectMax=DETECT_MAX):
 	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
 	hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
-	thresh_frame = cv.inRange(hsv_frame, DETECT_MIN, DETECT_MAX)
+	thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
 
 	# Calculate contours
 	bw_copy = thresh_frame.copy()
@@ -148,3 +163,34 @@ def processImage(frame, avg_frame, frame_type=ImageProcessor.frame_types[0]):
 		return 'Image Processor{%r}' % self.image_source
 	def __repr__(self):
 		return self.__string__()
+	
+	
+def loadIntrinsicParams(imageProc):
+	""" Loads intrinsic matrix and distortion coefficients from xml files into ImageProcessor object, and calculates distortion map
+	
+	Arguments:
+		imageProc -- ImageProcessor object
+	
+	"""
+
+	### TODO : UPDATE PATH FOR INTRINSIC/DISTORTION FILES
+	imageProc.intrinsic = cv.Load("Intrinsics.xml")
+	imageProc.distortion = cv.Load("Distortion.xml")
+	
+	
+def calcDistortionMaps(imageProc):
+	""" Calculates distortion maps 
+	
+	Arguments:
+		imageProc -- ImageProcessor object
+		
+	"""
+	
+	size = imageProc.img_source.height, imageProc.img_source.width
+	
+	# Calculate newCameraMatrix
+	newCameraMatrix, newExtents = cv.getOptimalNewCameraMatrix(imageProc.intrinsic, imageProc.distortion, size, 0.0)
+	
+	# Calculate Distortion Maps
+	imageProc.map1, imageProc.map2 = cv.initUndistortRectifyMap(imageProc.intrinsic, imageProc.distortion, None, newCameraMatrix, size, cv.CV_32FC1)
+
