@@ -16,7 +16,7 @@ class ImageProcessor(object):
 	# Frames to conditionally display
 	frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
-	def __init__(self, img_source, frame_type=0, data_proc=None, position=None, x_offset=0, y_offset=0):
+	def __init__(self, img_source, frame_type=0, data_proc=None, position='left', x_offset=0, y_offset=0):
 		self.img_source = img_source
 		self.last_frame = None
 		self.__avg_frame = None
@@ -176,8 +176,8 @@ def loadIntrinsicParams(imageProc):
 	"""
 
 	### TODO : UPDATE PATH FOR INTRINSIC/DISTORTION FILES
-	imageProc.cal_data.intrinsic = cv.Load("Intrinsics.xml")
-	imageProc.cal_data.distortion = cv.Load("Distortion.xml")
+	imageProc.cal_data.intrinsic = np.loadtxt("Intrinsics.txt", np.float32) 
+	imageProc.cal_data.distortion = np.loadtxt("Distortion.txt", np.float32)
 	
 	
 def calcDistortionMaps(imageProc):

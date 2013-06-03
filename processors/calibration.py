@@ -5,17 +5,18 @@ import logging
 from math import sin, cos, pi
 from image import ImageProcessor
 
+
 SCALE = 12 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
 DISTS = (6, 10, 12)
 
 # Constant values for calibration points with zero offset
-LEFT_PTS = [[dist * SCALE * x for x in (-1 * cos(pi/3), sin(pi/3))] for dist in DISTS]
-CENTER_PTS = [
+LEFT_POINTS = [[dist * SCALE * x for x in (-1 * cos(pi/3), sin(pi/3))] for dist in DISTS]
+CENTER_POINTS = [
 	[0, 6],
 	[0, 10],
 	[0, 12]
 	]
-RIGHT_PTS = [[dist * SCALE * x for x in (cos(pi/3), sin(pi/3))] for dist in DISTS]
+RIGHT_POINTS = [[dist * SCALE * x for x in (cos(pi/3), sin(pi/3))] for dist in DISTS]
 
 class Calibrator(object):
 
@@ -74,7 +75,7 @@ class Calibrator(object):
 			self.rightPts = [[xOffset + point[0], yOffset + point[1]] for point in RIGHT_POINTS]
 		
 		# Append object points to array
-		if imageProc.position == left:
+		if imageProc.position == 'left':
 			objectPoints = np.array( (self.centerPts + self.leftPts), np.float32 )
 		else:
 			objectPoints = np.array( (self.centerPts + self.rightPts), np.float32 )
@@ -97,11 +98,12 @@ class Calibrator(object):
 		imagePoints = np.array( calCenters, np.float32 )
 		
 		# Calculate extrinsic parameters
-		cv2.calibrateCamera(objectPoints, imagePoints, imageProc.cal_data.intrinsic, imageProc.cal_data.distortion, rvec, tvec)
-		cv2.Rodriguez(rvec, rotation)
+		_, rvec, tvec = cv.solvePnP(objectPoints, imagePoints, imageProc.cal_data.intrinsic, imageProc.cal_data.distortion)
+		rotation , _= cv.Rodrigues(rvec)
 		translation = tvec
 		
 		# Store in camera object
 		imageProc.cal_data.rotation = rotation
 		imageProc.cal_data.translation = translation
+		
 		

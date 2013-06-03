@@ -7,7 +7,7 @@ DEFAULT_OUTPUT_DIR = "../"
 DEFAULT_IMG_EXT = "png"
 
 class Camera:
-    def __init__(self, name, cap_index, size, position):
+    def __init__(self, name, cap_index, size):
         self.capture = getCapture(cap_index)
         self.name = name
         self.width = size[0]

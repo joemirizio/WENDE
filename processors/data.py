@@ -79,7 +79,10 @@ def convertToGlobal(imageProc, input):
 
 	"""
 	
-	imgPoint = np.array( input.reshape(2, 1), np.float32 )
+	imgPoint = np.ones( (3, 1), np.float32 )
+	imgPoint[0, 0] = input[0]
+	imgPoint[1, 0] = input[1]
+	
 	leftMat = np.linalg.inv(imageProc.rotation) * np.linalg.inv(imageProc.intrinsic) * imgPoint
 	rightMat = np.linalg.inv(imageProc.rotation) * imageProc.translation
 	s = rightMat[2,0]
