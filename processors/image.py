@@ -175,9 +175,11 @@ def loadIntrinsicParams(imageProc):
 	
 	"""
 
-	### TODO : UPDATE PATH FOR INTRINSIC/DISTORTION FILES
-	imageProc.cal_data.intrinsic = np.loadtxt("Intrinsics.txt", np.float32) 
-	imageProc.cal_data.distortion = np.loadtxt("Distortion.txt", np.float32)
+	### TODO Possibly add files to config
+	imageProc.cal_data.intrinsic = np.loadtxt(
+        os.path.join('calibration_data', 'intrinsics.txt'))
+	imageProc.cal_data.distortion = np.loadtxt(
+        os.path.join('calibration_data', 'distortion.txt'))
 	
 	
 def calcDistortionMaps(imageProc):
