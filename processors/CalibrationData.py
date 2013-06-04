@@ -1,5 +1,5 @@
 
-class calibrationData(object):
+class CalibrationData(object):
     
     def __init__(self):
         

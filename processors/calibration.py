@@ -7,7 +7,7 @@ from image import ImageProcessor
 
 
 SCALE = 12 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
-DISTS = (6, 10, 12)
+DISTS = (5, 10, 12)
 
 # Constant values for calibration points with zero offset
 LEFT_POINTS = [[dist * SCALE * x for x in (-1 * cos(pi/3), sin(pi/3))] for dist in DISTS]

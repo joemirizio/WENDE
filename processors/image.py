@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 import logging
-from processors.structs import calibrationData
+from processors.structs import CalibrationData
 
 from data import DataProcessor
 from display.gui.tkinter_gui import InputDialog
@@ -26,7 +26,7 @@ class ImageProcessor(object):
         self.position = position
         self.x_offset = x_offset
         self.y_offset = y_offset
-        self.cal_data = calibrationData()
+        self.cal_data = CalibrationData()
         
         # Temporary polynomial variables
         self.A = 0.4386 #0.1916

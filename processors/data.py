@@ -68,24 +68,31 @@ def undistortImage(imageProc, image):
     return cv.remap(image, imageProc.map1, imageProc.map2, cv.INTER_LINEAR)
 
 
-def convertToGlobal(imageProc, input):
+def convertToGlobal(imageProc, coordinates):
     """ Converts x and y coordinates to global coordinates, according to calibration parameters
     
     Arguments:
         imageProc -- ImageProcessor object
-        input -- x and y coordinates of input point in a list
+        coordinates -- x and y coordinates of input point in an array-like object
         
     Returns a 3D point in with coordinates in an array
 
     """
     
     imgPoint = np.ones( (3, 1), np.float32 )
-    imgPoint[0, 0] = input[0]
-    imgPoint[1, 0] = input[1]
+    imgPoint[0, 0] = coordinates[0]
+    imgPoint[1, 0] = coordinates[1]
+    
+    # Convert to matrix to simplify the following linear algebra
+    # TODO: CLEAN THIS UP
+    imgPoint = np.matrix(imgPoint)
+    intrinsic = np.matrix(intrinsic)
+    rotation = np.matrix(rotation)
+    translation = np.matrix(translation)
     
     leftMat = np.linalg.inv(imageProc.rotation) * np.linalg.inv(imageProc.intrinsic) * imgPoint
     rightMat = np.linalg.inv(imageProc.rotation) * imageProc.translation
     s = rightMat[2,0]
     s /= leftMat[2,0]
     
-    return np.linalg.inv(imageProc.rotation) * ( s * np.linalg.inv(imageProc.intrinsic) * imgPoint - imageProc.translation )
+    return np.array( np.linalg.inv(imageProc.rotation) * ( s * np.linalg.inv(imageProc.intrinsic) * imgPoint - imageProc.translation ) )
