@@ -83,7 +83,7 @@ class Calibrator(object):
         
         # Append object points to array
         #if imageProc.position == left:
-        objectPoints = np.array( (self.centerPts + self.leftPts), np.float32 )
+        objectPoints = np.array( (self.centerPts + self.rightPts), np.float32 )
         
         center_thresh_min = np.array([8, 165, 105], np.uint8)
         center_thresh_max = np.array([19, 203, 169], np.uint8)
@@ -116,7 +116,11 @@ class Calibrator(object):
                     calCenters.append(center)
 
         logging.debug("Centers: %s" % calCenters)
-        assert(len(calCenters) == 6)
+        if not len(calCenters) == 6:
+            logging.error("All calibration points not found (Need 6): %s" %
+                          calCenters)
+            imageProc.cal_data = None
+            return
         
         imagePoints = np.array( calCenters, np.float32 )
         
