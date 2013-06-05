@@ -1,6 +1,7 @@
 import cv2 as cv
 import math
 import logging
+import TrackList
 
 from target import Target
 
@@ -14,6 +15,7 @@ class DataProcessor(object):
 	def __init__(self):
 		self.targets = []		
 		self.coverages = {}
+        self.track_list = TrackList()
 
 	def process(self, data, img_proc):
 		for contour in data:
@@ -26,22 +28,22 @@ class DataProcessor(object):
 				pos = ([float(center[0]) / float(img_proc.img_source.width) * img_proc.coverage_size[0] - (img_proc.coverage_size[0] / 2) + img_proc.coverage_offset[0],
 						img_proc.coverage_size[1] - y + img_proc.coverage_offset[1]])
 
-				self.addTarget(Target(pos))
+				self.track_list.processDetection(pos)
 		self.addCoverage(img_proc)
 
-	def addTarget(self, target):
-		isPresent = False
-		for tgt in self.targets:
-			dist = distance(target.pos, tgt.pos)
-			if dist < DETECT_THRESHOLD:
-				isPresent = True
-				if dist > TRACK_THRESHOLD:
-					tgt.recordPosition()
-				if dist > POS_THRESHOLD:
-					tgt.pos = target.pos
-		if not isPresent:
-			#logging.info("Adding target")
-			self.targets.append(target)
+	#def addTarget(self, target):
+	#	isPresent = False
+	#	for tgt in self.targets:
+	#		dist = distance(target.pos, tgt.pos)
+	#		if dist < DETECT_THRESHOLD:
+	#			isPresent = True
+	#			if dist > TRACK_THRESHOLD:
+	#				tgt.recordPosition()
+	#			if dist > POS_THRESHOLD:
+	#				tgt.pos = target.pos
+	#	if not isPresent:
+	#		#logging.info("Adding target")
+	#		self.targets.append(target)
 
 	def addCoverage(self, img_proc):
 		self.coverages[img_proc] = [img_proc.coverage_size, img_proc.coverage_offset]
