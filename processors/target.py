@@ -1,11 +1,54 @@
+import cv2.cv as cv
 class Target(object):
 	
 	def __init__(self, pos):
 		self.pos = pos
 		self.tracks = []
+		self.kalman = makeKalman(pos)
+		self.prediction = (pos)
 
 	def recordPosition(self):
 		self.tracks.append(self.pos)
 
 	def __repr__(self):
 		return "Target{(%d, %d)}" % (self.pos[0], self.pos[1])
+def makeKalman(position):
+	kalman = cv.CreateKalman(dynam_params=4, measure_params=2)
+	kalman_measurement = cv.CreateMat(2,1,cv.CV_32FC1)
+
+        # set previous state prediction
+        x_init = position[0]
+        y_init = position[1]
+        x_dot_init = 0
+        y_dot_init = 0
+        kalman.state_pre[0, 0] = x_init
+        kalman.state_pre[1, 0] = y_init
+        kalman.state_pre[2, 0] = x_dot_init
+        kalman.state_pre[3, 0] = y_dot_init
+     
+        # set kalman transition matrix
+        tk = 1
+        kalman.transition_matrix[0, 0] = 1
+        kalman.transition_matrix[0, 1] = 0
+        kalman.transition_matrix[0, 2] = tk
+        kalman.transition_matrix[0, 3] = 0
+        kalman.transition_matrix[1, 0] = 0
+        kalman.transition_matrix[1, 1] = 1
+        kalman.transition_matrix[1, 2] = 0
+        kalman.transition_matrix[1, 3] = tk
+        kalman.transition_matrix[2, 0] = 0
+        kalman.transition_matrix[2, 1] = 0
+        kalman.transition_matrix[2, 2] = 1
+        kalman.transition_matrix[2, 3] = 0
+        kalman.transition_matrix[3, 0] = 0
+        kalman.transition_matrix[3, 1] = 0
+        kalman.transition_matrix[3, 2] = 0
+        kalman.transition_matrix[3, 3] = 1
+
+        # set Kalman Filter
+        cv.SetIdentity(kalman.measurement_matrix, cv.RealScalar(1))
+        cv.SetIdentity(kalman.process_noise_cov, cv.RealScalar(1e-5))
+        cv.SetIdentity(kalman.measurement_noise_cov, cv.RealScalar(1e-1))
+        cv.SetIdentity(kalman.error_cov_post, cv.RealScalar(1))
+
+	return kalman
