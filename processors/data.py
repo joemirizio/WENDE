@@ -1,10 +1,11 @@
 import cv2 as cv
 import math
 import logging
+import numpy as np
 
 from target import Target
 
-AREA_THRESHOLD = 200
+AREA_THRESHOLD = 50
 DETECT_THRESHOLD = 0.75
 TRACK_THRESHOLD = 0.075
 POS_THRESHOLD = 0.05
@@ -20,11 +21,16 @@ class DataProcessor(object):
             area = cv.contourArea(contour)
             if area > AREA_THRESHOLD:
                 center, radius = cv.minEnclosingCircle(contour)
+
+
                 # Compute offset
                 y = float(center[1]) / float(img_proc.img_source.height) * img_proc.coverage_size[1] 
                 y = img_proc.A + (img_proc.B * y) + (img_proc.C * y**2)
                 pos = ([float(center[0]) / float(img_proc.img_source.width) * img_proc.coverage_size[0] - (img_proc.coverage_size[0] / 2) + img_proc.coverage_offset[0],
                         img_proc.coverage_size[1] - y + img_proc.coverage_offset[1]])
+
+                if img_proc.cal_data:
+                    pos = convertToGlobal(img_proc, center)
 
                 self.addTarget(Target(pos))
         self.addCoverage(img_proc)
@@ -86,13 +92,13 @@ def convertToGlobal(imageProc, coordinates):
     # Convert to matrix to simplify the following linear algebra
     # TODO: CLEAN THIS UP
     imgPoint = np.matrix(imgPoint)
-    intrinsic = np.matrix(intrinsic)
-    rotation = np.matrix(rotation)
-    translation = np.matrix(translation)
+    intrinsic = np.matrix(imageProc.cal_data.intrinsic)
+    rotation = np.matrix(imageProc.cal_data.rotation)
+    translation = np.matrix(imageProc.cal_data.translation)
     
-    leftMat = np.linalg.inv(imageProc.rotation) * np.linalg.inv(imageProc.intrinsic) * imgPoint
-    rightMat = np.linalg.inv(imageProc.rotation) * imageProc.translation
+    leftMat = np.linalg.inv(rotation) * np.linalg.inv(intrinsic) * imgPoint
+    rightMat = np.linalg.inv(rotation) * translation
     s = rightMat[2,0]
     s /= leftMat[2,0]
     
-    return np.array( np.linalg.inv(imageProc.rotation) * ( s * np.linalg.inv(imageProc.intrinsic) * imgPoint - imageProc.translation ) )
+    return np.array( np.linalg.inv(rotation) * ( s * np.linalg.inv(intrinsic) * imgPoint - translation ) )

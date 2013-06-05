@@ -1,16 +1,17 @@
 import cv2 as cv
 import numpy as np
 import logging
-from processors.structs import CalibrationData
+import os
 
 from data import DataProcessor
 from display.gui.tkinter_gui import InputDialog
+from processors.CalibrationData import CalibrationData
 
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
 
-DETECT_MIN = np.array([0, 154, 109], np.uint8)
-DETECT_MAX = np.array([37, 255, 255], np.uint8)
+DETECT_MIN = np.array([26, 94, 105], np.uint8)
+DETECT_MAX = np.array([101, 203, 169], np.uint8)
 
 class ImageProcessor(object):
     # Frames to conditionally display
@@ -26,7 +27,7 @@ class ImageProcessor(object):
         self.position = position
         self.x_offset = x_offset
         self.y_offset = y_offset
-        self.cal_data = CalibrationData()
+        self.cal_data = None
         
         # Temporary polynomial variables
         self.A = 0.4386 #0.1916
@@ -111,9 +112,9 @@ class ImageProcessor(object):
 
         ### TODO Possibly add files to config
         self.cal_data.intrinsic = np.loadtxt(
-            os.path.join('calibration_data', 'intrinsics.txt'))
+            os.path.join('processors', 'calibration_data', 'intrinsics.txt'))
         self.cal_data.distortion = np.loadtxt(
-            os.path.join('calibration_data', 'distortion.txt'))
+            os.path.join('processors', 'calibration_data', 'distortion.txt'))
         
         
     def calcDistortionMaps(self):
@@ -134,7 +135,8 @@ class ImageProcessor(object):
     def __repr__(self):
         return self.__string__()
 
-def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0], detectMin=DETECT_MIN, detectMax=DETECT_MAX):
+def findObjects(frame, avg_frame, frame_type=ImageProcessor.frame_types[0],
+                detectMin=DETECT_MIN, detectMax=DETECT_MAX):
     blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
     hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
     thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
