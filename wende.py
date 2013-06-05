@@ -8,7 +8,7 @@ from processors import DataProcessor
 from processors.calibration import Calibrator
 from display.tactical import TacticalDisplay
 from display.gui.tkinter_gui import ColorDialog
-from net.server import ImageServer
+#from net.server import ImageServer
 
 import sys
 from ConfigParser import SafeConfigParser

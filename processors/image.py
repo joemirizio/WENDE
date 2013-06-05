@@ -17,16 +17,13 @@ class ImageProcessor(object):
     # Frames to conditionally display
     frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
-    def __init__(self, img_source, frame_type=0, data_proc=None, position='left', x_offset=0, y_offset=0):
+    def __init__(self, img_source, frame_type=0, data_proc=None):
         self.img_source = img_source
         self.last_frame = None
         self.__avg_frame = None
         self.frame_type = self.frame_types[frame_type]
         self.coverage_size = [17, 10]
         self.coverage_offset = [0, 0]
-        self.position = position
-        self.x_offset = x_offset
-        self.y_offset = y_offset
         self.cal_data = None
         
         # Temporary polynomial variables

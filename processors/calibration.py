@@ -7,25 +7,39 @@ from image import ImageProcessor
 from image import findObjects
 from processors.CalibrationData import CalibrationData
 
-
+# CONSTANTS
 SCALE = 1 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
-DISTS = (5, 10, 12)
+SIDE_ANGLE = pi/3
+DISTANCES = (5, 10, 12)
 
-# Constant values for calibration points with zero offset
-LEFT_POINTS = [[dist * SCALE * x for x in (-1 * sin(pi/3), cos(pi/3))] for dist in DISTS]
-CENTER_POINTS = [[x * SCALE, y * SCALE] for x, y in [
-    [0, 5],
-    [0, 10],
-    [0, 12]
-    ]]
-RIGHT_POINTS = [[dist * SCALE * x for x in (sin(pi/3), cos(pi/3))] for dist in DISTS]
+# CALIBRATION POINT COLORS
+CENTER_THRESH_MIN = [8, 165, 105]
+CENTER_THRESH_MAX = [19, 203, 169]
+SIDE_THRESH_MIN = [79, 49, 26]
+SIDE_THRESH_MAX = [130, 86, 240]
+
+# Calibration point position calculations
+DISTANCES = [distance * SCALE for distance in DISTANCES]
+SIDE_POINTS = [sin(SIDE_ANGLE), cos(SIDE_ANGLE), 0]
+CENTER_POINTS = [0, 1, 0]
+
+RIGHT_POINTS = [[ distance * coordinate for coordinate in SIDE_POINTS] for distance in DISTANCES]
+CENTER_POINTS = [[ distance * coordinate for coordinate in CENTER_POINTS] for distance in DISTANCES]
+LEFT_POINTS = [[ -1 * x, y, z ] for x, y, z in RIGHT_POINTS ]
+
+# Detection Colors
+center_thresh_min = np.array(CENTER_THRESH_MIN, np.uint8)
+center_thresh_max = np.array(CENTER_THRESH_MAX, np.uint8)
+side_thresh_min = np.array(SIDE_THRESH_MIN, np.uint8);
+side_thresh_max = np.array(SIDE_THRESH_MAX, np.uint8);
+
+colors = [(center_thresh_min, center_thresh_max), 
+          (side_thresh_min, side_thresh_max)]
+
 
 class Calibrator(object):
 
     def __init__(self, image_processors=None):
-        self.leftPts = None
-        self.centerPts = None
-        self.rightPts = None
         
         if image_processors:
             self.calibrateImageProcessors(image_processors)
@@ -46,7 +60,7 @@ class Calibrator(object):
             imageProc.calcDistortionMaps()
 
             # Extrinsic
-            self.calcExtrinsicParams(imageProc, imageProc.x_offset, imageProc.y_offset)
+            self.calcExtrinsicParams(imageProc)
             
 
     def getCalibration(self, img_proc1, img_proc2=None):
@@ -64,38 +78,14 @@ class Calibrator(object):
             return (img_proc1.cal_data, img_proc2.cal_data)
    
     ### TODO -- Implement object detection from images to get imgPoints
-    def calcExtrinsicParams(self, imageProc, xOffset, yOffset): 
+    def calcExtrinsicParams(self, imageProc): 
         """ Collects images and calculates extrinsic parameters, storing them in ImageProcessor object
         
         Arguments: 
             imageProc -- ImageProcessor object
-            xOffset -- Distance offset in x direction, specified in inches
-            yOffset -- Distance offset in y direction, specified in inches
     
         """
-        
-        # Add offset and scaling to global coordinates if not already done
-        if not self.leftPts:
-            # Add necessary offset for global coordinate system (there should be no negative numbers...)
-            self.leftPts = [[xOffset + point[0], yOffset + point[1], 0] for point in LEFT_POINTS]
-            self.centerPts = [[xOffset + point[0], yOffset + point[1], 0] for point in CENTER_POINTS]
-            self.rightPts = [[xOffset + point[0], yOffset + point[1], 0] for point in RIGHT_POINTS]
-        
-        # Append object points to array
-        #if imageProc.position == left:
-        objectPoints = np.array( (self.centerPts + self.rightPts), np.float32 )
-        
-        center_thresh_min = np.array([8, 165, 105], np.uint8)
-        center_thresh_max = np.array([19, 203, 169], np.uint8)
-
-        outside_thresh_min = np.array([79, 49, 26], np.uint8);
-        outside_thresh_max = np.array([130, 86, 240], np.uint8);
-
-        colors = [(center_thresh_min, center_thresh_max), 
-                  (outside_thresh_min, outside_thresh_max)]
-        #else:
-            #objectPoints = np.array( (self.centerPts + self.rightPts), np.float32 )
-        
+           
         # Capture Image
         frame = imageProc.img_source.read()
         avg_frame = frame
@@ -115,6 +105,7 @@ class Calibrator(object):
                 if radius > 10:
                     calCenters.append(center)
 
+        # Log and error check
         logging.debug("Centers: %s" % calCenters)
         if not len(calCenters) == 6:
             logging.error("All calibration points not found (Need 6): %s" %
@@ -122,7 +113,14 @@ class Calibrator(object):
             imageProc.cal_data = None
             return
         
+        # Create array from detected points
         imagePoints = np.array( calCenters, np.float32 )
+        
+        # Determine whether left or right view and create appropriate object points array
+        if calCenters[0][0] < calCenters[5][0]: # Right Camera (center points farther left than side points)
+            objectPoints = np.array( (CENTER_POINTS + RIGHT_POINTS), np.float32 )
+        else:
+            objectPoints = np.array( (CENTER_POINTS + LEFT_POINTS), np.float32 )
         
         # Calculate extrinsic parameters
         logging.debug("-------------------------------")
