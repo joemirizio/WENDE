@@ -11,7 +11,7 @@ class TrackList(object):
 
     def associateTrack(self, pos):
         for track in self.tracks:
-            gate_w = track.kalman.measurement_noise_cov
+            gate_w = track.kalman.measurement_noise_cov[0,0]
             if pos[0] > track.prediction[0] - gate_w           \
                     and pos[0] < track.prediction[0] + gate_w  \
                     and pos[1] > track.prediction[1] - gate_w  \
