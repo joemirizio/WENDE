@@ -9,4 +9,6 @@ class CalibrationData(object):
         self.map2 = None
         self.rotation = None
         self.translation = None
+        self.image_points = None
+        self.object_points = None
         

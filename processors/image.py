@@ -43,6 +43,13 @@ class ImageProcessor(object):
         #self.last_frame, self.avg_frame = processImage(self.last_frame, self.avg_frame, self.frame_type)
         self.last_frame, self.avg_frame, img_data = findObjects(self.last_frame, self.avg_frame, self.frame_type)
 
+        # Plot calibration points 
+        if self.cal_data and self.frame_type == 'main':
+            for cal_point in self.cal_data.image_points:
+                point = (cal_point[0], cal_point[1])
+                cv.circle(self.last_frame, point, 5, [0, 0, 255], thickness=-1)
+                cv.circle(self.last_frame, point, 5, [0, 0, 0], thickness=2)
+
         self.data_proc.process(img_data, self)
 
         return self.last_frame

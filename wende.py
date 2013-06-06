@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import display.gui
 from image_sources import Camera
 from image_sources import ImageFile
@@ -8,7 +9,6 @@ from processors import DataProcessor
 from processors.calibration import Calibrator
 from display.tactical import TacticalDisplay
 from display.gui.tkinter_gui import ColorDialog
-from net.server import ImageServer
 
 import sys
 from ConfigParser import SafeConfigParser
@@ -48,7 +48,7 @@ class App(object):
                 self.image_processors.append(img_proc)
 
         # Setup calibrator
-        self.calibrator = Calibrator()
+        self.calibrator = Calibrator(config=config)
 
         # Setup GUI
         window_title = config.get('gui', 'window_title')

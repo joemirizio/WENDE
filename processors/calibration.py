@@ -13,10 +13,10 @@ SIDE_ANGLE = pi/3
 DISTANCES = (5, 10, 12)
 
 # CALIBRATION POINT COLORS
-CENTER_THRESH_MIN = [8, 165, 105]
-CENTER_THRESH_MAX = [19, 203, 169]
-SIDE_THRESH_MIN = [79, 49, 26]
-SIDE_THRESH_MAX = [130, 86, 240]
+CENTER_THRESH_MIN = [69, 45, 56]
+CENTER_THRESH_MAX = [124, 255, 120]
+SIDE_THRESH_MIN = [0, 56, 64]
+SIDE_THRESH_MAX = [8, 158, 120]
 
 # Calibration point position calculations
 DISTANCES = [distance * SCALE for distance in DISTANCES]
@@ -39,11 +39,22 @@ colors = [(center_thresh_min, center_thresh_max),
 
 class Calibrator(object):
 
-    def __init__(self, image_processors=None):
+    def __init__(self, image_processors=None, config=None):
         
         if image_processors:
             self.calibrateImageProcessors(image_processors)
 
+        if config:
+            import processors.calibration as cal
+            cal.center_thresh_min = np.array(config.get('calibration', 'center_color_min').split(','), np.uint8)
+            cal.center_thresh_max = np.array(config.get('calibration', 'center_color_max').split(','), np.uint8)
+            cal.side_thresh_min = np.array(config.get('calibration', 'side_color_min').split(','), np.uint8)
+            cal.side_thresh_max = np.array(config.get('calibration', 'side_color_max').split(','), np.uint8)
+
+            cal.colors = [(cal.center_thresh_min, cal.center_thresh_max), 
+                            (cal.side_thresh_min, cal.side_thresh_max)]
+
+            logging.debug("Updated cal colors: %s" % cal.colors)
 
     def calibrateImageProcessors(self, image_processors):
         """ Calibrates input ImageProcessors
@@ -93,23 +104,21 @@ class Calibrator(object):
         
         # Find centers of calibration points
         calCenters = []
-        for i, color in enumerate(colors): ### TODO : IMPLEMENT SUCH THAT WE FILTER DIFFERENT COLORS FOR CENTER/SIDE
+        for color in colors: ### TODO : IMPLEMENT SUCH THAT WE FILTER DIFFERENT COLORS FOR CENTER/SIDE
             # Get Contours
             _, _, contours = findObjects(frame, avg_frame,
                                 imageProc.frame_type, 
                                 color[0], color[1])
             
-            # Get center points (Should get three, TODO : ADD EXCEPTION AND RETRY IF DIFFERENT)
+            # Get center points
             for contour in contours:
                 center, radius = cv.minEnclosingCircle(contour)
                 if radius > 10:
                     calCenters.append(center)
 
         # Log and error check
-        logging.debug("Centers: %s" % calCenters)
         if not len(calCenters) == 6:
-            logging.error("All calibration points not found (Need 6): %s" %
-                          calCenters)
+            logging.error("Found " + str(len(calCenters)) + " calibration points. (Expected 6): %s" % calCenters)
             imageProc.cal_data = None
             return
         
@@ -135,3 +144,5 @@ class Calibrator(object):
         # Store in camera object
         imageProc.cal_data.rotation = rotation
         imageProc.cal_data.translation = translation
+        imageProc.cal_data.object_points = objectPoints
+        imageProc.cal_data.image_points = imagePoints

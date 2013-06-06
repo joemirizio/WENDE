@@ -22,8 +22,22 @@ class DataProcessor(object):
             if area > AREA_THRESHOLD:
                 center, radius = cv.minEnclosingCircle(contour)
 
+                # Translate to origin
+                center = [center[0] - (img_proc.img_source.width / 2), 
+                          img_proc.img_source.height - center[1]]
 
-                # Compute offset
+                # Convert to polar and subtract radius
+                r = math.sqrt(center[0]**2 + center[1]**2) - (radius)
+                if center[0] == 0:
+                    center[0] = 0.00001
+                theta = math.atan(center[1] / center[0])
+
+                # Convert back to cartesian and translate
+                center = [r * math.cos(theta), r * math.sin(theta)]
+                center[0] = center[0] + (img_proc.img_source.width / 2)
+                center[1] = img_proc.img_source.height - center[1]
+
+                #TODO Remove old code
                 y = float(center[1]) / float(img_proc.img_source.height) * img_proc.coverage_size[1] 
                 y = img_proc.A + (img_proc.B * y) + (img_proc.C * y**2)
                 pos = ([float(center[0]) / float(img_proc.img_source.width) * img_proc.coverage_size[0] - (img_proc.coverage_size[0] / 2) + img_proc.coverage_offset[0],
