@@ -1,7 +1,7 @@
 import cv2 as cv
 import math
 import logging
-import TrackList
+from track_list import TrackList
 
 from target import Target
 
@@ -15,7 +15,7 @@ class DataProcessor(object):
 	def __init__(self):
 		self.targets = []		
 		self.coverages = {}
-        self.track_list = TrackList()
+        	self.track_list = TrackList()
 
 	def process(self, data, img_proc):
 		for contour in data:

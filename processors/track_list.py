@@ -1,6 +1,5 @@
 from target import Target
 
-
 class TrackList(object):
     def __init__(self):
         self.tracks = []
@@ -22,6 +21,6 @@ class TrackList(object):
         # Got through the whole track list without a hit
         return False
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     #TODO: UNIT TEST
-    return
+    #return
