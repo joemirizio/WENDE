@@ -31,19 +31,19 @@ class DataProcessor(object):
 				self.track_list.processDetection(pos)
 		self.addCoverage(img_proc)
 
-	#def addTarget(self, target):
-	#	isPresent = False
-	#	for tgt in self.targets:
-	#		dist = distance(target.pos, tgt.pos)
-	#		if dist < DETECT_THRESHOLD:
-	#			isPresent = True
-	#			if dist > TRACK_THRESHOLD:
-	#				tgt.recordPosition()
-	#			if dist > POS_THRESHOLD:
-	#				tgt.pos = target.pos
-	#	if not isPresent:
-	#		#logging.info("Adding target")
-	#		self.targets.append(target)
+	def addTarget(self, target):
+		isPresent = False
+		for tgt in self.targets:
+			dist = distance(target.pos, tgt.pos)
+			if dist < DETECT_THRESHOLD:
+				isPresent = True
+				if dist > TRACK_THRESHOLD:
+					tgt.recordPosition()
+				if dist > POS_THRESHOLD:
+					tgt.pos = target.pos
+		if not isPresent:
+			#logging.info("Adding target")
+			self.targets.append(target)
 
 	def addCoverage(self, img_proc):
 		self.coverages[img_proc] = [img_proc.coverage_size, img_proc.coverage_offset]

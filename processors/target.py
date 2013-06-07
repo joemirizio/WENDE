@@ -9,6 +9,7 @@ class Target(object):
         self.smooth_dets = []
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
+	self.valid = VerifyValidity(pos)
 
     def update(self, pos):
         self.kal_meas[0, 0] = pos[0]
@@ -20,6 +21,13 @@ class Target(object):
 
     def __repr__(self):
         return "Target{(%d, %d)}" % (self.pos[0], self.pos[1])
+
+#Not yet implemented, this function will be used when a new Target object is 
+#made and will determine if the tracked object is a "running dog" this happens
+#in init since future positions don't matter, from I imagine when the display 
+#is drawing targets, it will first check their valididy before drawing them
+def VerifyValidity(pos):
+    return True
 
 #This is not supposed to be a member function of class target please don't indent
 def makeKalman( position):
