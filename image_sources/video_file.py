@@ -20,6 +20,11 @@ class VideoFile:
         if flip:
             frame = cv.flip(frame, 1)
         #frame = cv.pyrDown(frame)
+        
+        # Rewind video if the end has been reached
+        if self.capture.get(cv.cv.CV_CAP_PROP_POS_FRAMES) == self.capture.get(cv.cv.CV_CAP_PROP_FRAME_COUNT): #End of video
+            self.capture.set(cv.cv.CV_CAP_PROP_POS_FRAMES, 0)
+            
         return frame
 
     def save(self, filename="", frame=None):
