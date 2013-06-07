@@ -6,7 +6,6 @@ from math import sin, cos, pi
 from image import ImageProcessor
 from image import findObjects
 from processors.CalibrationData import CalibrationData
-from display.tactical import TacticalDisplay
 
 # CONSTANTS
 SCALE = 1 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
@@ -64,9 +63,7 @@ class Calibrator(object):
             image_processors -- Image Processor objects
             
         """
-        # send starting calibrataion message
-        #TacticalDisplay.calStatus(1)
-
+        
         for imageProc in image_processors:
             imageProc.cal_data = CalibrationData()
             # Intrinsic
@@ -75,11 +72,7 @@ class Calibrator(object):
 
             # Extrinsic
             self.calcExtrinsicParams(imageProc)
-
-        # send calibration complete message
-        #TacticalDisplay.calStatus(2)
-        
-        # check on tactical display if cal_data = None then system is still uncalibrated?
+            
 
     def getCalibration(self, img_proc1, img_proc2=None):
         """ Returns calibration data from image processors

@@ -12,7 +12,7 @@ class TacticalDisplay(object):
 	MAX_WIDTH = MAX_RANGE * math.cos(math.radians(30)) * 2
 	LABEL_OFFSET = [0, -15]
 
-	def __init__(self, display, data_proc, ):
+	def __init__(self, display, data_proc):
 		self.display = display
 		self.data_proc = data_proc
 		self.tgtTracks = {}
@@ -34,16 +34,6 @@ class TacticalDisplay(object):
 			self.displayTarget(target)
 		for img_proc, coverage in self.data_proc.coverages.iteritems():
 			self.displayCoverage(img_proc, coverage)
-
-        #Insert text showing calibration status on display based on input from calibration.py 
-        status_pos = [300,700]
-	def calStatus(self, msg):
-                if calStatus.msg == 1:
-                        self.canvas.create_text(status_pos, text = "Calibration in Progress", fill = "red")
-                elif calStatus.msg == 2:
-                        self.canvas.create_text(status_pos, text = "Calibration Complete", fill = "green")
-                else:
-                        self.canvas.create_text(status_pos, text = "Uncalibrated System", fill = "red")
 
 	def displayTarget(self, target):
 		# Remap target position
