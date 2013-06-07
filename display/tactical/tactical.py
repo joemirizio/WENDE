@@ -35,6 +35,19 @@ class TacticalDisplay(object):
 		for img_proc, coverage in self.data_proc.coverages.iteritems():
 			self.displayCoverage(img_proc, coverage)
 
+	def updateCalibration(self, message):
+                if message == 1:
+                        status = "Starting Calibration Process"
+                        status_pos = [80,350]
+                elif message == 2:
+                        status = "Calibration Complete"
+                        status_pos = [80,370]
+                else:
+                        status = "Uncalibrated System"
+                        status_pos = [80,330]
+
+                self.canvas.create_text(status_pos, text=status)
+
 	def displayTarget(self, target):
 		# Remap target position
 		target_pos = self.remapPosition(target.pos)
@@ -122,7 +135,9 @@ class TacticalDisplay(object):
 		pred_zone = self.canvas.create_arc(pred_points, start=start_angle, extent=sweep_angle, fill="#33B5E5", outline="#0099CC", width=4)
 		alrt_zone = self.canvas.create_arc(alrt_points, start=start_angle, extent=sweep_angle, fill="#FF4444", outline="#CC0000", width=4)
 		safe_zone = self.canvas.create_arc(safe_points, start=start_angle, extent=sweep_angle, fill="#99CC00", outline="#669900", width=4)
-	
+
+	        self.canvas.create_text([80,330], text="Uncalibrated System")
+	        
 	def clearTargetData(self):
 		for tgtTrack in self.tgtTracks.itervalues():
 			tgtTrack.removeDisplayObjects(self.canvas)

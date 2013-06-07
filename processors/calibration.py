@@ -40,6 +40,8 @@ colors = [(center_thresh_min, center_thresh_max),
 class Calibrator(object):
 
     def __init__(self, image_processors=None, config=None):
+
+        self.tactical=None
         
         if image_processors:
             self.calibrateImageProcessors(image_processors)
@@ -63,6 +65,8 @@ class Calibrator(object):
             image_processors -- Image Processor objects
             
         """
+        #send status update to tactical display to begin calibration
+        self.tactical.updateCalibration(1)
         
         for imageProc in image_processors:
             imageProc.cal_data = CalibrationData()
@@ -72,7 +76,9 @@ class Calibrator(object):
 
             # Extrinsic
             self.calcExtrinsicParams(imageProc)
-            
+
+        #send status update to tactical display that calibration is complete
+        self.tactical.updateCalibration(2)
 
     def getCalibration(self, img_proc1, img_proc2=None):
         """ Returns calibration data from image processors

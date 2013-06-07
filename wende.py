@@ -49,6 +49,7 @@ class App(object):
 
         # Setup calibrator
         self.calibrator = Calibrator(config=config)
+        #self.calibrator.tactical=self.tactical
 
         # Setup GUI
         window_title = config.get('gui', 'window_title')
@@ -61,6 +62,7 @@ class App(object):
 
         # Tactical display
         self.tactical = TacticalDisplay(self.ui.tactical_frame, self.data_processor)
+        self.calibrator.tactical=self.tactical
         
         # Key bindings
         #TODO Clean up syntax, implement dynamic frame types
