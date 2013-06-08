@@ -3,6 +3,7 @@ import cv2.cv as cv
 
 class Target(object):
     def __init__(self, pos):
+	self.tracks = []
         self.pos = pos
         self.kalman = makeKalman(pos)
         self.prediction = pos
@@ -18,6 +19,8 @@ class Target(object):
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction[0] = self.kal_pred[0, 0]  # x
         self.prediction[1] = self.kal_pred[1, 0]  # y
+        # This statement is for compatibility with old drawing method only
+	self.tracks = self.smooth_dets
 
     def __repr__(self):
         return "Target{(%d, %d)}" % (self.pos[0], self.pos[1])

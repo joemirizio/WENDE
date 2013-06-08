@@ -29,6 +29,7 @@ class DataProcessor(object):
 						img_proc.coverage_size[1] - y + img_proc.coverage_offset[1]])
 
 				self.track_list.processDetection(pos)
+				self.targets = self.track_list.tracks
 		self.addCoverage(img_proc)
 
 	def addTarget(self, target):
