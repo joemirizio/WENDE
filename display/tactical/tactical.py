@@ -16,7 +16,6 @@ class TacticalDisplay(object):
 		self.display = display
 		self.data_proc = data_proc
 		self.tgtTracks = {}
-		self.coverages = {}
 		self.canvas = tk.Canvas(self.display, bg="#FEFEFE",
 				width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING, 
 				height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING)
@@ -32,8 +31,6 @@ class TacticalDisplay(object):
 	def update(self):
 		for target in self.data_proc.targets:
 			self.displayTarget(target)
-		for img_proc, coverage in self.data_proc.coverages.iteritems():
-			self.displayCoverage(img_proc, coverage)
 
 	def updateCalibration(self, message):
                 if message == 1:
@@ -94,16 +91,6 @@ class TacticalDisplay(object):
 				label_text = ""
 			self.canvas.coords(tgtTrack.label, *label_pos)
 			self.canvas.itemconfigure(tgtTrack.label, text=label_text)
-
-	def displayCoverage(self, img_proc, coverage):
-		size = [coverage[0][0] / 2, coverage[0][1] / 2]
-		pos = [coverage[1][0], coverage[1][1] + size[1]]
-		pos = self.remapPosition(pos)
-		coverage_points = self.getBoundingBox(*size, pos=pos)
-		if img_proc not in self.coverages:
-			self.coverages[img_proc] = self.canvas.create_rectangle(*coverage_points, outline="#333333", width=1)
-		else:
-			self.canvas.coords(self.coverages[img_proc], *coverage_points)
 
 	def remapPosition(self, pos):
 		return [float(pos[0]) / float(TacticalDisplay.MAX_WIDTH) * TacticalDisplay.WIDTH + (TacticalDisplay.WIDTH / 2), 
