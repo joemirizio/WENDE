@@ -78,7 +78,6 @@ class App(object):
         # Get next frame from camera
         for img_proc in self.image_processors:
             frame = img_proc.process()
-            self.ui.updateView(img_proc.img_source.name, frame)
 
         self.tactical.update()
         self.ui.update(self.main)

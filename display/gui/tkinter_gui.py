@@ -37,11 +37,10 @@ class Tkinter_gui(object):
         self.tactical_frame.grid(column=1, row=0, rowspan=2)
 
         size = DEFAULT_VIEWPORT_SIZE
-        #pos = {'x':0, 'y':0}
+
         pos = [0, 0]
         for img_proc in image_processors:
             self.addView(img_proc, pos, size)
-            #pos['x'] += size[0] + VIEWPORT_PADDING
             pos[1] = pos[1] + 1
 
         self.root.bind("<Escape>", lambda e: e.widget.quit())
@@ -62,49 +61,31 @@ class Tkinter_gui(object):
         self.root.mainloop()
     
     def update(self, update_func):
+        # Update viewports
+        for viewport in self.viewports.itervalues():
+            viewport.update()
+        # Update GUI elements
         self.root.update()
         self.root.after(0, update_func)
 
     def addView(self, img_proc, pos={'x':0, 'y':0}, size=(0, 0)):
-        label = tk.Label(self.frame, cursor='tcross')
-        if 'x' in pos:
-            label.place(**pos)
-        else:
-            label.grid(column=pos[0], row=pos[1])
         name = img_proc.img_source.name
-        self.viewports[name] = Viewport(img_proc, label, pos, size)
+        self.viewports[name] = Viewport(img_proc, self.frame, pos, size)
         self.viewports[name].view.bind('<Button-1>', lambda e:
                                  self.viewports[name].addCalibrationPoint([e.x, e.y]))
 
-    def updateView(self, name, frame):
-        viewport = self.viewports[name]
-        frame = cv.resize(frame, viewport.size)
-        # Check frame dimensions if Gray or BGR and convert to RGB
-        if len(frame.shape) == 2:
-            img = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
-        else:
-            img = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        
-        if viewport.cal_points:
-            for cal_point in viewport.cal_points:
-                cal_point = tuple(cal_point)
-                cv.circle(frame, cal_point, 5, [0, 255, 0], thickness=-1)
-                cv.circle(frame, cal_point, 5, [0, 0, 0], thickness=2)
-
-        # Convert to PIL
-        pil_img = Image.fromarray(img)
-        photo = ImageTk.PhotoImage(pil_img)
-        # Set PIL to label's image
-        viewport.view['image'] = photo
-        viewport.view.photo = photo
 
 class Viewport(object):
-    def __init__(self, img_proc, view, pos={'x':0, 'y':0}, size=[0, 0]):
+    def __init__(self, img_proc, parent, pos={'x':0, 'y':0}, size=[0, 0]):
         self.img_proc = img_proc
-        self.view = view
+        self.view = tk.Label(parent, cursor='tcross')
         self.pos = pos
         self.size = size
         self.cal_points = []
+        if 'x' in self.pos:
+            self.view.place(**pos)
+        else:
+            self.view.grid(column=self.pos[0], row=self.pos[1])
     
     def addCalibrationPoint(self, point):
         from processors.data import distance
@@ -130,6 +111,28 @@ class Viewport(object):
         if len(self.cal_points) == 6:
             logging.debug("Saving new calibration points %s" % self.cal_points)
             self.img_proc.scm.calibrate(self.cal_points)
+
+    def update(self):
+        frame = self.img_proc.last_frame
+        frame = cv.resize(frame, self.size)
+        # Check frame dimensions if Gray or BGR and convert to RGB
+        if len(frame.shape) == 2:
+            img = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+        else:
+            img = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        
+        if self.cal_points:
+            for cal_point in self.cal_points:
+                cal_point = tuple(cal_point)
+                cv.circle(frame, cal_point, 5, [0, 255, 0], thickness=-1)
+                cv.circle(frame, cal_point, 5, [0, 0, 0], thickness=2)
+
+        # Convert to PIL
+        pil_img = Image.fromarray(img)
+        photo = ImageTk.PhotoImage(pil_img)
+        # Set PIL to label's image
+        self.view['image'] = photo
+        self.view.photo = photo
 
 class InputDialog(tkSimpleDialog.Dialog):
 

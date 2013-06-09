@@ -4,8 +4,6 @@ import os
 import logging
 from math import sin, cos, pi
 
-from processors.CalibrationData import CalibrationData
-
 # CONSTANTS
 SCALE = 1 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
 SIDE_ANGLE = pi/3
@@ -40,7 +38,7 @@ class SourceCalibrationModule(object):
         
         """
         # Send status update to tactical display to begin calibration
-        self.image_processor.tca.tactical.updateCalibration(1)
+        #self.image_processor.tca.tactical.updateCalibration(1)
         
         self.image_processor.cal_data = CalibrationData()
 
@@ -54,7 +52,7 @@ class SourceCalibrationModule(object):
         self.calcExtrinsicParams(cal_points)
 
         # Send status update to tactical display that calibration is complete
-        self.image_processor.tca.tactical.updateCalibration(2)
+        #self.image_processor.tca.tactical.updateCalibration(2)
 
     def getCalibration(self):
         """ Returns calibration data from image processors
@@ -153,3 +151,19 @@ class SourceCalibrationModule(object):
         cal_data.map1, cal_data.map2 = cv.initUndistortRectifyMap(
             cal_data.intrinsic, cal_data.distortion, 
             None, camera_matrix, size, cv.CV_32FC1)
+
+
+class CalibrationData(object):
+    
+    def __init__(self):
+        self.intrinsic = None
+        self.distortion = None
+        self.map1 = None
+        self.map2 = None
+        self.rotation = None
+        self.translation = None
+        self.image_points = None
+        self.object_points = None
+
+    def __eq__(self):
+        return self.rotation and self.translation and self.image_points
