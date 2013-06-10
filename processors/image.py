@@ -11,6 +11,7 @@ BW_THRESHOLD = 20
 DETECT_MIN = np.array([0, 154, 109], np.uint8)
 DETECT_MAX = np.array([37, 255, 255], np.uint8)
 
+
 class ImageProcessor(object):
 	# Frames to conditionally display
 	frame_types = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')

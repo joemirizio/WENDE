@@ -5,48 +5,49 @@ ORIGIN = [0,0]
 
 class Target(object):
     def __init__(self, pos):
-	self.tracks = []
+        self.tracks = []
         self.pos = pos
         self.kalman = makeKalman(pos)
         self.prediction = pos
         self.smooth_dets = []
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
-	self.valid = VerifyValidity(pos)
+        self.valid = VerifyValidity(pos)
 
     def update(self, pos):
         # This statement is for compatibility with old drawing method only
-	self.tracks.append(self.pos)
+        self.tracks.append(self.pos)
 
-	self.pos = pos
+        self.pos = pos
         self.kal_meas[0, 0] = pos[0]
         self.kal_meas[1, 0] = pos[1]
         tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
-        self.smooth_dets.append([tmp[0,0], tmp[1,0]])
+        self.smooth_dets.append([tmp[0, 0], tmp[1, 0]])
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction[0] = self.kal_pred[0, 0]  # x
         self.prediction[1] = self.kal_pred[1, 0]  # y
-	#self.tracks = self.smooth_dets
+        #self.tracks = self.smooth_dets
 
     def __repr__(self):
         return "Target{(%d, %d)}" % (self.pos[0], self.pos[1])
 
-#Not yet implemented, this function will be used when a new Target object is 
+#Not yet implemented, this function will be used when a new Target object is
 #made and will determine if the tracked object is a "running dog" this happens
-#in init since future positions don't matter, from I imagine when the display 
+#in init since future positions don't matter, from I imagine when the display
 #is drawing targets, it will first check their valididy before drawing them
 def VerifyValidity(pos):
     output = False
-    if distance(pos,ORIGIN) < 5: 
+    if distance(pos, ORIGIN) < 5:
         output = True
     return output
+
 
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
 
 #This is not supposed to be a member function of class target please don't indent
-def makeKalman( position):
+def makeKalman(position):
     kalman = cv.CreateKalman(dynam_params=4, measure_params=2)
 
     # set previous state prediction
