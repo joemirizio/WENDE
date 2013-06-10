@@ -18,15 +18,15 @@ class TrackList(object):
             #print "pos[0]:%f pos[1]:%f gate[0,0]:%f gate[1,0]:%f gate[0,1]:%f \
             #      gate[1,1]:%f" % (pos[0],pos[1],gate_w[0,0],gate_w[1,0],     \
             #      gate_w[0,1],gate_w[1,1])
-            if pos[0] > track.prediction[0] - gate_w[0,0]           \
-                    and pos[0] < track.prediction[0] + gate_w[0,0]  \
-                    and pos[1] > track.prediction[1] - gate_w[1,0]  \
-                    and pos[1] < track.prediction[1] + gate_w[1,0]:
+            #if pos[0] > track.prediction[0] - gate_w[0,0]           \
+            #        and pos[0] < track.prediction[0] + gate_w[0,0]  \
+            #        and pos[1] > track.prediction[1] - gate_w[1,0]  \
+            #        and pos[1] < track.prediction[1] + gate_w[1,0]:
 	    #The below comments are for additional testing if the above method 
             # doest work
-	    #dist = distance(pos,track.prediction)
-            #if dist < 0.075:
-            #    track.update(pos)
+	    dist = distance(pos,track.prediction)
+            if dist < 1.000:
+                track.update(pos)
                 return True
         # Got through the whole track list without a hit
         return False

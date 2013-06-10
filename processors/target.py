@@ -1,5 +1,7 @@
 import cv2.cv as cv
+import math
 
+ORIGIN = [0,0]
 
 class Target(object):
     def __init__(self, pos):
@@ -13,14 +15,18 @@ class Target(object):
 	self.valid = VerifyValidity(pos)
 
     def update(self, pos):
+        # This statement is for compatibility with old drawing method only
+	self.tracks.append(self.pos)
+
+	self.pos = pos
         self.kal_meas[0, 0] = pos[0]
         self.kal_meas[1, 0] = pos[1]
-        self.smooth_dets.append(cv.KalmanCorrect(self.kalman, self.kal_meas))
+        tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
+        self.smooth_dets.append([tmp[0,0], tmp[1,0]])
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction[0] = self.kal_pred[0, 0]  # x
         self.prediction[1] = self.kal_pred[1, 0]  # y
-        # This statement is for compatibility with old drawing method only
-	self.tracks = self.smooth_dets
+	#self.tracks = self.smooth_dets
 
     def __repr__(self):
         return "Target{(%d, %d)}" % (self.pos[0], self.pos[1])
@@ -30,7 +36,14 @@ class Target(object):
 #in init since future positions don't matter, from I imagine when the display 
 #is drawing targets, it will first check their valididy before drawing them
 def VerifyValidity(pos):
-    return True
+    output = False
+    if distance(pos,ORIGIN) < 5: 
+        output = True
+    return output
+
+def distance(p1, p2):
+    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+
 
 #This is not supposed to be a member function of class target please don't indent
 def makeKalman( position):
