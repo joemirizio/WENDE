@@ -32,6 +32,8 @@ class DataProcessor(object):
                 self.targets = self.track_list.tracks
         self.addCoverage(img_proc)
 
+    # the following function no longer gets called. Detection association
+    #   is now done in track_list.py
     def addTarget(self, target):
         isPresent = False
         for tgt in self.targets:
@@ -55,3 +57,12 @@ class DataProcessor(object):
 
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+
+from random import random
+import pdb
+if __name__ == '__main__':
+    tl = TrackList()
+    data = [[i+random()-0.5, i+random()-0.5] for i in range(100)]
+    for pos in data:
+        #pdb.set_trace()
+        tl.processDetection(pos)
