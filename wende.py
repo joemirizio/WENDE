@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+import sys
+from ConfigParser import SafeConfigParser
+import logging
+import os
+
 import display.gui
 from image_sources import Camera
 from image_sources import ImageFile
@@ -8,10 +13,6 @@ from processors import ImageProcessor
 from processors import DataProcessor
 from display.tactical import TacticalDisplay
 from display.gui.tkinter_gui import ColorDialog
-
-import sys
-from ConfigParser import SafeConfigParser
-import logging
 
 class App(object):
 
@@ -86,7 +87,7 @@ class App(object):
 if __name__ == "__main__":
     # Load configuration
     config = SafeConfigParser()
-    config_file = 'defaults.ini'
+    config_file = os.path.join('config', 'defaults.ini')
     try:
         config.readfp(open(config_file))
     except:

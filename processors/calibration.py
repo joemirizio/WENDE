@@ -126,13 +126,12 @@ class SourceCalibrationModule(object):
         """ Loads intrinsic matrix and distortion coefficients from xml files into ImageProcessor object, and calculates distortion map
         
         """
+        intrinsic_file = self.config.get('calibration', 'cal_intrinsic_file')
+        logging.debug(intrinsic_file)
+        self.image_processor.cal_data.intrinsic = np.loadtxt(intrinsic_file)
 
-        ### TODO Possibly add files to config
-        self.image_processor.cal_data.intrinsic = np.loadtxt(
-            os.path.join('processors', 'calibration_data', 'intrinsics.txt'))
-        self.image_processor.cal_data.distortion = np.loadtxt(
-            os.path.join('processors', 'calibration_data', 'distortion.txt'))
-        
+        distortion_file = self.config.get('calibration', 'cal_distortion_file')
+        self.image_processor.cal_data.distortion = np.loadtxt(distortion_file)
         
     def calcDistortionMaps(self):
         """ Calculates distortion maps 
