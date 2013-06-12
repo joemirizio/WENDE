@@ -1,8 +1,9 @@
-import cv2 as cv
 import math
 import logging
 import numpy as np
+import cv2
 
+from track_list import TrackList
 from target import Target
 
 AREA_THRESHOLD = 50
@@ -10,10 +11,12 @@ DETECT_THRESHOLD = 0.75
 TRACK_THRESHOLD = 0.075
 POS_THRESHOLD = 0.05
 
+
 class DataProcessor(object):
-    
     def __init__(self):
-        self.targets = []        
+        self.targets = []
+        self.coverages = {}
+        self.track_list = TrackList()
 
     def process(self, data, img_proc):
         # Only process if calibrated
@@ -21,9 +24,9 @@ class DataProcessor(object):
             return
 
         for contour in data:
-            area = cv.contourArea(contour)
+            area = cv2.contourArea(contour)
             if area > AREA_THRESHOLD:
-                center, radius = cv.minEnclosingCircle(contour)
+                center, radius = cv2.minEnclosingCircle(contour)
 
                 # Translate to origin
                 center = [center[0] - (img_proc.img_source.width / 2), 
@@ -42,26 +45,14 @@ class DataProcessor(object):
 
                 pos = convertToGlobal(img_proc, center)
 
-                self.addTarget(Target(pos))
-
-    def addTarget(self, target):
-        isPresent = False
-        for tgt in self.targets:
-            dist = distance(target.pos, tgt.pos)
-            if dist < DETECT_THRESHOLD:
-                isPresent = True
-                if dist > TRACK_THRESHOLD:
-                    tgt.recordPosition()
-                if dist > POS_THRESHOLD:
-                    tgt.pos = target.pos
-        if not isPresent:
-            #logging.info("Adding target")
-            self.targets.append(target)
+                self.track_list.processDetection(pos)
+                # TODO Clean reference up
+                self.targets = self.track_list.tracks
 
     def clearTargetData(self):
         self.targets = []
 
-
+# TODO Possible move 
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
@@ -77,7 +68,7 @@ def undistortImage(imageProc, image):
     
     """
     
-    return cv.remap(image, imageProc.map1, imageProc.map2, cv.INTER_LINEAR)
+    return cv2.remap(image, imageProc.map1, imageProc.map2, cv2.INTER_LINEAR)
 
 
 def convertToGlobal(imageProc, coordinates):

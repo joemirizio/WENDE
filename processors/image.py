@@ -11,6 +11,7 @@ from processors.calibration import SourceCalibrationModule
 from display.gui.tkinter_gui import InputDialog
 from processors.detection import ObjectDetectionModule
 
+
 class ImageProcessor(object):
 
     def __init__(self, tca, img_source, config=None, frame_type=0, data_proc=None):
