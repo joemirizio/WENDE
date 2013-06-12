@@ -39,3 +39,4 @@ nosetests.xml
 
 # Config file
 config.ini
+/image_sources

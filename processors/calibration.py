@@ -1,79 +1,169 @@
 import cv2 as cv
-import itertools as it
+import numpy as np
+import os
 import logging
+from math import sin, cos, pi
 
-FLANN_INDEX_KDTREE = 1
-FLANN_INDEX_LSH = 6
+# CONSTANTS
+SCALE = 1 # Scaling factor for global coordinates wrt feet, ex. 12 makes units inches, 1 makes unit feet
+SIDE_ANGLE = pi/3
+DISTANCES = (5, 10, 12)
 
-class Calibrator(object):
+# Calibration point position calculations
+DISTANCES = [distance * SCALE for distance in DISTANCES]
+SIDE_POINTS = [sin(SIDE_ANGLE), cos(SIDE_ANGLE), 0]
+CENTER_POINTS = [0, 1, 0]
 
-	def __init__(self, image_processors=None):
-		self.calibrations = {}
-		if image_processors:
-			self.calibrateImageProcessors(image_processors)
-
-	def calibrateImageProcessors(self, image_processors):
-		for img_proc1, img_proc2 in it.combinations(image_processors, 2):
-			self.calibrations[(img_proc1, img_proc2)] = calibrateImages(img_proc1, img_proc2)
-		logging.info(repr(self.calibrations))
-
-	def getCalibration(self, img_proc1, img_proc2=None):
-		if not img_proc2:
-			return [proc_comb for proc_comb in self.calibrations.iteritems() 
-					if img_proc1 in proc_comb[0]]
-		else:
-			return [proc_comb[1] for proc_comb in self.calibrations.iteritems() 
-					if img_proc1 in proc_comb[0] and img_proc2 in proc_comb[0]][0]
+RIGHT_POINTS = [[ distance * coordinate for coordinate in SIDE_POINTS] for distance in DISTANCES]
+CENTER_POINTS = [[ distance * coordinate for coordinate in CENTER_POINTS] for distance in DISTANCES]
+LEFT_POINTS = [[ -1 * x, y, z ] for x, y, z in RIGHT_POINTS ]
 
 
-def calibrateImages(img1, img2):
-	flann_params = dict(algorithm=FLANN_INDEX_LSH,
-	                   table_number=6, # 12
-	                   key_size=12,     # 20
-	                   multi_probe_level=1) #2
-	image1 = img1.img_source.read();
-	image2 = img2.img_source.read();
-	gimage1 = cv.cvtColor(image1, cv.COLOR_BGR2GRAY);
-	gimage2 = cv.cvtColor(image2, cv.COLOR_BGR2GRAY);
-	surfer = cv.SURF(400);
-	key_points1 = surfer.detect(gimage1);
-	surfer_descriptor = cv.DescriptorExtractor_create("SURF");
-	descripters1 = surfer_descriptor.compute(image1,key_points1);
-	key_points2 = surfer.detect(image2); 
-	descripters2 = surfer_descriptor.compute(image2,key_points2);
-	flann_matcher = cv.FlannBasedMatcher(dict(algorithm = FLANN_INDEX_KDTREE,
-                    trees = 4),{});
-	matches = flann_matcher.match(descripters1[1],descripters2[1]);
-	good_matches = [];
-	min_dist = matches[1].distance;
-	for match in matches:
-		if match.distance < min_dist:
-			min_dist = match.distance
-	for match in matches:
-		if match.distance <= 2*min_dist:
-			good_matches.append(match)
-	i = 0;
-	average_dist = 0;
-	width, heigth,depth = image1.shape
-	dists = [];	
-	for match in good_matches:
-		i +=1;
-		x1, y1 = key_points1[match.queryIdx].pt
-		x2, y1 = key_points2[match.trainIdx].pt
-		average_dist += (width - x1) + x2;
-		dists.append((width - x1) + x2)
-		
-	average_dist /= i;
-	#logging.debug("Distances: %r" % dists)
-	offset = 1;
-	return average_dist 
-	
-flann_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=4)
+class SourceCalibrationModule(object):
 
-def match_flann(desc1, desc2, r_threshold=0.6):
-    flann = cv.flann_Index(desc2, flann_params)
-    idx2, dist = flann.knnSearch(desc1, 2, params={})
-    mask = dist[:,0] / dist[:,1] < r_threshold
-    idx1 = np.arange(len(desc1))
-    pairs = np.int32( zip(idx1, idx2[:,0]) )
-    return pairs[mask]
+    def __init__(self, image_processor, config):
+        self.image_processor = image_processor
+        self.config = config
+        
+        center_thresh_min = np.array(config.get('calibration', 'center_color_min').split(','), np.uint8)
+        center_thresh_max = np.array(config.get('calibration', 'center_color_max').split(','), np.uint8)
+        side_thresh_min = np.array(config.get('calibration', 'side_color_min').split(','), np.uint8)
+        side_thresh_max = np.array(config.get('calibration', 'side_color_max').split(','), np.uint8)
+
+        self.colors = [(center_thresh_min, center_thresh_max), 
+                        (side_thresh_min, side_thresh_max)]
+
+    def calibrate(self, cal_points=None):
+        """ Calibrates the image processor
+        
+        """
+        # Send status update to tactical display to begin calibration
+        #self.image_processor.tca.tactical.updateCalibration(1)
+        
+        self.image_processor.cal_data = CalibrationData()
+
+        # Intrinsic
+        self.loadIntrinsicParams()
+        self.calcDistortionMaps()
+
+        # Extrinsic
+        if not cal_points:
+            cal_points = self.getCalibrationPoints()
+        self.calcExtrinsicParams(cal_points)
+
+        # Send status update to tactical display that calibration is complete
+        #self.image_processor.tca.tactical.updateCalibration(2)
+
+    def getCalibration(self):
+        """ Returns calibration data from image processors
+            
+        """
+        
+        return self.image_processor.cal_data
+   
+    def getCalibrationPoints(self):
+        # Capture Image
+        frame = self.image_processor.img_source.read()
+        avg_frame = frame
+        height, width = frame.shape[:2]
+        
+        # Find centers of calibration points
+        cal_points = []
+        for color in self.colors:
+            # Get Contours
+            _, _, contours = self.image_processor.odm.findObjects(
+                                frame, avg_frame,
+                                self.image_processor.frame_type, 
+                                color[0], color[1])
+            
+            # Get center points
+            for contour in contours:
+                center, radius = cv.minEnclosingCircle(contour)
+                if radius > 10:
+                    cal_points.append(center)
+
+        return cal_points
+
+    def calcExtrinsicParams(self, cal_points): 
+        """ Collects images and calculates extrinsic parameters, storing them in ImageProcessor object
+        
+        Arguments: 
+            cal_points -- The calibration points
+    
+        """
+        # Verify image points are valid
+        if not len(cal_points) == 6:
+            logging.error("Given " + str(len(cal_points)) + " calibration points. (Expected 6): %s" % cal_points)
+            self.image_processor.cal_data = None
+            return
+
+        # Create array from detected points
+        imagePoints = np.array( cal_points, np.float32 )
+        
+        # Determine whether left or right view and create appropriate object points array
+        if cal_points[0][0] < cal_points[5][0]: # Right Camera (center points farther left than side points)
+            objectPoints = np.array( (CENTER_POINTS + RIGHT_POINTS), np.float32 )
+        else:
+            objectPoints = np.array( (CENTER_POINTS + LEFT_POINTS), np.float32 )
+        
+        # Calculate extrinsic parameters
+        logging.debug("-------------------------------")
+        logging.debug("objectPoints: %s" % objectPoints)
+        logging.debug("imagePoint: %s" % imagePoints)
+        logging.debug("intrinsic: %s" % self.image_processor.cal_data.intrinsic)
+        logging.debug("distortion: %s" % self.image_processor.cal_data.distortion)
+        _, rvec, tvec = cv.solvePnP(objectPoints, imagePoints, self.image_processor.cal_data.intrinsic, self.image_processor.cal_data.distortion)
+        rotation , _= cv.Rodrigues(rvec)
+        translation = tvec
+        
+        # Store in camera object
+        self.image_processor.cal_data.rotation = rotation
+        self.image_processor.cal_data.translation = translation
+        self.image_processor.cal_data.object_points = objectPoints
+        self.image_processor.cal_data.image_points = imagePoints
+
+    def loadIntrinsicParams(self):
+        """ Loads intrinsic matrix and distortion coefficients from xml files into ImageProcessor object, and calculates distortion map
+        
+        """
+
+        ### TODO Possibly add files to config
+        self.image_processor.cal_data.intrinsic = np.loadtxt(
+            os.path.join('processors', 'calibration_data', 'intrinsics.txt'))
+        self.image_processor.cal_data.distortion = np.loadtxt(
+            os.path.join('processors', 'calibration_data', 'distortion.txt'))
+        
+        
+    def calcDistortionMaps(self):
+        """ Calculates distortion maps 
+            
+        """
+        
+        cal_data = self.image_processor.cal_data
+        size = (self.image_processor.img_source.height, 
+                self.image_processor.img_source.width)
+        
+        # Calculate newCameraMatrix
+        camera_matrix, _ = cv.getOptimalNewCameraMatrix(
+            cal_data.intrinsic, cal_data.distortion, size, 0.0)
+        
+        # Calculate Distortion Maps
+        cal_data.map1, cal_data.map2 = cv.initUndistortRectifyMap(
+            cal_data.intrinsic, cal_data.distortion, 
+            None, camera_matrix, size, cv.CV_32FC1)
+
+
+class CalibrationData(object):
+    
+    def __init__(self):
+        self.intrinsic = None
+        self.distortion = None
+        self.map1 = None
+        self.map2 = None
+        self.rotation = None
+        self.translation = None
+        self.image_points = None
+        self.object_points = None
+
+    def __eq__(self):
+        return self.rotation and self.translation and self.image_points

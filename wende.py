@@ -1,11 +1,11 @@
 #!/usr/bin/env python
+
 import display.gui
 from image_sources import Camera
 from image_sources import ImageFile
 from image_sources import VideoFile
 from processors import ImageProcessor
 from processors import DataProcessor
-from processors.calibration import Calibrator
 from display.tactical import TacticalDisplay
 from display.gui.tkinter_gui import ColorDialog
 
@@ -28,7 +28,7 @@ class App(object):
                         config.getint('camera', 'camera_size_y'))
             for cap_index in range(cam_offset, cam_offset + cam_count):
                 camera = Camera('Cam' + str(cap_index), cap_index, cam_size)
-                img_proc = ImageProcessor(camera, data_proc=self.data_processor)
+                img_proc = ImageProcessor(self, camera, config, data_proc=self.data_processor)
                 self.image_processors.append(img_proc)
         elif (config.get('main', 'image_source') == 'VIDEO_FILE'):
             video_files = config.get('video_file', 'video_files').split(',')
@@ -37,17 +37,14 @@ class App(object):
                             config.getint('video_file', 'video_size_y'))
                 video_name = 'Video' + str(video_file_index)
                 video = VideoFile(video_name, video_file, video_size)
-                img_proc = ImageProcessor(video, data_proc=self.data_processor)
+                img_proc = ImageProcessor(self, video, config, data_proc=self.data_processor)
                 self.image_processors.append(img_proc)
         else:
             img_files = config.get('image_file', 'image_files').split(',')
             for img_file in img_files:
                 img = ImageFile(img_file)
-                img_proc = ImageProcessor(img, data_proc=self.data_processor)
+                img_proc = ImageProcessor(self, img, config, data_proc=self.data_processor)
                 self.image_processors.append(img_proc)
-
-        # Setup calibrator
-        self.calibrator = Calibrator()
 
         # Setup GUI
         window_title = config.get('gui', 'window_title')
@@ -71,10 +68,7 @@ class App(object):
         self.ui.addKeyEvent("0", lambda: map(lambda ip: ip.setFrameType(0), self.image_processors))
         self.ui.addKeyEvent("1", lambda: map(lambda ip: ip.setFrameType(1), self.image_processors))
         self.ui.addKeyEvent("2", lambda: map(lambda ip: ip.setFrameType(2), self.image_processors))
-        self.ui.addKeyEvent("o", lambda: map(lambda ip: ip.setCoverageOffset(self.ui.root), self.image_processors))
-        self.ui.addKeyEvent("s", lambda: map(lambda ip: ip.setCoverageSize(self.ui.root), self.image_processors))
-        self.ui.addKeyEvent("y", lambda: map(lambda ip: ip.setPolynomials(self.ui.root), self.image_processors))
-        self.ui.addKeyEvent("d", lambda: self.calibrator.calibrateImageProcessors(self.image_processors))
+        self.ui.addKeyEvent("d", lambda: map(lambda ip: ip.scm.calibrate(), self.image_processors))
         self.ui.addKeyEvent("c", lambda: ColorDialog(self.ui.root))
 
     def run(self):
@@ -84,7 +78,6 @@ class App(object):
         # Get next frame from camera
         for img_proc in self.image_processors:
             frame = img_proc.process()
-            self.ui.updateView(img_proc.img_source.name, frame)
 
         self.tactical.update()
         self.ui.update(self.main)
