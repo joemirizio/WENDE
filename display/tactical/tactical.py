@@ -70,7 +70,7 @@ class TacticalDisplay(object):
             tgtTrack = self.tgtTracks[target] 
             if len(tgtTrack.target.tracks) > 2:
                 # Remap track positions
-                track_pts = tgtTrack.target.tracks
+                track_pts = tgtTrack.target.smooth_dets
                 track_points = []
                 for point in track_pts:
                     track_points.append(self.remapPosition(point))
@@ -79,7 +79,11 @@ class TacticalDisplay(object):
                 track_points = [coord + TacticalDisplay.PADDING for coord in track_points]
 
                 if not tgtTrack.track:
-                    tgtTrack.track = self.canvas.create_line(*track_points, fill="#FFBB33", width=2, capstyle="round", smooth=1)
+                    tgtTrack.track = self.canvas.create_line(*track_points,
+                                                             fill="#FFBB33",
+                                                             width=2,
+                                                             capstyle="round")
+                    #, smooth=1)
                 else:
                     self.canvas.coords(tgtTrack.track, *track_points)
 

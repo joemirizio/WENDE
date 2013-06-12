@@ -1,9 +1,12 @@
 import cv2.cv as cv
+import logging
 import math
 
 ORIGIN = [0, 0]
-PROCESS_NOISE = 1e-2
+
+PROCESS_NOISE = 1e-1
 MEASUREMENT_NOISE = 1
+TIME_STEP = 0.5
 
 class Target(object):
     def __init__(self, pos):
@@ -11,6 +14,7 @@ class Target(object):
         self.pos = pos
         self.kalman = None
         self.prediction = None
+        # TODO Rename
         self.smooth_dets = [pos]
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
@@ -28,10 +32,17 @@ class Target(object):
         self.kal_meas[1, 0] = pos[1]
         # TODO Implement newer OpenCV Kalman functions
         tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
+
+
         self.smooth_dets.append([tmp[0, 0], tmp[1, 0]])
+        logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
+
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]]
         #self.tracks = self.smooth_dets
+
+    def clearTargetData(self):
+        self.smooth_dets = []
 
     def __repr__(self):
         return "Target{(%f, %f)}" % (self.pos[0], self.pos[1])
@@ -65,7 +76,7 @@ def makeKalman(pos):
     kalman.state_pre[2, 0] = x_dot_init
     kalman.state_pre[3, 0] = y_dot_init
 
-    tk = 1
+    tk = TIME_STEP
     # Set kalman transition matrix
     kalman.transition_matrix[0, 0] = 1
     kalman.transition_matrix[0, 1] = 0

@@ -29,27 +29,29 @@ class DataProcessor(object):
                 center, radius = cv2.minEnclosingCircle(contour)
 
                 # Translate to origin
-                center = [center[0] - (img_proc.img_source.width / 2), 
-                          img_proc.img_source.height - center[1]]
+                #center = [center[0] - (img_proc.img_source.width / 2), 
+                          #img_proc.img_source.height - center[1]]
 
-                # Convert to polar and subtract radius
-                r = math.sqrt(center[0]**2 + center[1]**2) - (radius)
-                if center[0] == 0:
-                    center[0] = 0.00001
-                theta = math.atan(center[1] / center[0])
+                ## Convert to polar and subtract radius
+                #r = math.sqrt(center[0]**2 + center[1]**2) - (radius)
+                #if center[0] == 0:
+                    #center[0] = 0.00001
+                #theta = math.atan(center[1] / center[0])
 
-                # Convert back to cartesian and translate
-                center = [r * math.cos(theta), r * math.sin(theta)]
-                center[0] = center[0] + (img_proc.img_source.width / 2)
-                center[1] = img_proc.img_source.height - center[1]
+                ## Convert back to cartesian and translate
+                #center = [r * math.cos(theta), r * math.sin(theta)]
+                #center[0] = center[0] + (img_proc.img_source.width / 2)
+                #center[1] = img_proc.img_source.height - center[1]
 
                 pos = convertToGlobal(img_proc, center)
+                logging.debug("Target Detection: %s" % pos)
 
                 self.track_list.processDetection(pos)
                 # TODO Clean reference up
                 self.targets = self.track_list.tracks
 
     def clearTargetData(self):
+        self.track_list.tracks = []
         self.targets = []
 
 # TODO Possible move 

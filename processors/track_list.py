@@ -19,8 +19,8 @@ class TrackList(object):
         for i, track in enumerate(self.tracks):
             if (track.prediction and 
                 distance(pos, track.prediction) < KNOWN_GATE):
-                logging.debug('Det associated: %f from prediction of track %d' %
-                             (distance(pos, track.prediction), i))
+                #logging.debug('Det associated: %f from prediction of track %d' %
+                            # (distance(pos, track.prediction), i))
                 track.update(pos)
                 return True
             elif (not track.prediction and
@@ -29,7 +29,7 @@ class TrackList(object):
                 return True
 
         # Got through the whole track list without a hit
-        logging.debug('Det NOT associated')
+        #logging.debug('Det NOT associated')
         return False
 
 def distance(p1, p2):

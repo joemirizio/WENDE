@@ -6,8 +6,8 @@ from image import FRAME_TYPES
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
 
-DETECT_MIN = np.array([26, 94, 105], np.uint8)
-DETECT_MAX = np.array([101, 203, 169], np.uint8)
+DETECT_MIN = np.array([53, 131, 23], np.uint8)
+DETECT_MAX = np.array([124, 236, 206], np.uint8)
 
 class ObjectDetectionModule(object):
 
