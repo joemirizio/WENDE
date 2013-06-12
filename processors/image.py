@@ -42,8 +42,7 @@ class ImageProcessor(object):
             self.avg_frame = self.last_frame
 
         # Find objects from the image source
-        self.last_frame, self.avg_frame, img_data = self.odm.findObjects(
-            self.last_frame, self.avg_frame, self.frame_type)
+        self.last_frame, img_data = self.odm.findObjects(self.last_frame, self.frame_type)
 
         # Display calibration points 
         if self.cal_data and self.frame_type == 'main':
