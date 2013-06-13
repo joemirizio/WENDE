@@ -24,6 +24,8 @@ class ImageSourceInterface(object):
             frame = cv2.flip(frame, 1)
         if (self.video_writer and self.record):
             self.record(frame)
+        if frame is None:
+            raise IOError('Unable to read image source %s' % self.name)
         return frame
 
     def save(self, filename="", frame=None):
@@ -68,7 +70,7 @@ class ImageSourceInterface(object):
         return self.image_source.name
 
     def __string__(self):
-        return self.image_source
+        return self.image_source.__string__()
 
     def __repr__(self):
         return '%s{%s (%d, %d)}' % (self.__class__, self.image_source.name,

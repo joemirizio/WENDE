@@ -71,10 +71,9 @@ class SourceCalibrationModule(object):
         cal_points = []
         for color in self.colors:
             # Get Contours
-            _, _, contours = self.image_processor.odm.findObjects(
-                                frame, avg_frame,
-                                self.image_processor.frame_type, 
-                                color[0], color[1])
+            _, contours = self.image_processor.odm.findObjects(
+                            frame, self.image_processor.frame_type, 
+                            color[0], color[1])
             
             # Get center points
             for contour in contours:
@@ -93,7 +92,9 @@ class SourceCalibrationModule(object):
         """
         # Verify image points are valid
         if not len(cal_points) == 6:
-            logging.error("Given " + str(len(cal_points)) + " calibration points. (Expected 6): %s" % cal_points)
+            logging.error("%s Calibration Failed: %d/6 points: %s" %
+                          (self.image_processor.isi.name, len(cal_points),
+                           cal_points))
             self.image_processor.cal_data = None
             return
 
@@ -127,10 +128,10 @@ class SourceCalibrationModule(object):
         
         """
         intrinsic_file = self.config.get('calibration', 'cal_intrinsic_file')
-        logging.debug(intrinsic_file)
-        self.image_processor.cal_data.intrinsic = np.loadtxt(intrinsic_file)
-
         distortion_file = self.config.get('calibration', 'cal_distortion_file')
+        logging.debug('Loading intrinsic data from %s, %s' % 
+                      (intrinsic_file, distortion_file))
+        self.image_processor.cal_data.intrinsic = np.loadtxt(intrinsic_file)
         self.image_processor.cal_data.distortion = np.loadtxt(distortion_file)
         
     def calcDistortionMaps(self):
