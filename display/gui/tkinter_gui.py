@@ -69,7 +69,7 @@ class Tkinter_gui(object):
         self.root.after(0, update_func)
 
     def addView(self, img_proc, pos={'x':0, 'y':0}, size=(0, 0)):
-        name = img_proc.img_source.name
+        name = img_proc.isi.name
         self.viewports[name] = Viewport(img_proc, self.frame, pos, size)
         self.viewports[name].view.bind('<Button-1>', lambda e:
                                  self.viewports[name].addCalibrationPoint([e.x, e.y]))
@@ -92,9 +92,9 @@ class Viewport(object):
 
         logging.debug(point)
         point = [int(float(point[0] - 2) / float(self.size[0]) *
-                     self.img_proc.img_source.width), 
+                     self.img_proc.isi.width), 
                  int(float(point[1] - 2) / float(self.size[1]) *
-                     self.img_proc.img_source.height)]
+                     self.img_proc.isi.height)]
 
         if len(self.cal_points) < 6:
             self.cal_points.append(point)

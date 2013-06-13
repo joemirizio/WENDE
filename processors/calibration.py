@@ -21,14 +21,14 @@ LEFT_POINTS = [[ -1 * x, y, z ] for x, y, z in RIGHT_POINTS ]
 
 class SourceCalibrationModule(object):
 
-    def __init__(self, image_processor, config):
+    def __init__(self, image_processor):
         self.image_processor = image_processor
-        self.config = config
+        self.config = image_processor.config
         
-        center_thresh_min = np.array(config.get('calibration', 'center_color_min').split(','), np.uint8)
-        center_thresh_max = np.array(config.get('calibration', 'center_color_max').split(','), np.uint8)
-        side_thresh_min = np.array(config.get('calibration', 'side_color_min').split(','), np.uint8)
-        side_thresh_max = np.array(config.get('calibration', 'side_color_max').split(','), np.uint8)
+        center_thresh_min = np.array(self.config.get('calibration', 'center_color_min').split(','), np.uint8)
+        center_thresh_max = np.array(self.config.get('calibration', 'center_color_max').split(','), np.uint8)
+        side_thresh_min = np.array(self.config.get('calibration', 'side_color_min').split(','), np.uint8)
+        side_thresh_max = np.array(self.config.get('calibration', 'side_color_max').split(','), np.uint8)
 
         self.colors = [(center_thresh_min, center_thresh_max), 
                         (side_thresh_min, side_thresh_max)]
@@ -63,7 +63,7 @@ class SourceCalibrationModule(object):
    
     def getCalibrationPoints(self):
         # Capture Image
-        frame = self.image_processor.img_source.read()
+        frame = self.image_processor.isi.read()
         avg_frame = frame
         height, width = frame.shape[:2]
         
@@ -139,8 +139,8 @@ class SourceCalibrationModule(object):
         """
         
         cal_data = self.image_processor.cal_data
-        size = (self.image_processor.img_source.height, 
-                self.image_processor.img_source.width)
+        size = (self.image_processor.isi.height, 
+                self.image_processor.isi.width)
         
         # Calculate newCameraMatrix
         camera_matrix, _ = cv.getOptimalNewCameraMatrix(
@@ -165,4 +165,4 @@ class CalibrationData(object):
         self.object_points = None
 
     def __eq__(self):
-        return self.rotation and self.translation and self.image_points
+        return self.rotation and self.translation and self.image_points == 6

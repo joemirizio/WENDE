@@ -11,9 +11,9 @@ DETECT_MAX = np.array([124, 236, 206], np.uint8)
 
 class ObjectDetectionModule(object):
 
-    def __init__(self, image_processor, config):
+    def __init__(self, image_processor):
         self.image_processor = image_processor
-        self.config = config
+        self.config = image_processor.config
 
     def findObjects(self, frame, avg_frame, frame_type=FRAME_TYPES[0],
                     detectMin=DETECT_MIN, detectMax=DETECT_MAX):

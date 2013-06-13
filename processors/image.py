@@ -3,40 +3,40 @@ import numpy as np
 import logging
 import os
 
+
 # Frames to conditionally display
 FRAME_TYPES = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
 from data import DataProcessor
-from processors.calibration import SourceCalibrationModule
 from display.gui.tkinter_gui import InputDialog
-from processors.detection import ObjectDetectionModule
+from calibration import SourceCalibrationModule
+from detection import ObjectDetectionModule
+from image_source import ImageSourceInterface
+from image_sources import Camera
+from image_sources import ImageFile
+from image_sources import VideoFile
 
 
 class ImageProcessor(object):
 
-    def __init__(self, tca, img_source, config=None, frame_type=0, data_proc=None):
-        self.img_source = img_source
+    def __init__(self, tca, image_source, frame_type=0):
         self.last_frame = None
         self.__avg_frame = None
         self.frame_type = FRAME_TYPES[frame_type]
         self.cal_data = None
+        self.config = tca.config
 
         # Tactical Computer Application
         self.tca = tca
+        # Image Source Interface
+        self.isi = ImageSourceInterface(self, image_source)
         # Source Calibration Module
-        self.scm = SourceCalibrationModule(self, config)
-        # ObjectDetectionModule
-        self.odm = ObjectDetectionModule(self, config)
-
-        self.config = config
+        self.scm = SourceCalibrationModule(self)
+        # Object Detection Module
+        self.odm = ObjectDetectionModule(self)
         
-        if data_proc is None:
-            self.data_proc = DataProcessor()
-        else:
-            self.data_proc = data_proc
-    
     def process(self):
-        self.last_frame = self.img_source.read()
+        self.last_frame = self.isi.read()
 
         if self.avg_frame is None:
             self.avg_frame = self.last_frame
@@ -56,11 +56,12 @@ class ImageProcessor(object):
 
         # Display calibration status
         cal_status_color = [0, 255, 0] if self.cal_data else [0, 0, 255]
-        cv.circle(self.last_frame, (self.img_source.width - 25, 25), 20, [0, 0, 0], thickness=5) 
-        cv.circle(self.last_frame, (self.img_source.width - 25, 25), 20, cal_status_color, thickness=-1)
-        cv.circle(self.last_frame, (self.img_source.width - 25, 25), 20, [255, 255, 255], thickness=2) 
+        cal_status_pos = (self.isi.width - 25, 25)
+        cv.circle(self.last_frame, cal_status_pos, 20, [0, 0, 0], thickness=5) 
+        cv.circle(self.last_frame, cal_status_pos, 20, cal_status_color, thickness=-1)
+        cv.circle(self.last_frame, cal_status_pos, 20, [255, 255, 255], thickness=2) 
 
-        self.data_proc.process(img_data, self)
+        self.tca.data_processor.process(img_data, self)
 
         return self.last_frame
 
@@ -76,8 +77,8 @@ class ImageProcessor(object):
         else:
             self.__avg_frame = frame
 
-    def saveFrame(self, filename=""):
-        self.img_source.save(filename, self.last_frame)
+    def saveFrame(self, filename="", processed=True):
+        self.isi.save(filename, self.last_frame if processed else None)
 
     def setFrameType(self, frame_type):
         if isinstance(frame_type, basestring):
@@ -89,7 +90,36 @@ class ImageProcessor(object):
             self.frame_type = FRAME_TYPES[frame_type]
 
     def __string__(self):
-        return 'Image Processor{%r}' % self.image_source
+        return 'Image Processor{%r}' % self.isi.image_source
     def __repr__(self):
         return self.__string__()
 
+
+def createImageProcessors(tca):
+    image_processors = []
+    config = tca.config
+
+    if (config.get('main', 'image_source') == 'CAMERA'):
+        cam_offset = config.getint('camera', 'camera_offset')
+        cam_count = config.getint('camera', 'camera_count')
+        cam_size = (config.getint('camera', 'camera_size_x'),
+                    config.getint('camera', 'camera_size_y'))
+        for cap_index in range(cam_offset, cam_offset + cam_count):
+            image_source = Camera('Cam' + str(cap_index), cap_index, cam_size)
+
+    elif (config.get('main', 'image_source') == 'VIDEO_FILE'):
+        video_files = config.get('video_file', 'video_files').split(',')
+        for video_file_index, video_file in enumerate(video_files):
+            video_size = (config.getint('video_file', 'video_size_x'),
+                        config.getint('video_file', 'video_size_y'))
+            video_name = 'Video' + str(video_file_index)
+            image_source = VideoFile(video_name, video_file, video_size)
+    else:
+        img_files = config.get('image_file', 'image_files').split(',')
+        for img_file in img_files:
+            image_source = ImageFile(img_file)
+
+    image_processor = ImageProcessor(tca, image_source)
+    image_processors.append(image_processor)
+
+    return image_processors

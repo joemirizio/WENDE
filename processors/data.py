@@ -28,9 +28,10 @@ class DataProcessor(object):
             if area > AREA_THRESHOLD:
                 center, radius = cv2.minEnclosingCircle(contour)
 
+                # TODO Determine if this is an effective method
                 # Translate to origin
-                #center = [center[0] - (img_proc.img_source.width / 2), 
-                          #img_proc.img_source.height - center[1]]
+                #center = [center[0] - (img_proc.isi.width / 2), 
+                          #img_proc.isi.height - center[1]]
 
                 ## Convert to polar and subtract radius
                 #r = math.sqrt(center[0]**2 + center[1]**2) - (radius)
@@ -40,8 +41,8 @@ class DataProcessor(object):
 
                 ## Convert back to cartesian and translate
                 #center = [r * math.cos(theta), r * math.sin(theta)]
-                #center[0] = center[0] + (img_proc.img_source.width / 2)
-                #center[1] = img_proc.img_source.height - center[1]
+                #center[0] = center[0] + (img_proc.isi.width / 2)
+                #center[1] = img_proc.isi.height - center[1]
 
                 pos = convertToGlobal(img_proc, center)
                 logging.debug("Target Detection: %s" % pos)
