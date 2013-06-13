@@ -15,6 +15,8 @@ class ImageSourceInterface(object):
         self.video_writer = None
         self.recording = False
         self.video_codec = self.config.get('video_file', 'video_codec')
+        self.video_ext = self.config.get('video_file', 'video_ext')
+        self.video_fps = self.config.get('video_file', 'video_fps')
 
     def read(self, flip=False):
         frame = self.image_source.read()
@@ -34,15 +36,15 @@ class ImageSourceInterface(object):
             frame = self.read()
         cv2.imwrite(filename, frame)
     
-    def startRecord(self, filename="", fps=10):
+    def startRecord(self, filename=""):
         if not filename:
             time_stamp = datetime.datetime.fromtimestamp(
                     time.time()).strftime('%Y-%m-%d_%H-%M-%S')
             filename = "".join([DEFAULT_OUTPUT_DIR, self.name, "_", time_stamp, 
-                        ".", "avi"])
+                        ".", self.video_ext])
         self.video_writer = cv2.VideoWriter(filename, 
                                            cv2.cv.CV_FOURCC(*list(self.video_codec)),
-                                           fps, (self.width, self.height))
+                                           float(self.video_fps), (self.width, self.height))
         self.recording = True
 
     def stopRecord(self):
