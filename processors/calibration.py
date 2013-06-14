@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 import logging
+import pickle
 from math import sin, cos, pi
 
 # CONSTANTS
@@ -32,6 +33,9 @@ class SourceCalibrationModule(object):
 
         self.colors = [(center_thresh_min, center_thresh_max), 
                         (side_thresh_min, side_thresh_max)]
+
+        if self.config.getboolean('calibration', 'use_cal_data'):
+            self.loadCalibrationData()
 
     def calibrate(self, cal_points=None):
         """ Calibrates the image processor
@@ -133,7 +137,22 @@ class SourceCalibrationModule(object):
                       (intrinsic_file, distortion_file))
         self.image_processor.cal_data.intrinsic = np.loadtxt(intrinsic_file)
         self.image_processor.cal_data.distortion = np.loadtxt(distortion_file)
+
+    def getCalibrationDataFilename(self):
+        filename, ext = os.path.splitext(self.config.get("calibration", "cal_data_file"))
+        cal_filename = ''.join([filename, self.image_processor.isi.name, ext])
+        return cal_filename
         
+    def saveCalibrationData(self):
+        with open(self.getCalibrationDataFilename(), 'w') as cal_file:
+            #pickle.dump(self.image_processor.cal_data, cal_file)
+            self.image_processor.cal_data.save(cal_file)
+
+    def loadCalibrationData(self):
+        with open(self.getCalibrationDataFilename(), 'r') as cal_file:
+            #self.image_processor.cal_data = pickle.load(cal_file)
+            self.image_processor.cal_data.load(cal_file)
+
     def calcDistortionMaps(self):
         """ Calculates distortion maps 
             
@@ -159,11 +178,24 @@ class CalibrationData(object):
         self.intrinsic = None
         self.distortion = None
         self.map1 = None
-        self.map2 = None
+        self.map2 =self, self, self, self, self, self, self, self,  None
         self.rotation = None
         self.translation = None
         self.image_points = None
         self.object_points = None
+    
+    def save(self, file):
+        logging.debug("%s %s %s %s %s %s %s %s" % (self.intrinsic, self.distortion, 
+                 self.map1, self.map2, self.rotation, self.translation,
+                 self.image_points, self.object_points))
+        np.savez(file, self.intrinsic, self.distortion, 
+                 self.map1, self.map2, self.rotation, self.translation,
+                 self.image_points, self.object_points)
+
+    def load(self, file):
+       (self.intrinsic, self.distortion, self.map1, 
+        self.map2, self.rotation, self.translation, self.image_points, 
+        self.object_points) = np.load(file).files
 
     def __eq__(self):
         return self.rotation and self.translation and self.image_points == 6

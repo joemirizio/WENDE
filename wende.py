@@ -47,6 +47,9 @@ class App(object):
         self.ui.addKeyEvent("2", lambda: map(lambda ip: ip.setFrameType(2), self.image_processors))
         self.ui.addKeyEvent("d", lambda: map(lambda ip: ip.scm.calibrate(), self.image_processors))
         self.ui.addKeyEvent("c", lambda: ColorDialog(self.ui.root))
+        self.ui.addKeyEvent("q", lambda: self.tactical.clearTargetData())
+        self.ui.addKeyEvent("k", lambda: map(lambda ip: ip.scm.saveCalibrationData(), self.image_processors))
+        self.ui.addKeyEvent("l", lambda: map(lambda ip: ip.scm.loadCalibrationData(), self.image_processors))
 
     def run(self):
         self.ui.start(self.main)

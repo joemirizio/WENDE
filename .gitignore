@@ -40,3 +40,4 @@ nosetests.xml
 # Config file
 config.ini
 /image_sources
+config/calibration_data/calibration*.txt
