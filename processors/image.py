@@ -105,6 +105,8 @@ def createImageProcessors(tca):
                     config.getint('camera', 'camera_size_y'))
         for cap_index in range(cam_offset, cam_offset + cam_count):
             image_source = Camera('Cam' + str(cap_index), cap_index, cam_size)
+            image_processor = ImageProcessor(tca, image_source)
+            image_processors.append(image_processor)
 
     elif (config.get('main', 'image_source') == 'VIDEO_FILE'):
         video_files = config.get('video_file', 'video_files').split(',')
@@ -113,12 +115,13 @@ def createImageProcessors(tca):
                         config.getint('video_file', 'video_size_y'))
             video_name = 'Video' + str(video_file_index)
             image_source = VideoFile(video_name, video_file, video_size)
+            image_processor = ImageProcessor(tca, image_source)
+            image_processors.append(image_processor)
     else:
         img_files = config.get('image_file', 'image_files').split(',')
         for img_file in img_files:
             image_source = ImageFile(img_file)
-
-    image_processor = ImageProcessor(tca, image_source)
-    image_processors.append(image_processor)
+            image_processor = ImageProcessor(tca, image_source)
+            image_processors.append(image_processor)
 
     return image_processors
