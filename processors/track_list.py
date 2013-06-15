@@ -1,10 +1,12 @@
 import math
 import logging
+from collections import deque
 
 from target import Target
+from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 
-KNOWN_GATE = 5.0  # for use after at least two detections (known vel)
-UNKNOWN_GATE = 3.0  # for use after only one detection (unkown vel)
+KNOWN_GATE = 2  # for use after at least two detections (known vel)
+UNKNOWN_GATE = 1  # for use after only one detection (unkown vel)
 
 class TrackList(object):
     def __init__(self):
@@ -18,13 +20,14 @@ class TrackList(object):
     def associateTrack(self, pos):
         for i, track in enumerate(self.tracks):
             if (track.prediction and 
-                distance(pos, track.prediction) < KNOWN_GATE):
+                distance(pos, track.prediction[-1]) < KNOWN_GATE):
                 #logging.debug('Det associated: %f from prediction of track %d' %
                             # (distance(pos, track.prediction), i))
                 track.update(pos)
                 return True
             elif (not track.prediction and
-                    distance(pos, track.pos) < UNKNOWN_GATE):
+                    distance(pos, track.pos[-1]) < UNKNOWN_GATE):
+                track.prediction = deque(maxlen=MAXLEN_DEQUE)
                 track.update(pos)
                 return True
 

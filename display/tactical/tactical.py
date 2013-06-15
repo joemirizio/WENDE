@@ -1,6 +1,11 @@
 import Tkinter as tk
 import math
 import logging
+from datetime import datetime
+
+# TODO Cleanup this reference..
+PERSIST_TIME = 2 # Seconds
+MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
 
 class TacticalDisplay(object):
     
@@ -29,6 +34,24 @@ class TacticalDisplay(object):
         self.canvas.bind("<Button-2>", lambda e: self.clearTargetData())
 
     def update(self):
+        ## TODO : MOVE THIS CHECK AND REMOVAL INTO A SEPARATE METHOD
+        # Remove expired targets
+        remove_list = []
+        
+        for tgtTrack in self.tgtTracks.itervalues():
+            # Check if last update is older than persistance time
+            update_interval = (datetime.now() - tgtTrack.target.last_update).seconds
+            if update_interval > PERSIST_TIME:
+                # Delete from display and mark target for removal
+                tgtTrack.removeDisplayObjects(self.canvas)
+                remove_list.append(tgtTrack.target)
+        
+        # The actual removing
+        for target in remove_list:
+            del self.tgtTracks[target]
+            self.data_proc.targets.remove(target)
+        
+        # Display targets
         for target in self.data_proc.targets:
             self.displayTarget(target)
 
@@ -47,13 +70,13 @@ class TacticalDisplay(object):
 
     def displayTarget(self, target):
         # Remap target position
-        target_pos = self.remapPosition(target.pos)
+        target_pos = self.remapPosition(target.pos[-1])
         #logging.debug("Mapped pos: (%d, %d)" % (target_pos[0], target_pos[1]))
         target_pos_points = self.getBoundingBox(0.3, pos=target_pos)
         label_pos = [
                 target_pos[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
                 target_pos[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
-        label_text = "(%.2f, %.2f)" % (target.pos[0], target.pos[1])
+        label_text = "(%.2f, %.2f)" % (target.pos[-1][0], target.pos[-1][1])
 
         # Display target and track
         if target not in self.tgtTracks:
@@ -134,6 +157,7 @@ class TacticalDisplay(object):
             tgtTrack.removeDisplayObjects(self.canvas)
         self.tgtTracks = {}
         self.data_proc.clearTargetData()
+        logging.debug('removing')
     
 
 class TargetTrack(object):

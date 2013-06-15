@@ -1,6 +1,10 @@
 import cv2.cv as cv
 import logging
 import math
+from datetime import datetime
+from collections import deque
+
+from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 
 ORIGIN = [0, 0]
 
@@ -11,23 +15,24 @@ TIME_STEP = 0.5
 class Target(object):
     def __init__(self, pos):
         self.tracks = []
-        self.pos = pos
+        self.pos = deque([pos], maxlen=MAXLEN_DEQUE)
         self.kalman = None
         self.prediction = None
         # TODO Rename
-        self.smooth_dets = [pos]
+        self.smooth_dets = deque([pos], maxlen=MAXLEN_DEQUE)
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.valid = VerifyValidity(pos)
+        self.last_update = datetime.now()
 
     def update(self, pos):
         # This statement is for compatibility with old drawing method only
-        self.tracks.append(self.pos)
+        self.tracks.append(self.pos[-1])
 
         if self.kalman is None:
             self.kalman = makeKalman(pos)
 
-        self.pos = pos
+        self.pos.append(pos)
         self.kal_meas[0, 0] = pos[0]
         self.kal_meas[1, 0] = pos[1]
         # TODO Implement newer OpenCV Kalman functions
@@ -38,14 +43,19 @@ class Target(object):
         logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
 
         self.kal_pred = cv.KalmanPredict(self.kalman)
-        self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]]
+        self.prediction.append([self.kal_pred[0, 0], self.kal_pred[1, 0]])
         #self.tracks = self.smooth_dets
+        
+        # Update last time modified
+        self.last_update = datetime.now()
 
     def clearTargetData(self):
         self.smooth_dets = []
+        self.pos = []
+        self.prediction = []
 
     def __repr__(self):
-        return "Target{(%f, %f)}" % (self.pos[0], self.pos[1])
+        return "Target{(%f, %f)}" % (self.pos[-1][0], self.pos[-1][1])
 
 # Not yet implemented, this function will be used when a new Target object is
 # made and will determine if the tracked object is a "running dog" this happens
