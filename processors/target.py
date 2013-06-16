@@ -40,7 +40,7 @@ class Target(object):
 
 
         self.smooth_dets.append([tmp[0, 0], tmp[1, 0]])
-        logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
+        #logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
 
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction.append([self.kal_pred[0, 0], self.kal_pred[1, 0]])

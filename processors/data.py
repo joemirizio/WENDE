@@ -27,6 +27,7 @@ class DataProcessor(object):
             area = cv2.contourArea(contour)
             if area > AREA_THRESHOLD:
                 center, radius = cv2.minEnclosingCircle(contour)
+                center = np.array([center[0], center[1] + radius])
 
                 # TODO Determine if this is an effective method
                 # Translate to origin
@@ -45,7 +46,7 @@ class DataProcessor(object):
                 #center[1] = img_proc.isi.height - center[1]
 
                 pos = convertToGlobal(img_proc, center)
-                logging.debug("Target Detection: %s" % pos)
+                #logging.debug("Target Detection: %s" % pos)
 
                 self.track_list.processDetection(pos)
                 # TODO Clean reference up
