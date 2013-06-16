@@ -1,12 +1,14 @@
 import cv2.cv as cv
 import logging
 import math
+import prediction
 
 ORIGIN = [0, 0]
 
 PROCESS_NOISE = 1e-1
 MEASUREMENT_NOISE = 1
 TIME_STEP = 0.5
+PREDICTION_RADIUS = 12
 
 class Target(object):
     def __init__(self, pos):
@@ -19,6 +21,8 @@ class Target(object):
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.valid = VerifyValidity(pos)
+        self.predLineIntersect = ORIGIN
+	self.beyond9 = False
 
     def update(self, pos):
         # This statement is for compatibility with old drawing method only
@@ -38,7 +42,14 @@ class Target(object):
         logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
 
         self.kal_pred = cv.KalmanPredict(self.kalman)
-        self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]]
+        self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
+        if self.valid:
+            if(distance(self.pos,ORIGIN) > 9):
+	        self.beyond9 = True
+                self.predLineIntersect = prediction.predict(self.tracks,PREDICTION_RADIUS)
+            elif self.predLineIntersect != ORIGIN:
+                self.predLineIntersect = ORIGIN
+
         #self.tracks = self.smooth_dets
 
     def clearTargetData(self):
@@ -47,10 +58,7 @@ class Target(object):
     def __repr__(self):
         return "Target{(%f, %f)}" % (self.pos[0], self.pos[1])
 
-# Not yet implemented, this function will be used when a new Target object is
-# made and will determine if the tracked object is a "running dog" this happens
-# in init since future positions don't matter, from I imagine when the display
-# is drawing targets, it will first check their valididy before drawing them
+# This function is called during init to determine if a track is a running dog
 def VerifyValidity(pos):
     output = False
     if distance(pos, ORIGIN) < 5:
@@ -58,11 +66,12 @@ def VerifyValidity(pos):
     return output
 
 
+#This function computes the distance between two points
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
 
-# This is not supposed to be a member function of class target please don't indent
+#This function takes in the target position and returns a kalman filter
 def makeKalman(pos):
     kalman = cv.CreateKalman(dynam_params=4, measure_params=2)
 
