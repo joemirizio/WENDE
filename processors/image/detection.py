@@ -6,8 +6,8 @@ from image import FRAME_TYPES
 AVG_WEIGHT = 0.01
 BW_THRESHOLD = 20
 
-DETECT_MIN = np.array([53, 131, 40], np.uint8)
-DETECT_MAX = np.array([124, 236, 206], np.uint8)
+DETECT_MIN = np.array([124, 131, 40], np.uint8)
+DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 CONTOUR_MIN_WIDTH = 15
 CONTOUR_MIN_HEIGHT = 15

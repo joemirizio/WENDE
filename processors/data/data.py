@@ -19,6 +19,7 @@ class DataProcessor(object):
         self.ttm = TargetTrackModule(self)
 
     def process(self, data, img_proc):
+        from display.tactical.tactical import flattenArray
         # Only process if calibrated
         if not img_proc.cal_data:
             return
@@ -46,7 +47,10 @@ class DataProcessor(object):
                 #center[1] = img_proc.isi.height - center[1]
 
                 pos = convertToGlobal(img_proc, center)
-                #logging.debug("Target Detection: %s" % pos)
+
+                # Convert from numpy to list
+                pos = pos.tolist()
+                pos = flattenArray(pos)
 
                 self.ttm.processDetection(pos)
                 # TODO Clean reference up

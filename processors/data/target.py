@@ -50,11 +50,11 @@ class Target(object):
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
         if self.valid:
-            if distance(self.pos, ORIGIN) > 9:
-                self.beyond9 = True
-                self.predLineIntersect = prediction.predict(self.targets,PREDICTION_RADIUS)
-            elif self.predLineIntersect != ORIGIN:
-                self.predLineIntersect = ORIGIN
+            #if distance(self.pos, ORIGIN) > 9:
+            self.beyond9 = True
+            self.predLineIntersect = prediction.predict(self.targets,PREDICTION_RADIUS)
+            #elif self.predLineIntersect != ORIGIN:
+                #self.predLineIntersect = ORIGIN
 
         #self.targets = self.smooth_dets
         
@@ -62,7 +62,7 @@ class Target(object):
         self.last_update = datetime.now()
 
     def clearTargetData(self):
-        self.smooth_dets = []
+        self.smooth_dets = deque([], maxlen=MAXLEN_DEQUE)
         self.prediction = []
 
     def __repr__(self):
@@ -85,8 +85,8 @@ def makeKalman(pos):
     # Set previous state prediction
     x_init = pos[0]
     y_init = pos[1]
-    x_dot_init = 1
-    y_dot_init = 1
+    x_dot_init = 0
+    y_dot_init = 0
     kalman.state_pre[0, 0] = x_init
     kalman.state_pre[1, 0] = y_init
     kalman.state_pre[2, 0] = x_dot_init

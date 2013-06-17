@@ -145,13 +145,13 @@ class SourceCalibrationModule(object):
         
     def saveCalibrationData(self):
         with open(self.getCalibrationDataFilename(), 'w') as cal_file:
-            #pickle.dump(self.image_processor.cal_data, cal_file)
-            self.image_processor.cal_data.save(cal_file)
+            pickle.dump(self.image_processor.cal_data, cal_file)
+            #self.image_processor.cal_data.save(cal_file)
 
     def loadCalibrationData(self):
         with open(self.getCalibrationDataFilename(), 'r') as cal_file:
-            #self.image_processor.cal_data = pickle.load(cal_file)
-            self.image_processor.cal_data.load(cal_file)
+            self.image_processor.cal_data = pickle.load(cal_file)
+            #self.image_processor.cal_data.load(cal_file)
 
     def calcDistortionMaps(self):
         """ Calculates distortion maps 

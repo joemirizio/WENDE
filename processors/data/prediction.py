@@ -18,6 +18,11 @@ from random import random
 
 
 def predict(det_coords, pred_line_r):
+
+    # Prevent prediction when insufficient data is provided
+    if len(det_coords) < 20:
+        return None
+
     # reformat into x and y arrays
     x = [pair[0] for pair in det_coords]
     y = [pair[1] for pair in det_coords]
@@ -27,7 +32,6 @@ def predict(det_coords, pred_line_r):
 
     # use numpy least squares function to get slope and intercept
     slope, y_incpt = lstsq(A, y)[0]
-    print 'slope, intercept: ' + str(slope) + ', ' + str(y_incpt)
 
     # create a, b and c for quadratic equation to solve for x given:
     #   (y = slope * x + y_intcp)
@@ -36,7 +40,6 @@ def predict(det_coords, pred_line_r):
     a = 1 + slope**2
     b = 2 * slope * y_incpt
     c = y_incpt**2 - pred_line_r**2
-    print a, b, c
 
     x_pred = (-b + sqrt(b**2 - 4*a*c)) / (2*a)
     y_pred = slope * x_pred + y_incpt
