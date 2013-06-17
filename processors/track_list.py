@@ -20,14 +20,14 @@ class TrackList(object):
     def associateTrack(self, pos):
         for i, track in enumerate(self.tracks):
             if (track.prediction and 
-                distance(pos, track.prediction[-1]) < KNOWN_GATE):
+                distance(pos, track.prediction) < KNOWN_GATE):
                 #logging.debug('Det associated: %f from prediction of track %d' %
                             # (distance(pos, track.prediction), i))
                 track.update(pos)
                 return True
             elif (not track.prediction and
-                    distance(pos, track.pos[-1]) < UNKNOWN_GATE):
-                track.prediction = deque(maxlen=MAXLEN_DEQUE)
+                    distance(pos, track.pos) < UNKNOWN_GATE):
+                track.prediction = []
                 track.update(pos)
                 return True
 

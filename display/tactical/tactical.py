@@ -70,13 +70,13 @@ class TacticalDisplay(object):
 
     def displayTarget(self, target):
         # Remap target position
-        target_pos = self.remapPosition(target.pos[-1])
+        target_pos = self.remapPosition(target.pos)
         #logging.debug("Mapped pos: (%d, %d)" % (target_pos[0], target_pos[1]))
         target_pos_points = self.getBoundingBox(0.3, pos=target_pos)
         label_pos = [
                 target_pos[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
                 target_pos[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
-        label_text = "(%.2f, %.2f)" % (target.pos[-1][0], target.pos[-1][1])
+        label_text = "(%.2f, %.2f)" % (target.pos[0], target.pos[1])
 
         # Display target and track
         if target not in self.tgtTracks:

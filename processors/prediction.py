@@ -41,11 +41,11 @@ def predict(det_coords, pred_line_r):
     x_pred = (-b + sqrt(b**2 - 4*a*c)) / (2*a)
     y_pred = slope * x_pred + y_incpt
     if y_pred > 0:
-        return (x_pred, y_pred)
+        return [x_pred, y_pred]
 
     x_pred = (-b - sqrt(b**2 - 4*a*c)) / (2*a)
     y_pred = slope * x_pred + y_incpt
-    return (x_pred, y_pred)
+    return [x_pred, y_pred]
 
 if __name__ == '__main__':
     fake_dets = [[i + 2*random()-1, i + 2*random()-1] for i in range(100)]
