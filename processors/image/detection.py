@@ -30,13 +30,23 @@ class ObjectDetectionModule(object):
 
         # Draw countours and bounding boxes
         main_frame = frame.copy()
+        filtered_contours = []
         for contour in contours:
             rect = cv.boundingRect(contour)
-            top  = rect[0:2] # Top left corner
-            bot  = (rect[0] + rect[2], rect[1] + rect[3]) # Bottom right corner
-            if rect[2]>CONTOUR_MIN_WIDTH and rect[3]>CONTOUR_MIN_HEIGHT:
+            if rect[1]>CONTOUR_MIN_WIDTH and rect[3]>CONTOUR_MIN_HEIGHT:
+                top  = rect[0:2] # Top left corner
+                bot  = (rect[0] + rect[2], rect[1] + rect[3]) # Bottom right corner
                 cv.rectangle(main_frame, top, bot, (0, 255, 0), 1)
+                np.append(filtered_contours, contour)
         cv.drawContours(main_frame, contours, -1, (255, 0, 0), -1)
+
+##        for contour in contours:
+##            rect = cv.boundingRect(contour)
+##            top  = rect[0:2] # Top left corner
+##            bot  = (rect[0] + rect[2], rect[1] + rect[3]) # Bottom right corner
+##            if rect[2]>CONTOUR_MIN_WIDTH and rect[3]>CONTOUR_MIN_HEIGHT:
+##                cv.rectangle(main_frame, top, bot, (0, 255, 0), 1)
+##        cv.drawContours(main_frame, contours, -1, (255, 0, 0), -1)
 
         frames = dict(zip(FRAME_TYPES, (main_frame, frame, thresh_frame)))
         out_frame = frames[frame_type]
