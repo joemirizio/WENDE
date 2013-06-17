@@ -16,10 +16,11 @@ PREDICTION_RADIUS = 12
 
 class Target(object):
     def __init__(self, pos):
-        self.tracks = []
+        self.targets = []
         self.pos = pos
         self.kalman = None
         self.prediction = None
+        self.missed_updates = 0
         # TODO Rename
         self.smooth_dets = deque([pos], maxlen=MAXLEN_DEQUE)
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
@@ -31,7 +32,8 @@ class Target(object):
 
     def update(self, pos):
         self.pos = pos
-        self.tracks.append(self.pos)
+        self.targets.append(self.pos)
+        self.missed_updates = 0
 
         if self.kalman is None:
             self.kalman = makeKalman(pos)
@@ -50,11 +52,11 @@ class Target(object):
         if self.valid:
             if distance(self.pos, ORIGIN) > 9:
                 self.beyond9 = True
-                self.predLineIntersect = prediction.predict(self.tracks,PREDICTION_RADIUS)
+                self.predLineIntersect = prediction.predict(self.targets,PREDICTION_RADIUS)
             elif self.predLineIntersect != ORIGIN:
                 self.predLineIntersect = ORIGIN
 
-        #self.tracks = self.smooth_dets
+        #self.targets = self.smooth_dets
         
         # Update last time modified
         self.last_update = datetime.now()

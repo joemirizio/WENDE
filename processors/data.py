@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import cv2
 
-from track_list import TrackList
+from track_list import TargetTrackModule
 from target import Target
 
 AREA_THRESHOLD = 50
@@ -16,7 +16,7 @@ class DataProcessor(object):
     def __init__(self):
         self.targets = []
         self.coverages = {}
-        self.track_list = TrackList()
+        self.ttm = TargetTrackModule(self)
 
     def process(self, data, img_proc):
         # Only process if calibrated
@@ -32,7 +32,7 @@ class DataProcessor(object):
                 # TODO Determine if this is an effective method
                 # Translate to origin
                 #center = [center[0] - (img_proc.isi.width / 2), 
-                          #img_proc.isi.height - center[1]]
+                    #img_proc.isi.height - center[1]]
 
                 ## Convert to polar and subtract radius
                 #r = math.sqrt(center[0]**2 + center[1]**2) - (radius)
@@ -48,12 +48,12 @@ class DataProcessor(object):
                 pos = convertToGlobal(img_proc, center)
                 #logging.debug("Target Detection: %s" % pos)
 
-                self.track_list.processDetection(pos)
+                self.ttm.processDetection(pos)
                 # TODO Clean reference up
-                self.targets = self.track_list.tracks
+                self.targets = self.ttm.targets
 
     def clearTargetData(self):
-        self.track_list.tracks = []
+        self.ttm.targets = []
         self.targets = []
 
 # TODO Possible move 

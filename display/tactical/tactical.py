@@ -91,7 +91,7 @@ class TacticalDisplay(object):
         else:
             # Draw track lines
             tgtTrack = self.tgtTracks[target] 
-            if len(tgtTrack.target.tracks) > 2:
+            if len(tgtTrack.target.targets) > 2:
                 # Remap track positions
                 track_pts = tgtTrack.target.smooth_dets
                 track_points = []
