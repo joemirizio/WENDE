@@ -7,8 +7,6 @@ import os
 # Frames to conditionally display
 FRAME_TYPES = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
-from data import DataProcessor
-from display.gui.tkinter_gui import InputDialog
 from calibration import SourceCalibrationModule
 from detection import ObjectDetectionModule
 from image_source import ImageSourceInterface

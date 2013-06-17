@@ -161,12 +161,12 @@ class InputDialog(tkSimpleDialog.Dialog):
 class ColorDialog(tkSimpleDialog.Dialog):
 
     def body(self, root):
-        from processors.detection import DETECT_MIN, DETECT_MAX
+        from processors.image import detection
         hue_range = [0, 180]
         sat_range = [0, 255]
         val_range = [0, 255]
 
-        self.color_ranges = [DETECT_MIN, DETECT_MAX]
+        self.color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
         self.colors = []
         for i in range(2):
             hue = tk.Scale(root, from_=hue_range[0], to=hue_range[1])

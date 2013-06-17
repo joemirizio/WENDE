@@ -6,11 +6,9 @@ import logging
 import os
 
 import display.gui
-from image_sources import Camera
-from image_sources import ImageFile
-from image_sources import VideoFile
-from processors import image
-from processors import DataProcessor
+from processors.image import image
+from processors.image import ImageProcessor
+from processors.data import DataProcessor
 from display.tactical import TacticalDisplay
 from display.gui.tkinter_gui import ColorDialog
 
