@@ -110,6 +110,23 @@ class TacticalDisplay(object):
                 else:
                     self.canvas.coords(tgtTrack.track, *track_points)
 
+        # Prediction line
+        if tgtTrack.target.predLineIntersect:
+            
+            current_pos = tgtTrack.target.smooth_dets[-1]
+            prediction_pos = [self.remapPosition(current_pos),
+                              self.remapPosition(tgtTrack.target.predLineIntersect)]
+            prediction_pos = flattenArray(prediction_pos)
+            prediction_pos = ([coord + TacticalDisplay.PADDING for coord in
+                                prediction_pos])
+
+            if not tgtTrack.prediction:
+                tgtTrack.prediction = self.canvas.create_line(*prediction_pos, fill="#090600",
+                                            width=2, capstyle="round")
+            else:
+                self.canvas.coords(tgtTrack.prediction, *prediction_pos)
+
+
             # Draw target icon
             self.canvas.coords(tgtTrack.icon, *target_pos_points)
             self.canvas.tag_raise(tgtTrack.icon)
@@ -165,12 +182,14 @@ class TargetTrack(object):
         self.target = target
         self.icon = None
         self.track = None
+        self.prediction = None
         self.label = None
         self.display_label = False
     
     def removeDisplayObjects(self, canvas):
         canvas.delete(self.icon)
         canvas.delete(self.track)
+        canvas.delete(self.prediction)
         canvas.delete(self.label)
 
     def toggleLabelVisibility(self):

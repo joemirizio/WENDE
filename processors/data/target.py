@@ -31,7 +31,7 @@ class Target(object):
         self.beyond9 = False
 
     def update(self, pos):
-        self.pos = pos
+        self.pos = pos[0:2]
         self.targets.append(self.pos)
         self.missed_updates = 0
 
