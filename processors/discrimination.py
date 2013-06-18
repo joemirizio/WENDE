@@ -4,13 +4,8 @@ import numpy as np
 import logging
 import data
 
-#from data import DataProcessor
-
-MIN_AREA_THRESHOLD = 50
-MAX_AREA_THRESHOLD = 1000
-TARGET_CONTOUR_ORIGIN = 1000
-DISCRIM_PARMETER = 1
-TOLERANCE = 100
+MIN_AREA_THRESHOLD = 100
+MAX_AREA_THRESHOLD = 7500
 
 ORIGIN = [0,0]
 
@@ -18,8 +13,7 @@ class TargetDisciminationModule(object):
 
     def __init__(self):
         self.validTargets = []
-        
-                                                    
+                                                      
     def discriminate(self, contour_data, img_process):
         
         for contour in contour_data:
@@ -34,6 +28,7 @@ class TargetDisciminationModule(object):
                     expected_contour = 1903*math.pow(distance(pos, ORIGIN),-0.861) 
                     upper_area_ = 1.8*expected_contour
                     lower_area = 0.5*expected_contour
+                    # Add to target list if size conditions satisfied
                     if area > lower_area and area < upper_area:
                         self.validTargets.append(pos)
                         logging.debug("Target Detection: %s" % pos)
