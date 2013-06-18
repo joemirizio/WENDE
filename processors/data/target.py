@@ -8,6 +8,7 @@ from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 import prediction
 
 ORIGIN = [0, 0]
+LASTX = 20
 
 PROCESS_NOISE = 1e-1
 MEASUREMENT_NOISE = 1
@@ -52,7 +53,11 @@ class Target(object):
         if self.valid:
             #if distance(self.pos, ORIGIN) > 9:
             self.beyond9 = True
-            self.predLineIntersect = prediction.predict(self.targets,PREDICTION_RADIUS)
+            tmp = len(self.targets)
+            tmp1 = tmp - LASTX
+            if (tmp1 < 0):
+                tmp1 = 0
+            self.predLineIntersect = prediction.predict(self.targets[tmp1:tmp] ,PREDICTION_RADIUS)
             #elif self.predLineIntersect != ORIGIN:
                 #self.predLineIntersect = ORIGIN
 
