@@ -5,6 +5,7 @@ import cv2
 
 from track_list import TrackList
 from target import Target
+from discrimination import TargetDisciminationModule
 
 AREA_THRESHOLD = 50
 DETECT_THRESHOLD = 0.75
@@ -17,16 +18,21 @@ class DataProcessor(object):
         self.targets = []
         self.coverages = {}
         self.track_list = TrackList()
+        
+        # Target Discimination Module
+        self.tdm = TargetDisciminationModule(self)
 
     def process(self, data, img_proc):
         # Only process if calibrated
         if not img_proc.cal_data:
             return
+        
+        filtered_targ = self.tdm.discriminate(data, img_proc)
 
-        for contour in data:
-            area = cv2.contourArea(contour)
-            if area > AREA_THRESHOLD:
-                center, radius = cv2.minEnclosingCircle(contour)
+        #for contour in data:
+         #   area = cv2.contourArea(contour)
+          #  if area > AREA_THRESHOLD:
+           #     center, radius = cv2.minEnclosingCircle(contour)
 
                 # TODO Determine if this is an effective method
                 # Translate to origin
@@ -44,10 +50,10 @@ class DataProcessor(object):
                 #center[0] = center[0] + (img_proc.isi.width / 2)
                 #center[1] = img_proc.isi.height - center[1]
 
-                pos = convertToGlobal(img_proc, center)
-                logging.debug("Target Detection: %s" % pos)
-
-                self.track_list.processDetection(pos)
+                #pos = convertToGlobal(img_proc, center)
+                #logging.debug("Target Detection: %s" % pos)
+        for point in filtered_targ: 
+                self.track_list.processDetection(point)
                 # TODO Clean reference up
                 self.targets = self.track_list.tracks
 
