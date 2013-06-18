@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 # TODO Cleanup this reference..
-PERSIST_TIME = 10 # Seconds
+PERSIST_TIME = 20 # Seconds
 MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
 
 class TacticalDisplay(object):
@@ -110,6 +110,15 @@ class TacticalDisplay(object):
                 else:
                     self.canvas.coords(tgtTrack.track, *track_points)
 
+        # Draw target icon
+        self.canvas.coords(tgtTrack.icon, *target_pos_points)
+        self.canvas.tag_raise(tgtTrack.icon)
+        # Update target label
+        if not tgtTrack.display_label:
+            label_text = ""
+        self.canvas.coords(tgtTrack.label, *label_pos)
+        self.canvas.itemconfigure(tgtTrack.label, text=label_text)
+
         # Prediction line
         if tgtTrack.target.predLineIntersect:
             
@@ -125,14 +134,33 @@ class TacticalDisplay(object):
                                             width=2, capstyle="round")
             else:
                 self.canvas.coords(tgtTrack.prediction, *prediction_pos)
-
-
-            # Draw target icon
-            self.canvas.coords(tgtTrack.icon, *target_pos_points)
-            self.canvas.tag_raise(tgtTrack.icon)
+                
+            ####################################################### Create Prediction Label
+            # Remap prediction position
+            prediction_point = self.remapPosition(tgtTrack.target.predLineIntersect)
+            prediction_point_box = self.getBoundingBox(0.1, pos=prediction_point)
+            label_pos = [
+                    prediction_point[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
+                    prediction_point[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
+            label_text = "(%.2f, %.2f)" % (tgtTrack.target.predLineIntersect[0], 
+                                           tgtTrack.target.predLineIntersect[1])
+    
+            ## Display prediction
+#             # Display target and track
+#             if target not in self.tgtTracks:
+            # Create prediction icon
+            prediction_track = TargetTrack(target)
+            prediction_track.icon = self.canvas.create_oval(prediction_point_box, fill="#090600", width=2)
+            # Create label
+            prediction_track.label = self.canvas.create_text(*label_pos, anchor="s")
+#             self.tgtTracks[target] = tgtTrack
+#         else:
+            # Draw prediction icon
+            self.canvas.coords(prediction_track.icon, *prediction_point_box)
+            self.canvas.tag_lower(prediction_track.icon)
             # Update target label
-            if not tgtTrack.display_label:
-                label_text = ""
+#             if not tgtTrack.display_label:
+#                 label_text = ""
             self.canvas.coords(tgtTrack.label, *label_pos)
             self.canvas.itemconfigure(tgtTrack.label, text=label_text)
 
