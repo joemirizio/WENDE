@@ -41,8 +41,8 @@ class DataProcessor(object):
                 self.targets = self.ttm.targets
 
     def clearTargetData(self):
-        self.ttm.targets = []
-        self.targets = []
+        del self.ttm.targets[:]
+        del self.targets[:]
 
 # TODO Possible move 
 def distance(p1, p2):
@@ -90,4 +90,6 @@ def convertToGlobal(imageProc, coordinates):
     s = rightMat[2,0]
     s /= leftMat[2,0]
     
-    return np.array( np.linalg.inv(rotation) * ( s * np.linalg.inv(intrinsic) * imgPoint - translation ) )
+    position = np.array(np.linalg.inv(rotation) * 
+        (s * np.linalg.inv(intrinsic) * imgPoint - translation))[:2]
+    return position

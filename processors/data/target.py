@@ -21,9 +21,8 @@ class Target(object):
         self.kalman = None
         self.prediction = None
         self.missed_updates = 0
-        self.previous_positions = [pos]
-        # TODO Rename
-        self.smooth_dets = deque([pos], maxlen=MAXLEN_DEQUE)
+        self.detected_positions = [pos]
+        self.filtered_positions = deque([pos], maxlen=MAXLEN_DEQUE)
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.valid = VerifyValidity(pos)
@@ -33,42 +32,46 @@ class Target(object):
         self.updatedThisCycle = True
 
     def update(self, pos):
-        if not self.updatedThisCycle:
-            self.pos = pos[0:2]
-            self.previous_positions.append(self.pos)
-            self.missed_updates = 0
+        # TODO Reimplement
+        if self.updatedThisCycle:
+            return
 
-            if self.kalman is None:
-                self.kalman = makeKalman(pos)
+        self.pos = pos[0:2]
+        self.detected_positions.append(self.pos)
+        self.missed_updates = 0
 
-            self.kal_meas[0, 0] = pos[0]
-            self.kal_meas[1, 0] = pos[1]
-            # TODO Implement newer OpenCV Kalman functions
-            tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
+        if self.kalman is None:
+            self.kalman = makeKalman(pos)
 
-            self.smooth_dets.append([tmp[0, 0], tmp[1, 0]])
-            #logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
+        self.kal_meas[0, 0] = pos[0]
+        self.kal_meas[1, 0] = pos[1]
+        # TODO Implement newer OpenCV Kalman functions
+        tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
 
-            self.kal_pred = cv.KalmanPredict(self.kalman)
-            self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
-            if self.valid:
-                #if distance(self.pos, ORIGIN) > 9:
-                self.beyond9 = True
-                self.predLineIntersect = prediction.predict(
-                    self.previous_positions[-NUM_PREDICTION_VALS:], 
-                    PREDICTION_RADIUS)
+        self.filtered_positions.append([tmp[0, 0], tmp[1, 0]])
+        #logging.debug("Smoothed Detections: %s" % self.filtered_positions[-1])
 
-            # Update last time modified
-            self.last_update = datetime.now()
-            self.updatedThisCycle = True
+        self.kal_pred = cv.KalmanPredict(self.kalman)
+        self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
+        if self.valid:
+            #if distance(self.pos, ORIGIN) > 9:
+            self.beyond9 = True
+            self.predLineIntersect = prediction.predict(
+                self.detected_positions[-NUM_PREDICTION_VALS:], 
+                PREDICTION_RADIUS)
+
+        # Update last time modified
+        self.last_update = datetime.now()
+        self.updatedThisCycle = True
 
     def clearTargetData(self):
-        self.smooth_dets = deque([], maxlen=MAXLEN_DEQUE)
-        self.prediction = []
+        del self.detected_positions[:]
+        self.filtered_positions.clear()
+        del self.prediction[:]
     
     def clearProcessedThisCycle(self):
-        if self.processedThisCycle:
-            self.processedThisCycle = False
+        if self.updatedThisCycle:
+            self.updatedThisCycle = False
 
     def __repr__(self):
         return "Target{(%f, %f)}" % (self.pos[0], self.pos[1])

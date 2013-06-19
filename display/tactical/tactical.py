@@ -91,9 +91,9 @@ class TacticalDisplay(object):
         else:
             # Draw track lines
             tgtTrack = self.tgtTracks[target] 
-            if len(tgtTrack.target.previous_positions) > 2:
+            if len(tgtTrack.target.detected_positions) > 2:
                 # Remap track positions
-                track_pts = tgtTrack.target.previous_positions
+                track_pts = tgtTrack.target.detected_positions
                 track_points = []
                 for point in track_pts:
                     track_points.append(self.remapPosition(point))
