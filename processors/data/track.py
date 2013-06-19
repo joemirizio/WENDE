@@ -17,6 +17,8 @@ class TargetTrackModule(object):
         associated = self.associateTrack(pos)
         if not associated:
             self.targets.append(Target(pos))
+        for target in self.targets:
+            target.clearProcessedThisCycle()
 
     def associateTrack(self, pos):
         for target in self.targets:

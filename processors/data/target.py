@@ -30,38 +30,45 @@ class Target(object):
         self.last_update = datetime.now()
         self.predLineIntersect = ORIGIN
         self.beyond9 = False
+        self.updatedThisCycle = True
 
     def update(self, pos):
-        self.pos = pos[0:2]
-        self.previous_positions.append(self.pos)
-        self.missed_updates = 0
+        if not self.updatedThisCycle:
+            self.pos = pos[0:2]
+            self.previous_positions.append(self.pos)
+            self.missed_updates = 0
 
-        if self.kalman is None:
-            self.kalman = makeKalman(pos)
+            if self.kalman is None:
+                self.kalman = makeKalman(pos)
 
-        self.kal_meas[0, 0] = pos[0]
-        self.kal_meas[1, 0] = pos[1]
-        # TODO Implement newer OpenCV Kalman functions
-        tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
+            self.kal_meas[0, 0] = pos[0]
+            self.kal_meas[1, 0] = pos[1]
+            # TODO Implement newer OpenCV Kalman functions
+            tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
 
-        self.smooth_dets.append([tmp[0, 0], tmp[1, 0]])
-        #logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
+            self.smooth_dets.append([tmp[0, 0], tmp[1, 0]])
+            #logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
 
-        self.kal_pred = cv.KalmanPredict(self.kalman)
-        self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
-        if self.valid:
-            #if distance(self.pos, ORIGIN) > 9:
-            self.beyond9 = True
-            self.predLineIntersect = prediction.predict(
-                self.previous_positions[-NUM_PREDICTION_VALS:], 
-                PREDICTION_RADIUS)
+            self.kal_pred = cv.KalmanPredict(self.kalman)
+            self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
+            if self.valid:
+                #if distance(self.pos, ORIGIN) > 9:
+                self.beyond9 = True
+                self.predLineIntersect = prediction.predict(
+                    self.previous_positions[-NUM_PREDICTION_VALS:], 
+                    PREDICTION_RADIUS)
 
-        # Update last time modified
-        self.last_update = datetime.now()
+            # Update last time modified
+            self.last_update = datetime.now()
+            self.updatedThisCycle = True
 
     def clearTargetData(self):
         self.smooth_dets = deque([], maxlen=MAXLEN_DEQUE)
         self.prediction = []
+    
+    def clearProcessedThisCycle(self):
+        if self.processedThisCycle:
+            self.processedThisCycle = False
 
     def __repr__(self):
         return "Target{(%f, %f)}" % (self.pos[0], self.pos[1])
