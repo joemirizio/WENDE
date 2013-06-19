@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import cv2
 
-from track_list import TargetTrackModule
+from track import TargetTrackModule
 from target import Target
 
 AREA_THRESHOLD = 50
@@ -29,22 +29,6 @@ class DataProcessor(object):
             if area > AREA_THRESHOLD:
                 center, radius = cv2.minEnclosingCircle(contour)
                 center = np.array([center[0], center[1] + radius])
-
-                # TODO Determine if this is an effective method
-                # Translate to origin
-                #center = [center[0] - (img_proc.isi.width / 2), 
-                    #img_proc.isi.height - center[1]]
-
-                ## Convert to polar and subtract radius
-                #r = math.sqrt(center[0]**2 + center[1]**2) - (radius)
-                #if center[0] == 0:
-                    #center[0] = 0.00001
-                #theta = math.atan(center[1] / center[0])
-
-                ## Convert back to cartesian and translate
-                #center = [r * math.cos(theta), r * math.sin(theta)]
-                #center[0] = center[0] + (img_proc.isi.width / 2)
-                #center[1] = img_proc.isi.height - center[1]
 
                 pos = convertToGlobal(img_proc, center)
 

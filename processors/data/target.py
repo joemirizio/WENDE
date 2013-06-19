@@ -8,7 +8,7 @@ from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 import prediction
 
 ORIGIN = [0, 0]
-LASTX = 20
+NUM_PREDICTION_VALS = 20
 
 PROCESS_NOISE = 1e-1
 MEASUREMENT_NOISE = 1
@@ -17,11 +17,11 @@ PREDICTION_RADIUS = 12
 
 class Target(object):
     def __init__(self, pos):
-        self.targets = []
         self.pos = pos
         self.kalman = None
         self.prediction = None
         self.missed_updates = 0
+        self.previous_positions = [pos]
         # TODO Rename
         self.smooth_dets = deque([pos], maxlen=MAXLEN_DEQUE)
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
@@ -33,7 +33,7 @@ class Target(object):
 
     def update(self, pos):
         self.pos = pos[0:2]
-        self.targets.append(self.pos)
+        self.previous_positions.append(self.pos)
         self.missed_updates = 0
 
         if self.kalman is None:
@@ -44,7 +44,6 @@ class Target(object):
         # TODO Implement newer OpenCV Kalman functions
         tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
 
-
         self.smooth_dets.append([tmp[0, 0], tmp[1, 0]])
         #logging.debug("Smoothed Detections: %s" % self.smooth_dets[-1])
 
@@ -53,16 +52,10 @@ class Target(object):
         if self.valid:
             #if distance(self.pos, ORIGIN) > 9:
             self.beyond9 = True
-            tmp = len(self.targets)
-            tmp1 = tmp - LASTX
-            if (tmp1 < 0):
-                tmp1 = 0
-            self.predLineIntersect = prediction.predict(self.targets[tmp1:tmp] ,PREDICTION_RADIUS)
-            #elif self.predLineIntersect != ORIGIN:
-                #self.predLineIntersect = ORIGIN
+            self.predLineIntersect = prediction.predict(
+                self.previous_positions[-NUM_PREDICTION_VALS:], 
+                PREDICTION_RADIUS)
 
-        #self.targets = self.smooth_dets
-        
         # Update last time modified
         self.last_update = datetime.now()
 

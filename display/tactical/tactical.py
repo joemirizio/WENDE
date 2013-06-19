@@ -91,9 +91,9 @@ class TacticalDisplay(object):
         else:
             # Draw track lines
             tgtTrack = self.tgtTracks[target] 
-            if len(tgtTrack.target.targets) > 2:
+            if len(tgtTrack.target.previous_positions) > 2:
                 # Remap track positions
-                track_pts = tgtTrack.target.smooth_dets
+                track_pts = tgtTrack.target.previous_positions
                 track_points = []
                 for point in track_pts:
                     track_points.append(self.remapPosition(point))
@@ -122,7 +122,7 @@ class TacticalDisplay(object):
         # Prediction line
         if tgtTrack.target.predLineIntersect:
             
-            current_pos = tgtTrack.target.smooth_dets[-1]
+            current_pos = tgtTrack.target.pos
             prediction_pos = [self.remapPosition(current_pos),
                               self.remapPosition(tgtTrack.target.predLineIntersect)]
             prediction_pos = flattenArray(prediction_pos)

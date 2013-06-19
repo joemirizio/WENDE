@@ -5,8 +5,8 @@ from collections import deque
 from target import Target
 from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 
-KNOWN_GATE = 2  # for use after at least two detections (known vel)
-UNKNOWN_GATE = 1  # for use after only one detection (unkown vel)
+KNOWN_GATE = 0.8  # for use after at least two detections (known vel)
+UNKNOWN_GATE = 0.5  # for use after only one detection (unkown vel)
 MAXED_MISSED_UPDATES = 2
 
 class TargetTrackModule(object):
@@ -19,7 +19,7 @@ class TargetTrackModule(object):
             self.targets.append(Target(pos))
 
     def associateTrack(self, pos):
-        for i, target in enumerate(self.targets):
+        for target in self.targets:
             if (target.prediction and 
                 distance(pos, target.prediction) < KNOWN_GATE):
                 #logging.debug('Det associated: %f from prediction of target %d' %
