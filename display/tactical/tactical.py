@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 # TODO Cleanup this reference..
-PERSIST_TIME = 20 # Seconds
+PERSIST_TIME = 3 # Seconds
 MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
 
 class TacticalDisplay(object):
@@ -133,24 +133,19 @@ class TacticalDisplay(object):
             label_text = "(%.2f, %.2f)" % (tgtTrack.target.predLineIntersect[0], 
                                            tgtTrack.target.predLineIntersect[1])
     
-            ## Display prediction
-#             # Display target and track
-#             if target not in self.tgtTracks:
-            # Create prediction icon
-            prediction_track = TargetTrack(target)
-            prediction_track.icon = self.canvas.create_oval(prediction_point_box, fill="#090600", width=2)
-            # Create label
-            prediction_track.label = self.canvas.create_text(*label_pos, anchor="s")
-#             self.tgtTracks[target] = tgtTrack
-#         else:
+            # Display prediction
+            if not tgtTrack.icon_prediction:
+                # Create prediction icon
+                tgtTrack.icon_prediction = self.canvas.create_oval(prediction_point_box, fill="#090600", width=2)
+                # Create label
+                tgtTrack.label_prediction = self.canvas.create_text(*label_pos, anchor="s")
+                
             # Draw prediction icon
-            self.canvas.coords(prediction_track.icon, *prediction_point_box)
-            self.canvas.tag_lower(prediction_track.icon)
+            self.canvas.coords(tgtTrack.icon_prediction, *prediction_point_box)
+            self.canvas.tag_lower(tgtTrack.icon_prediction)
             # Update target label
-#             if not tgtTrack.display_label:
-#                 label_text = ""
-            self.canvas.coords(tgtTrack.label, *label_pos)
-            self.canvas.itemconfigure(tgtTrack.label, text=label_text)
+            self.canvas.coords(tgtTrack.label_prediction, *label_pos)
+            self.canvas.itemconfigure(tgtTrack.label_prediction, text=label_text)
 
     def remapPosition(self, pos):
         return [float(pos[0]) / float(TacticalDisplay.MAX_WIDTH) * TacticalDisplay.WIDTH + (TacticalDisplay.WIDTH / 2), 
@@ -227,12 +222,18 @@ class TargetTrack(object):
         self.prediction = None
         self.label = None
         self.display_label = False
+        
+        self.icon_prediction = None
+        self.label_prediction = None
     
     def removeDisplayObjects(self, canvas):
         canvas.delete(self.icon)
         canvas.delete(self.track)
         canvas.delete(self.prediction)
         canvas.delete(self.label)
+        
+        canvas.delete(self.icon_prediction)
+        canvas.delete(self.label_prediction)
 
     def toggleLabelVisibility(self):
         self.display_label = not self.display_label
