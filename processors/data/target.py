@@ -28,8 +28,7 @@ class Target(object):
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.valid = VerifyValidity(pos)
         self.last_update = datetime.now()
-        self.predLineIntersect = ORIGIN
-        self.beyond9 = False
+        self.predLineIntersect = None
         self.updatedThisCycle = True
 
     def update(self, pos):
@@ -55,16 +54,14 @@ class Target(object):
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
         if self.valid:
-            #if distance(self.pos, ORIGIN) > 9:
-            self.beyond9 = True
-
-            #positions = self.detected_positions[-NUM_PREDICTION_VALS:]
-            positions = self.filtered_positions
-            if len(self.filtered_positions) > NUM_PREDICTION_VALS:
-                positions = list(itertools.islice(self.filtered_positions, len(self.filtered_positions) -NUM_PREDICTION_VALS, None))
-
-            self.predLineIntersect = prediction.predict(
-                positions, PREDICTION_RADIUS)
+            if distance(self.pos, ORIGIN) > 5 and distance(self.pos,ORIGIN) < 10:
+                #positions = self.detected_positions[-NUM_PREDICTION_VALS:]
+                prediction_positions = self.filtered_positions
+                if len(self.filtered_positions) > NUM_PREDICTION_VALS:
+                    prediction_positions = list(itertools.islice(self.filtered_positions, 
+                                                len(self.filtered_positions) -NUM_PREDICTION_VALS, None))
+                    self.predLineIntersect = prediction.predict(
+                                             prediction_positions, PREDICTION_RADIUS)
 
         # Update last time modified
         self.last_update = datetime.now()
