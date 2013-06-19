@@ -58,9 +58,7 @@ class ImageProcessor(object):
         cv.circle(self.last_frame, cal_status_pos, 20, cal_status_color, thickness=-1)
         cv.circle(self.last_frame, cal_status_pos, 20, [255, 255, 255], thickness=2) 
 
-        self.tca.data_processor.process(img_data, self)
-
-        return self.last_frame
+        return img_data
 
     @property
     def avg_frame(self):
