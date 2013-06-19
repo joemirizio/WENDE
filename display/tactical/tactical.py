@@ -34,22 +34,10 @@ class TacticalDisplay(object):
         self.canvas.bind("<Button-2>", lambda e: self.clearTargetData())
 
     def update(self):
-        ## TODO : MOVE THIS CHECK AND REMOVAL INTO A SEPARATE METHOD
+        
         # Remove expired targets
-        remove_list = []
-        
-        for tgtTrack in self.tgtTracks.itervalues():
-            # Check if last update is older than persistance time
-            update_interval = (datetime.now() - tgtTrack.target.last_update).seconds
-            if update_interval > PERSIST_TIME:
-                # Delete from display and mark target for removal
-                tgtTrack.removeDisplayObjects(self.canvas)
-                remove_list.append(tgtTrack.target)
-        
-        # The actual removing
-        for target in remove_list:
-            del self.tgtTracks[target]
-            self.data_proc.targets.remove(target)
+        remove_list = self.findExpiredTargets()
+        self.removeTarget(remove_list)
         
         # Display targets
         for target in self.data_proc.targets:
@@ -203,7 +191,33 @@ class TacticalDisplay(object):
         self.tgtTracks = {}
         self.data_proc.clearTargetData()
         logging.debug('removing')
+        
+    def findExpiredTargets(self):
+        """ Finds targets which have exceeded the maximum between updates 
+        
+        returns a list of expired targets
+        
+        """
+        
+        remove_list = []
+        
+        for tgtTrack in self.tgtTracks.itervalues():
+            # Check if last update is older than persistance time
+            update_interval = (datetime.now() - tgtTrack.target.last_update).seconds
+            
+            if update_interval > PERSIST_TIME:
+                # Delete from display and mark target for removal
+                tgtTrack.removeDisplayObjects(self.canvas)
+                remove_list.append(tgtTrack.target)
+                
+        return remove_list
     
+    def removeTarget(self, remove_list):
+        """ Removes targets from display """
+        
+        for target in remove_list:
+            del self.tgtTracks[target]
+            self.data_proc.targets.remove(target)
 
 class TargetTrack(object):
     def __init__(self, target):
