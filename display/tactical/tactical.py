@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 # TODO Cleanup this reference..
-PERSIST_TIME = 20 # Seconds
+PERSIST_TIME = 2.5 # Seconds
 MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
 
 class TacticalDisplay(object):
@@ -68,10 +68,10 @@ class TacticalDisplay(object):
         # Remap target position
         target_pos = self.remapPosition(target.pos)
         #logging.debug("Mapped pos: (%d, %d)" % (target_pos[0], target_pos[1]))
-        target_pos_points = self.getBoundingBox(0.3, pos=target_pos)
+        target_pos_points = self.getBoundingBox(0.25, pos=target_pos)
         label_pos = [
-                target_pos[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
-                target_pos[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
+                target_pos[0] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[0],
+                target_pos[1] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[1]]
         label_text = "(%.2f, %.2f)" % (target.pos[0], target.pos[1])
 
         # Display target and track
@@ -80,7 +80,7 @@ class TacticalDisplay(object):
             tgtTrack = TargetTrack(target)
             tgtTrack.icon = self.canvas.create_oval(target_pos_points, fill="#AA66CC", outline="#9933CC", width=4)
             # Create label
-            tgtTrack.label = self.canvas.create_text(*label_pos, anchor="s")
+            tgtTrack.label = tk.Label(self.canvas, text=label_text, bg='white', anchor='s')
             # Add label_toggle
             self.canvas.tag_bind(tgtTrack.icon, "<Button-1>", lambda e: tgtTrack.toggleLabelVisibility())
             self.tgtTracks[target] = tgtTrack
@@ -102,18 +102,23 @@ class TacticalDisplay(object):
                                                              fill="#FFBB33",
                                                              width=2,
                                                              capstyle="round")
-                    #, smooth=1)
                 else:
                     self.canvas.coords(tgtTrack.track, *track_points)
 
         # Draw target icon
         self.canvas.coords(tgtTrack.icon, *target_pos_points)
         self.canvas.tag_raise(tgtTrack.icon)
+        
         # Update target label
-        if not tgtTrack.display_label:
-            label_text = ""
-        self.canvas.coords(tgtTrack.label, *label_pos)
-        self.canvas.itemconfigure(tgtTrack.label, text=label_text)
+        tgtTrack.label.config(text=label_text)
+        
+        # Toggle visibility
+        if tgtTrack.display_label:
+            tgtTrack.label.place(x=label_pos[0], y=label_pos[1])
+        else:
+            tgtTrack.label.place_forget()
+            
+        tgtTrack.label_pos = label_pos
 
         # Draw prediction line and label
         if tgtTrack.target.predLineIntersect:
@@ -135,26 +140,27 @@ class TacticalDisplay(object):
                 
             # Determine prediction label position
             prediction_point = self.remapPosition(tgtTrack.target.predLineIntersect)
-            prediction_point_box = self.getBoundingBox(0.1, pos=prediction_point)
+            prediction_point_box = self.getBoundingBox(0.15, pos=prediction_point)
             label_pos = [
-                    prediction_point[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
-                    prediction_point[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
+                    prediction_point[0] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[0],
+                    prediction_point[1] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[1]]
             label_text = "(%.2f, %.2f)" % (tgtTrack.target.predLineIntersect[0], 
                                            tgtTrack.target.predLineIntersect[1])
     
             # Create icon and label if this is first prediction
-            if not tgtTrack.icon_prediction:
+            if not tgtTrack.label_prediction:
                 # Create prediction icon
                 tgtTrack.icon_prediction = self.canvas.create_oval(prediction_point_box, fill="#090600", width=2)
                 # Create label
-                tgtTrack.label_prediction = self.canvas.create_text(*label_pos, anchor="nw")
+                tgtTrack.label_prediction = tk.Label(self.canvas, text=label_text, bg='white', anchor='s')
                 
             # Draw prediction icon
             self.canvas.coords(tgtTrack.icon_prediction, *prediction_point_box)
-            self.canvas.tag_lower(tgtTrack.icon_prediction)
-            # Update target label
-            self.canvas.coords(tgtTrack.label_prediction, *label_pos)
-            self.canvas.itemconfigure(tgtTrack.label_prediction, text=label_text)
+            self.canvas.tag_raise(tgtTrack.icon_prediction)
+
+            # Update prediction label
+            tgtTrack.label_prediction.config(text=label_text)
+            tgtTrack.label_prediction.place(x=label_pos[0], y=label_pos[1])
 
     def remapPosition(self, pos):
         return [float(pos[0]) / float(TacticalDisplay.MAX_WIDTH) * TacticalDisplay.WIDTH + (TacticalDisplay.WIDTH / 2), 
@@ -234,7 +240,8 @@ class TargetTrack(object):
         self.track = None
         self.prediction = None
         self.label = None
-        self.display_label = False
+        self.label_pos = None
+        self.display_label = True
         self.icon_prediction = None
         self.label_prediction = None
     
@@ -242,9 +249,10 @@ class TargetTrack(object):
         canvas.delete(self.icon)
         canvas.delete(self.track)
         canvas.delete(self.prediction)
-        canvas.delete(self.label)
         canvas.delete(self.icon_prediction)
-        canvas.delete(self.label_prediction)
+        self.label.destroy()
+        if self.label_prediction:
+            self.label_prediction.destroy()
 
     def toggleLabelVisibility(self):
         self.display_label = not self.display_label
