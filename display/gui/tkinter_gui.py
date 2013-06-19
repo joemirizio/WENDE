@@ -1,5 +1,6 @@
 import cv2 as cv
 import Tkinter as tk
+import tkFont
 import tkSimpleDialog
 import numpy as np
 from PIL import Image
@@ -80,7 +81,7 @@ class Tkinter_gui(object):
                                  self.viewports[name].addCalibrationPoint([e.x, e.y]))
         
     def displayAlert(self, label_text):
-        self.alert.displayAlert(root, label_text)
+        self.alert.displayAlert(label_text)
 
 
 class Viewport(object):
@@ -145,10 +146,11 @@ class Viewport(object):
 class Alert(object):
     def __init__(self, root):
         self.label_text = tk.StringVar()
-        self.alert_label = tk.Label(root, textvariable=self.label_text, anchor=tk.SW)
-        self.alert_label.pack()
+        font = tkFont.Font(family="Arial", size=24)
+        self.alert_label = tk.Label(root, font=font, textvariable=self.label_text, anchor=tk.SW)
+        self.alert_label.grid()
         
-    def displayAlert(self, root, alert_text):
+    def displayAlert(self, alert_text):
         self.label_text.set(alert_text)
         
 class InputDialog(tkSimpleDialog.Dialog):
