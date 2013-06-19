@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 # TODO Cleanup this reference..
-PERSIST_TIME = 100 # Seconds
+PERSIST_TIME = 20 # Seconds
 MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
 
 class TacticalDisplay(object):
@@ -107,24 +107,25 @@ class TacticalDisplay(object):
         self.canvas.coords(tgtTrack.label, *label_pos)
         self.canvas.itemconfigure(tgtTrack.label, text=label_text)
 
-        # Prediction line
+        # Draw prediction line and label
         if tgtTrack.target.predLineIntersect:
             
+            # Determine current line position
             current_pos = tgtTrack.target.pos
             prediction_pos = [self.remapPosition(current_pos),
                               self.remapPosition(tgtTrack.target.predLineIntersect)]
             prediction_pos = flattenArray(prediction_pos)
             prediction_pos = ([coord + TacticalDisplay.PADDING for coord in
                                 prediction_pos])
-
+            
+            # Create or redraw line
             if not tgtTrack.prediction:
                 tgtTrack.prediction = self.canvas.create_line(*prediction_pos, fill="#090600",
                                             width=2, capstyle="round")
             else:
                 self.canvas.coords(tgtTrack.prediction, *prediction_pos)
                 
-            ####################################################### Create Prediction Label
-            # Remap prediction position
+            # Determine prediction label position
             prediction_point = self.remapPosition(tgtTrack.target.predLineIntersect)
             prediction_point_box = self.getBoundingBox(0.1, pos=prediction_point)
             label_pos = [
@@ -133,7 +134,7 @@ class TacticalDisplay(object):
             label_text = "(%.2f, %.2f)" % (tgtTrack.target.predLineIntersect[0], 
                                            tgtTrack.target.predLineIntersect[1])
     
-            # Display prediction
+            # Create icon and label if this is first prediction
             if not tgtTrack.icon_prediction:
                 # Create prediction icon
                 tgtTrack.icon_prediction = self.canvas.create_oval(prediction_point_box, fill="#090600", width=2)
@@ -185,12 +186,11 @@ class TacticalDisplay(object):
             tgtTrack.removeDisplayObjects(self.canvas)
         self.tgtTracks = {}
         self.data_proc.clearTargetData()
-        logging.debug('removing')
         
     def findExpiredTargets(self):
-        """ Finds targets which have exceeded the maximum between updates 
+        """ Finds targets which have exceeded the maximum time between updates 
         
-        returns a list of expired targets
+        Returns a list of expired targets
         
         """
         
@@ -208,7 +208,12 @@ class TacticalDisplay(object):
         return remove_list
     
     def removeTarget(self, remove_list):
-        """ Removes targets from display """
+        """ Removes targets from display 
+        
+        Arguments --
+            remove_list - List containing targets marked for removal
+            
+        """
         
         for target in remove_list:
             del self.tgtTracks[target]
@@ -222,7 +227,6 @@ class TargetTrack(object):
         self.prediction = None
         self.label = None
         self.display_label = False
-        
         self.icon_prediction = None
         self.label_prediction = None
     
@@ -231,7 +235,6 @@ class TargetTrack(object):
         canvas.delete(self.track)
         canvas.delete(self.prediction)
         canvas.delete(self.label)
-        
         canvas.delete(self.icon_prediction)
         canvas.delete(self.label_prediction)
 
