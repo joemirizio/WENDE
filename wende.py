@@ -53,9 +53,15 @@ class App(object):
         self.ui.start(self.main)
 
     def main(self):
-        # Get next frame from camera
+        # Process through the image 
         for img_proc in self.image_processors:
-            frame = img_proc.process()
+            img_data = img_proc.process()
+            self.data_processor.process(img_data, img_proc)
+
+        #TODO Remove after testing
+        for target in self.data_processor.targets:
+            target.clearProcessedThisCycle()
+        logging.debug('------------ clearing ----------------')
 
         self.tactical.update()
         self.ui.update(self.main)

@@ -36,6 +36,7 @@ class Target(object):
         if self.updatedThisCycle:
             return
 
+        logging.debug('Updating %s' % self)
         self.pos = pos[0:2]
         self.detected_positions.append(self.pos)
         self.missed_updates = 0
