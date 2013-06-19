@@ -61,7 +61,6 @@ class App(object):
         #TODO Remove after testing
         for target in self.data_processor.targets:
             target.clearProcessedThisCycle()
-        logging.debug('------------ clearing ----------------')
 
         self.tactical.update()
         self.ui.update(self.main)

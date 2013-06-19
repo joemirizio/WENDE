@@ -28,7 +28,7 @@ class Target(object):
         self.valid = VerifyValidity(pos)
         self.last_update = datetime.now()
         self.predLineIntersect = ORIGIN
-        self.beyond9 = False
+        self.predicting_location = False
         self.updatedThisCycle = True
 
     def update(self, pos):
@@ -36,7 +36,6 @@ class Target(object):
         if self.updatedThisCycle:
             return
 
-        logging.debug('Updating %s' % self)
         self.pos = pos[0:2]
         self.detected_positions.append(self.pos)
         self.missed_updates = 0
@@ -55,11 +54,15 @@ class Target(object):
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
         if self.valid:
-            #if distance(self.pos, ORIGIN) > 9:
-            self.beyond9 = True
-            self.predLineIntersect = prediction.predict(
-                self.detected_positions[-NUM_PREDICTION_VALS:], 
-                PREDICTION_RADIUS)
+            if distance(self.pos, ORIGIN) > 8 and distance(self.pos,ORIGIN) < 10:
+                self.predicting_location = True
+                self.predLineIntersect = prediction.predict(
+                    self.detected_positions[-NUM_PREDICTION_VALS:], 
+                    PREDICTION_RADIUS)
+            elif distance(self.pos, ORIGIN) < 8:
+                predicting_location = False
+
+             
 
         # Update last time modified
         self.last_update = datetime.now()
