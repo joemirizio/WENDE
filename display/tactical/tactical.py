@@ -34,6 +34,7 @@ class TacticalDisplay(object):
         self.canvas.bind("<Button-2>", lambda e: self.clearTargetData())
 
     def update(self):
+        from processors.data import distance
         
         # Remove expired targets
         remove_list = self.findExpiredTargets()
@@ -42,7 +43,13 @@ class TacticalDisplay(object):
         # Display targets
         for target in self.data_proc.targets:
             self.displayTarget(target)
-            self.data_proc.tca.gui.displayAlert("FIRE!! %s" % target)
+
+            # Display alerts
+            # TODO Clean up
+            if distance((0, 0), target.pos) > 10:
+                self.data_proc.tca.ui.displayAlert("Target has left the Alert-Zone")
+            elif distance((0, 0), target.pos) > 5:
+                self.data_proc.tca.ui.displayAlert("Target entered the Alert-Zone")
 
     def updateCalibration(self, message):
         if message == 1:

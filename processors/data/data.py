@@ -13,9 +13,11 @@ POS_THRESHOLD = 0.05
 
 
 class DataProcessor(object):
-    def __init__(self):
+    def __init__(self, tca):
         self.targets = []
         self.coverages = {}
+        self.tca = tca
+        self.config = tca.config
         self.ttm = TargetTrackModule(self)
 
     def process(self, data, img_proc):

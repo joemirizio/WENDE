@@ -18,7 +18,7 @@ class App(object):
         self.config = config
 
         # Setup processors
-        self.data_processor = DataProcessor()
+        self.data_processor = DataProcessor(self)
         self.image_processors = image.createImageProcessors(self)
 
         # Setup GUI
