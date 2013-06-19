@@ -138,7 +138,7 @@ class TacticalDisplay(object):
                 # Create prediction icon
                 tgtTrack.icon_prediction = self.canvas.create_oval(prediction_point_box, fill="#090600", width=2)
                 # Create label
-                tgtTrack.label_prediction = self.canvas.create_text(*label_pos, anchor="s")
+                tgtTrack.label_prediction = self.canvas.create_text(*label_pos, anchor="nw")
                 
             # Draw prediction icon
             self.canvas.coords(tgtTrack.icon_prediction, *prediction_point_box)
