@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from PIL import ImageTk
 import logging
+import math
 
 from display.tactical import TacticalDisplay
 
@@ -38,12 +39,16 @@ class Tkinter_gui(object):
 
         size = DEFAULT_VIEWPORT_SIZE
 
+        # Alerts
+        self.alert = Alert(self.root)
+
         pos = [0, 0]
         for img_proc in image_processors:
             self.addView(img_proc, pos, size)
             pos[1] = pos[1] + 1
 
         self.root.bind("<Escape>", lambda e: e.widget.quit())
+
 
     def addKeyEvent(self, key, event):
         if key in self.key_events:
@@ -73,6 +78,9 @@ class Tkinter_gui(object):
         self.viewports[name] = Viewport(img_proc, self.frame, pos, size)
         self.viewports[name].view.bind('<Button-1>', lambda e:
                                  self.viewports[name].addCalibrationPoint([e.x, e.y]))
+        
+    def displayAlert(self, label_text):
+        self.alert.displayAlert(root, label_text)
 
 
 class Viewport(object):
@@ -133,7 +141,16 @@ class Viewport(object):
         # Set PIL to label's image
         self.view['image'] = photo
         self.view.photo = photo
-
+        
+class Alert(object):
+    def __init__(self, root):
+        self.label_text = tk.StringVar()
+        self.alert_label = tk.Label(root, textvariable=self.label_text, anchor=tk.SW)
+        self.alert_label.pack()
+        
+    def displayAlert(self, root, alert_text):
+        self.label_text.set(alert_text)
+        
 class InputDialog(tkSimpleDialog.Dialog):
 
     def __init__(self, parent, title=None, inputs={'Value':0}):
