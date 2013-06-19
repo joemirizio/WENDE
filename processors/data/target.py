@@ -54,7 +54,7 @@ class Target(object):
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
         if self.valid:
-            if distance(self.pos, ORIGIN) > 8 and distance(self.pos,ORIGIN) < 10:
+            if distance(self.pos, ORIGIN) > 5 and distance(self.pos,ORIGIN) < 10:
                 self.predicting_location = True
                 self.predLineIntersect = prediction.predict(
                     self.detected_positions[-NUM_PREDICTION_VALS:], 
