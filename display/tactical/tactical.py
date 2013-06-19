@@ -42,6 +42,7 @@ class TacticalDisplay(object):
         # Display targets
         for target in self.data_proc.targets:
             self.displayTarget(target)
+            self.data_proc.tca.gui.displayAlert("FIRE!! %s" % target)
 
     def updateCalibration(self, message):
         if message == 1:
