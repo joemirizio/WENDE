@@ -1,6 +1,7 @@
 import cv2.cv as cv
 import logging
 import math
+import itertools
 from datetime import datetime
 from collections import deque
 
@@ -10,7 +11,7 @@ import prediction
 ORIGIN = [0, 0]
 NUM_PREDICTION_VALS = 20
 
-PROCESS_NOISE = 1e-1
+PROCESS_NOISE = 1
 MEASUREMENT_NOISE = 1
 TIME_STEP = 0.5
 PREDICTION_RADIUS = 12
@@ -36,7 +37,6 @@ class Target(object):
         if self.updatedThisCycle:
             return
 
-        logging.debug('Updating %s' % self)
         self.pos = pos[0:2]
         self.detected_positions.append(self.pos)
         self.missed_updates = 0
@@ -57,9 +57,14 @@ class Target(object):
         if self.valid:
             #if distance(self.pos, ORIGIN) > 9:
             self.beyond9 = True
+
+            #positions = self.detected_positions[-NUM_PREDICTION_VALS:]
+            positions = self.filtered_positions
+            if len(self.filtered_positions) > NUM_PREDICTION_VALS:
+                positions = list(itertools.islice(self.filtered_positions, len(self.filtered_positions) -NUM_PREDICTION_VALS, None))
+
             self.predLineIntersect = prediction.predict(
-                self.detected_positions[-NUM_PREDICTION_VALS:], 
-                PREDICTION_RADIUS)
+                positions, PREDICTION_RADIUS)
 
         # Update last time modified
         self.last_update = datetime.now()

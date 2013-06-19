@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 # TODO Cleanup this reference..
-PERSIST_TIME = 3 # Seconds
+PERSIST_TIME = 100 # Seconds
 MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
 
 class TacticalDisplay(object):
@@ -79,9 +79,9 @@ class TacticalDisplay(object):
         else:
             # Draw track lines
             tgtTrack = self.tgtTracks[target] 
-            if len(tgtTrack.target.detected_positions) > 2:
+            if len(tgtTrack.target.filtered_positions) > 2:
                 # Remap track positions
-                track_pts = tgtTrack.target.detected_positions
+                track_pts = tgtTrack.target.filtered_positions
                 track_points = []
                 for point in track_pts:
                     track_points.append(self.remapPosition(point))
