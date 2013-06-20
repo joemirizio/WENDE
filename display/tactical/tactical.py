@@ -9,13 +9,13 @@ MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
 
 class TacticalDisplay(object):
     
-    PADDING = 5
+    PADDING = 50
     WIDTH = 800
     HEIGHT = WIDTH / 2
     SIZE = (WIDTH, HEIGHT)
     MAX_RANGE = 12
     MAX_WIDTH = MAX_RANGE * math.cos(math.radians(30)) * 2
-    LABEL_OFFSET = [0, -15]
+    LABEL_OFFSET = [0, 35]
 
     def __init__(self, display, data_proc):
         self.display = display
