@@ -20,8 +20,9 @@ class Target(object):
         self.kalman = None
         self.prediction = None
         self.missed_updates = 0
-        self.detected_positions = [pos]
+        #self.detected_positions = [pos]
         self.filtered_positions = deque([pos], maxlen=MAXLEN_DEQUE)
+        self.prediction_positions = deque([pos], maxlen=prediction.NUM_PREDICTION_VALS)
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.valid = VerifyValidity(pos)
@@ -35,7 +36,7 @@ class Target(object):
             return
 
         self.pos = pos[0:2]
-        self.detected_positions.append(self.pos)
+        #self.detected_positions.append(self.pos)
         self.missed_updates = 0
 
         if self.kalman is None:
@@ -47,7 +48,7 @@ class Target(object):
         tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
 
         self.filtered_positions.append([tmp[0, 0], tmp[1, 0]])
-        #logging.debug("Smoothed Detections: %s" % self.filtered_positions[-1])
+        self.prediction_positions.append([tmp[0, 0], tmp[1, 0]])
 
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
@@ -55,15 +56,16 @@ class Target(object):
         if self.valid:
             # Calculate prediction line when target is located in alert zone
             if distance(self.pos, ORIGIN) > 5 and distance(self.pos, ORIGIN) < 10:
-                self.predLineIntersect = prediction.predict(self.filtered_positions, PREDICTION_RADIUS)
+                self.predLineIntersect = prediction.predict(self.prediction_positions, PREDICTION_RADIUS)
 
         # Update last time modified
         self.last_update = datetime.now()
         self.updatedThisCycle = True
 
     def clearTargetData(self):
-        del self.detected_positions[:]
+        #del self.detected_positions[:]
         self.filtered_positions.clear()
+        self.prediction_positions.clear()
         del self.prediction[:]
     
     def clearProcessedThisCycle(self):

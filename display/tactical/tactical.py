@@ -4,8 +4,8 @@ import logging
 from datetime import datetime
 
 # TODO Cleanup this reference..
-PERSIST_TIME = 2.5 # Seconds
-MAXLEN_DEQUE = PERSIST_TIME * 10 # Assuming 10 FPS
+PERSIST_TIME = 30 # Seconds # This seems reasonable.. right?
+MAXLEN_DEQUE = PERSIST_TIME * 50 # Just.. just save pretty much all of them for now
 
 class TacticalDisplay(object):
     

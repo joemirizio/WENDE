@@ -17,7 +17,7 @@ import itertools
 #       Radius of the prediction line from the origin.
 #       Should be in same units as x and y (i.e. meters)
 
-NUM_PREDICTION_VALS = 20
+NUM_PREDICTION_VALS = 25
 
 def predict(positions, pred_line_r):
 
@@ -26,9 +26,9 @@ def predict(positions, pred_line_r):
         return None
 
     # Restrict to the maximum number of prediction values
-    if len(positions) > NUM_PREDICTION_VALS:
-        positions = list(itertools.islice(
-            positions, (len(positions) - NUM_PREDICTION_VALS), None))
+#     if len(positions) > NUM_PREDICTION_VALS:
+#         positions = list(itertools.islice(
+#             positions, (len(positions) - NUM_PREDICTION_VALS), None))
 
     # reformat into x and y arrays
     x = [pair[0] for pair in positions]
