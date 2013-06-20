@@ -7,11 +7,13 @@ from PIL import Image
 from PIL import ImageTk
 import logging
 import math
+import datetime
 
 from display.tactical import TacticalDisplay
 
 DEFAULT_VIEWPORT_SIZE = (400, 300)
 VIEWPORT_PADDING = 10
+ALERT_DURATION = 5
 
 class Tkinter_gui(object):
     def __init__(self, name, image_processors={}):
@@ -70,6 +72,8 @@ class Tkinter_gui(object):
         # Update viewports
         for viewport in self.viewports.itervalues():
             viewport.update()
+        # Update alert
+        self.alert.update()
         # Update GUI elements
         self.root.update()
         self.root.after(0, update_func)
@@ -149,9 +153,20 @@ class Alert(object):
         font = tkFont.Font(family="Arial", size=24)
         self.alert_label = tk.Label(root, font=font, textvariable=self.label_text, anchor=tk.SW)
         self.alert_label.grid()
+        self.expire_time = None
         
+    def update(self):
+        if self.expire_time and datetime.datetime.now() > self.expire_time:
+            self.clear()
+
     def displayAlert(self, alert_text):
         self.label_text.set(alert_text)
+        self.expire_time = (datetime.datetime.now() +
+            datetime.timedelta(seconds=ALERT_DURATION))
+
+    def clear(self):
+        self.label_text.set('')
+        self.expire_time = None
         
 class InputDialog(tkSimpleDialog.Dialog):
 

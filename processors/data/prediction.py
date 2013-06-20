@@ -2,6 +2,7 @@ from numpy.linalg import lstsq
 import numpy as np
 from math import sqrt
 from random import random
+import itertools
 
 # Predict:
 #   predict intersection point with track and prediction line
@@ -16,16 +17,22 @@ from random import random
 #       Radius of the prediction line from the origin.
 #       Should be in same units as x and y (i.e. meters)
 
+NUM_PREDICTION_VALS = 20
 
-def predict(det_coords, pred_line_r):
+def predict(positions, pred_line_r):
 
     # Prevent prediction when insufficient data is provided
-    if len(det_coords) < 20:
+    if len(positions) < NUM_PREDICTION_VALS:
         return None
 
+    # Restrict to the maximum number of prediction values
+    if len(positions) > NUM_PREDICTION_VALS:
+        positions = list(itertools.islice(
+            positions, (len(positions) - NUM_PREDICTION_VALS), None))
+
     # reformat into x and y arrays
-    x = [pair[0] for pair in det_coords]
-    y = [pair[1] for pair in det_coords]
+    x = [pair[0] for pair in positions]
+    y = [pair[1] for pair in positions]
 
     # create blank slate to predict against
     A = np.vstack([x, np.ones(len(x))]).T

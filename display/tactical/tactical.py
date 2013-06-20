@@ -46,10 +46,10 @@ class TacticalDisplay(object):
 
             # Display alerts
             # TODO Clean up
-            if distance((0, 0), target.pos) > 10:
-                self.data_proc.tca.ui.displayAlert("Target has left the Alert-Zone")
-            elif distance((0, 0), target.pos) > 5:
-                self.data_proc.tca.ui.displayAlert("Target entered the Alert-Zone")
+            if distance((0, 0), target.pos) > 10 and distance((0, 0), target.pos) < 10.3:
+                self.data_proc.tca.ui.displayAlert("Target has left the Alert zone")
+            elif distance((0, 0), target.pos) > 5 and distance((0, 0), target.pos) < 5.3:
+                self.data_proc.tca.ui.displayAlert("Target entered the Alert zone")
 
     def updateCalibration(self, message):
         if message == 1:

@@ -1,7 +1,6 @@
 import cv2.cv as cv
 import logging
 import math
-import itertools
 from datetime import datetime
 from collections import deque
 
@@ -9,7 +8,6 @@ from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 import prediction
 
 ORIGIN = [0, 0]
-NUM_PREDICTION_VALS = 20
 
 PROCESS_NOISE = 1
 MEASUREMENT_NOISE = 1
@@ -53,15 +51,11 @@ class Target(object):
 
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
+
         if self.valid:
-            if distance(self.pos, ORIGIN) > 5 and distance(self.pos,ORIGIN) < 10:
-                #positions = self.detected_positions[-NUM_PREDICTION_VALS:]
-                prediction_positions = self.filtered_positions
-                if len(self.filtered_positions) > NUM_PREDICTION_VALS:
-                    prediction_positions = list(itertools.islice(self.filtered_positions, 
-                                                len(self.filtered_positions) -NUM_PREDICTION_VALS, None))
-                    self.predLineIntersect = prediction.predict(
-                                             prediction_positions, PREDICTION_RADIUS)
+            # Calculate prediction line when target is located in alert zone
+            if distance(self.pos, ORIGIN) > 5 and distance(self.pos, ORIGIN) < 10:
+                self.predLineIntersect = prediction.predict(self.filtered_positions, PREDICTION_RADIUS)
 
         # Update last time modified
         self.last_update = datetime.now()
