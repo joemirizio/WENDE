@@ -163,7 +163,7 @@ class TacticalDisplay(object):
             tgtTrack.label_prediction.place(x=label_pos[0], y=label_pos[1])
 
     def remapPosition(self, pos):
-        return [float(pos[0]) / float(TacticalDisplay.MAX_WIDTH) * TacticalDisplay.WIDTH + (TacticalDisplay.WIDTH / 2), 
+        return [float(pos[0]) / float(TacticalDisplay.MAX_RANGE * 2) * TacticalDisplay.WIDTH + (TacticalDisplay.WIDTH / 2), 
                 TacticalDisplay.HEIGHT - float(pos[1]) / float(TacticalDisplay.MAX_RANGE) * TacticalDisplay.HEIGHT]
 
     def getBoundingBox(self, width, height=None, pos=[float(WIDTH) / 2.0, HEIGHT]):
