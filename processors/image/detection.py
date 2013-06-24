@@ -1,41 +1,94 @@
+"""
+The object detection module scans an image for potential targets and provides
+information about these targets.
+
+Images passed to the object detection module are blurred and converted to a
+saturation display format. (This enhances the contrast of color variations
+appearing in the original image.) The resulting image is then binary filtered
+to isolate a certain color hue that is characteristic of target objects. Any
+contours are detected on the filtered image and are overlayed onto original,
+unaltered frame. Rectangular bounding boxes enclosing each contour are also
+drawn before returning the frame.
+
+Classes:
+    ObjectDetectionModule
+"""
 import cv2 as cv
 import numpy as np
 
 from image import FRAME_TYPES
 
-AVG_WEIGHT = 0.01
-BW_THRESHOLD = 20
+# AVG_WEIGHT = 0.01
+# BW_THRESHOLD = 20
 
+# Binary filter threshold limits
 DETECT_MIN = np.array([124, 98, 40], np.uint8)
 DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
+# Minimum dimensions of bounded contours
 CONTOUR_MIN_WIDTH = 15
 CONTOUR_MIN_HEIGHT = 15
 
-class ObjectDetectionModule(object):
 
+class ObjectDetectionModule(object):
+    """Scans an image for potential targets and provides size/location
+	information about these targets.
+
+    Attributes:
+        image_processor: An ImageProcessor object.
+        config: A SafeConfigParser object.
+
+    Methods:
+        findObjects()
+    """
     def __init__(self, image_processor):
         self.image_processor = image_processor
         self.config = image_processor.config
 
     def findObjects(self, frame, frame_type=FRAME_TYPES[0],
                     detectMin=DETECT_MIN, detectMax=DETECT_MAX):
-        blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
+		"""A frame is scanned for target objects by finding contours, which
+        are then drawn on the frame.
+
+        Takes the provided image frame, applies a Gaussian blur, and
+        converts it to a saturation display format. The resulting
+        image is then binary filtered to isolate a certain color hue
+        (currently hot pink) characteristic of target objects. Any contours
+        are detected on the filtered image and are overlayed onto original,
+        unaltered frame. Rectangular bounding boxes enclosing sufficiently
+        large contours are also drawn.
+
+        Args:
+            frame: An 8-bit image array of the frame to be processed.
+            frame_type: An string from the FRAME_TYPES list that describes a
+                property of the current frame.
+            detectMin = An array serving as the lower threshold in the binary
+                filtering.
+            detectMin = An array serving as the upper threshold in the binary
+                filtering.
+
+        Returns:
+            A two-element tuple whose first element is the original 8-bit
+            image frame with contours and bounding boxes drawn. The second
+            element is an array containing vectors of contour points.
+        """
+		blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
         thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
 
         # Calculate contours
         thresh_copy = thresh_frame.copy()
-        contours, hier = cv.findContours(thresh_copy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        contours, hier = cv.findContours(thresh_copy, cv.RETR_EXTERNAL,
+                                         cv.CHAIN_APPROX_SIMPLE)
 
         # Draw countours and bounding boxes
         main_frame = frame.copy()
         filtered_contours = []
         for contour in contours:
             rect = cv.boundingRect(contour)
-            if rect[1]>CONTOUR_MIN_WIDTH and rect[3]>CONTOUR_MIN_HEIGHT:
-                top  = rect[0:2] # Top left corner
-                bot  = (rect[0] + rect[2], rect[1] + rect[3]) # Bottom right corner
+            if rect[1] > CONTOUR_MIN_WIDTH and rect[3] > CONTOUR_MIN_HEIGHT:
+                top = rect[0:2]  # Top left corner
+                bot = (rect[0] + rect[2], rect[1] + rect[3])  # Lwr rght corner
                 cv.rectangle(main_frame, top, bot, (0, 255, 0), 1)
                 np.append(filtered_contours, contour)
         cv.drawContours(main_frame, contours, -1, (255, 0, 0), -1)
@@ -43,7 +96,7 @@ class ObjectDetectionModule(object):
 ##        for contour in contours:
 ##            rect = cv.boundingRect(contour)
 ##            top  = rect[0:2] # Top left corner
-##            bot  = (rect[0] + rect[2], rect[1] + rect[3]) # Bottom right corner
+##            bot  = (rect[0] + rect[2], rect[1] + rect[3]) # Lwr right corner
 ##            if rect[2]>CONTOUR_MIN_WIDTH and rect[3]>CONTOUR_MIN_HEIGHT:
 ##                cv.rectangle(main_frame, top, bot, (0, 255, 0), 1)
 ##        cv.drawContours(main_frame, contours, -1, (255, 0, 0), -1)
@@ -65,11 +118,13 @@ class ObjectDetectionModule(object):
 ##
 ##        # Convert to grayscale then to black/white
 ##        gray_frame = cv.cvtColor(diff_frame, cv.COLOR_RGB2GRAY)
-##        _, bw_frame = cv.threshold(gray_frame, BW_THRESHOLD, 255, cv.THRESH_BINARY)
+##        _, bw_frame = cv.threshold(gray_frame, BW_THRESHOLD, 255,
+##                                   cv.THRESH_BINARY)
 ##
 ##        # Calculate contours
 ##        bw_copy = bw_frame.copy()
-##        contours, hier = cv.findContours(bw_copy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+##        contours, hier = cv.findContours(bw_copy, cv.RETR_EXTERNAL,
+##                                         cv.CHAIN_APPROX_SIMPLE)
 ##
 ##        # Draw countours and bounding boxes
 ##        main_frame = frame.copy()
@@ -81,7 +136,8 @@ class ObjectDetectionModule(object):
 ##        cv.drawContours(main_frame, contours, -1, (0, 255, 0), -1)
 ##
 ##        # Select desired frame to display
-##        frames = dict(zip(FRAME_TYPES, (main_frame, frame, src_frame, conv_frame, gray_frame, bw_frame)))
+##        frames = dict(zip(FRAME_TYPES, (main_frame, frame, src_frame,
+##                                        conv_frame, gray_frame, bw_frame)))
 ##        out_frame = frames[frame_type]
 ##
 ##        return (out_frame, avg_frame, contours
