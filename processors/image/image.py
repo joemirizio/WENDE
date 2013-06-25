@@ -79,7 +79,7 @@ class ImageProcessor(object):
         self.odm = ObjectDetectionModule(self)
 
     def process(self):
-		"""Reads in an image frame and searches for valid targets. Located
+	"""Reads in an image frame and searches for valid targets. Located
         targets are defined by enclosing contours, which are stored as
         vectors of points.
  
@@ -97,7 +97,7 @@ class ImageProcessor(object):
         Returns:
             An array storing the contour points of valid target objects.
         """
-		self.last_frame = self.isi.read()
+	self.last_frame = self.isi.read()
 
         if self.avg_frame is None:
             self.avg_frame = self.last_frame
@@ -111,7 +111,7 @@ class ImageProcessor(object):
             for num, cal_point in enumerate(self.cal_data.image_points, 1):
                 point = (cal_point[0], cal_point[1])
                 color_intensity = ((num - 1) % 3) / 3.0 * 200 + 55
-                color = (0, 0, color_intensity)
+                color = (0, 0, color_intensity) \
                 if num > 3 else (0, color_intensity, 0)
                 cv.circle(self.last_frame, point, 5, color, thickness=-1)
                 cv.circle(self.last_frame, point, 5, [0, 0, 0], thickness=2)
@@ -142,7 +142,7 @@ class ImageProcessor(object):
 
     @avg_frame.setter
     def avg_frame(self, frame):
-		"""Sets average frame using numpy float.       
+	"""Sets average frame using numpy float.       
 
         Args:
             frame: An 8-bit image array 
@@ -153,7 +153,7 @@ class ImageProcessor(object):
             self.__avg_frame = frame
 
     def saveFrame(self, filename="", processed=True):
-		"""Saves current frame to an image file.       
+	"""Saves current frame to an image file.       
 
         Args:
             filename: A string containing the name of the saved image file.
@@ -163,7 +163,7 @@ class ImageProcessor(object):
         self.isi.save(filename, self.last_frame if processed else None)
 
     def setFrameType(self, frame_type):
-		"""Sets the frame type. 
+	"""Sets the frame type. 
         
         May be one of six options from the FRAME_TYPES list: 'main', 'orig',
         'blur', 'avg', 'gray', 'bw'        
@@ -182,7 +182,7 @@ class ImageProcessor(object):
             self.frame_type = FRAME_TYPES[frame_type]
 
     def __string__(self):
-		"""Returns a description of the image source. 
+	"""Returns a description of the image source. 
         
         Valid image sources are 'Camera', 'ImageFile', and 'VideoFile'.
         Example: Image Processor{Camera}  
@@ -211,7 +211,7 @@ class ImageProcessor(object):
 
 
 def createImageProcessors(tca):
-	"""Initializes the current system image sources.
+    """Initializes the current system image sources.
     
     Upon detection of the image source type, an ImageProcessor object is
     created for each source. These sources may be image files, video files,

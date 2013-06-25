@@ -81,11 +81,11 @@ class SourceCalibrationModule(object):
         self.colors = [(center_thresh_min, center_thresh_max),
                        (side_thresh_min, side_thresh_max)]
 
-		if self.config.getboolean('calibration', 'use_cal_data'):
-			self.loadCalibrationData()
+	if self.config.getboolean('calibration', 'use_cal_data'):
+		self.loadCalibrationData()
 
     def calibrate(self, cal_points=None):
-		"""Calibrates the image processor
+	"""Calibrates the image processor
         
         Args: 
             None.
@@ -116,7 +116,7 @@ class SourceCalibrationModule(object):
         return self.image_processor.cal_data
 
     def getCalibrationPoints(self):
-		"""Finds the pixel coordinates of calibration markers appearing in the captured image. 
+	"""Finds the pixel coordinates of calibration markers appearing in the captured image. 
         
         Args: 
             None.
@@ -200,7 +200,7 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.distortion = np.loadtxt(distortion_file)
 
     def getCalibrationDataFilename(self):
-	    """Generates the calibration data filename and returns it. 
+	"""Generates the calibration data filename and returns it. 
         
         Args:
             None.
@@ -214,7 +214,7 @@ class SourceCalibrationModule(object):
         return cal_filename
 
     def saveCalibrationData(self):
-		"""Saves calibration data to the calibration file. 
+	"""Saves calibration data to the calibration file. 
         
         Args:
             None.  
@@ -224,7 +224,7 @@ class SourceCalibrationModule(object):
             #self.image_processor.cal_data.save(cal_file)
 
     def loadCalibrationData(self):
-		"""Loads calibration data from the calibration file. 
+	"""Loads calibration data from the calibration file. 
         
         Args:
             None.  
@@ -254,7 +254,7 @@ class SourceCalibrationModule(object):
 
 
 class CalibrationData(object):
-	"""Saves or loads calibration data to/from file.
+    """Saves or loads calibration data to/from file.
 
     Attributes:
         intrinsic: A multi-channel 2D matrix of the intrinsic camera parameters.
@@ -282,7 +282,7 @@ class CalibrationData(object):
         self.object_points = None
 
     def save(self, file):
-		"""Saves the calibration data to a text file. 
+	"""Saves the calibration data to a text file. 
         
         Args:
             file: A string containing the file name where the data will be saved.  
@@ -299,7 +299,7 @@ class CalibrationData(object):
                  self.image_points, self.object_points)
 
     def load(self, file):
-		"""Loads the calibration data from a text file. 
+	"""Loads the calibration data from a text file. 
         
         Args:
             file: A string containing the file name from which the data will be retrieved.  
@@ -309,7 +309,7 @@ class CalibrationData(object):
          self.object_points) = np.load(file).files
 
     def __eq__(self):
-	    """Checks to see if calibration data is present. 
+	"""Checks to see if calibration data is present. 
         
         Args:
             None.

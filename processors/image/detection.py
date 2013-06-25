@@ -47,7 +47,7 @@ class ObjectDetectionModule(object):
 
     def findObjects(self, frame, frame_type=FRAME_TYPES[0],
                     detectMin=DETECT_MIN, detectMax=DETECT_MAX):
-		"""A frame is scanned for target objects by finding contours, which
+	"""A frame is scanned for target objects by finding contours, which
         are then drawn on the frame.
 
         Takes the provided image frame, applies a Gaussian blur, and
@@ -72,7 +72,7 @@ class ObjectDetectionModule(object):
             image frame with contours and bounding boxes drawn. The second
             element is an array containing vectors of contour points.
         """
-		blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
+	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
         thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
 
