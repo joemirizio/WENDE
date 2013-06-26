@@ -72,7 +72,7 @@ class ObjectDetectionModule(object):
             image frame with contours and bounding boxes drawn. The second
             element is an array containing vectors of contour points.
         """
-	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
+        blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
         thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
 
@@ -105,7 +105,31 @@ class ObjectDetectionModule(object):
         out_frame = frames[frame_type]
 
         return (out_frame, contours)
+    
 
+def buildDetectionThresholds(threshold_seed):
+    """ Creates detection min and max corresponding to input color
+    
+    Arguments:
+        threshold_seed -- list containing HSV value to build thresholds around
+        
+    Outputs:
+        detection_min, detection_max -- 3x1 numpy arrays containing HSV values
+            defining the detection thresholds
+            
+    """
+    
+    threshold_array = np.array(threshold_seed)
+    
+    detect_min = threshold_array - 50
+    detect_max = threshold_array + 50
+    
+    for value_min, value_max in zip(detect_min, detect_max):
+        if value_min < 0: value_min = 0
+        if value_max > 255: value_max = 255
+        
+    return detect_min, detect_max
+    
 ### This is for blob detection, currently unused
 ##    def processImage(self, frame, avg_frame, frame_type=FRAME_TYPES[0]):
 ##        # Blur and average with previous frames

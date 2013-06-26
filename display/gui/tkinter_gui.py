@@ -95,7 +95,7 @@ class Viewport(object):
         self.pos = pos
         self.size = size
         self.cal_points = []
-        self.set_center_next = True
+        self.cal_colors = None
         if 'x' in self.pos:
             self.view.place(**pos)
         else:
@@ -145,15 +145,17 @@ class Viewport(object):
                  int(float(point[1] - 2) / float(self.size[1]) *
                      self.img_proc.isi.height)]
         
+        # Get color and build threshold
         threshold_seed = frame[point[0], point[1]]
-        detect_min, detect_max = buildThreshold(threshold_seed)
+        detect_min, detect_max = buildDetectionThresholds(threshold_seed)
         
-        if not self.set_center_next:
-            self.image_proc.applyThreshold(detect_min, detect_max, 'center')
+        # Append colors and modify thresholds when both have been selected
+        if self.cal_colors == []:
+            self.cal_colors.append([detect_min, detect_max])
         else:
-            self.image_proc.applyThreshold(detect_min, detect_max, 'side')
-            
-        self.set_center_next = not self.set_center_next
+            self.cal_colors.append([detect_min, detect_max])
+            self.image_proc.scm.setCalibrationColors(self.cal_colors)
+            self.cal_colors = []
 
     def update(self):
         frame = self.img_proc.last_frame

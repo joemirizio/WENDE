@@ -78,8 +78,8 @@ class SourceCalibrationModule(object):
                                    ('calibration', 'side_color_max').
                                    split(','), np.uint8)
 
-        self.colors = [(center_thresh_min, center_thresh_max),
-                       (side_thresh_min, side_thresh_max)]
+        self.colors = [[center_thresh_min, center_thresh_max],
+                       [side_thresh_min, side_thresh_max]]
         
         # Load pre-saved calibration data or create blank cal_data
         if self.config.getboolean('calibration', 'use_cal_data'):
@@ -251,7 +251,22 @@ class SourceCalibrationModule(object):
         cal_data.map1, cal_data.map2 = cv.initUndistortRectifyMap(
             cal_data.intrinsic, cal_data.distortion,
             None, camera_matrix, size, cv.CV_32FC1)
-
+        
+    def setCalibrationColors(self, cal_colors):
+        """ Sets new HSV values used to find calibration points
+        
+        Arguments:
+            cal_colors -- List of color detection thresholds. List contains
+                two colors corresponding to the calibration targets for the
+                center and side. Individual thresholds are stored as 1x3
+                numpy arrays with data type uint8. Organization is:
+                
+                [[center_threshold_min, center_threshold_max],
+                [side_threshold_min, side_threshold_max]]
+                
+        """
+        
+        self.colors = cal_colors
 
 class CalibrationData(object):
     """Saves or loads calibration data to/from file.
