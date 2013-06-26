@@ -41,13 +41,13 @@ class SourceCalibrationModule(object):
         image_processor: An imageProcessor object.
         config: A SafeConfigParser object.
         center_thresh_min: An array of the lower-limit RGB values expected for
-			the demo calibration markers in the center region.
+            the demo calibration markers in the center region.
         center_thresh_max: An array of the upper-limit RGB values expected for
-			the demo calibration markers in the center region.
+            the demo calibration markers in the center region.
         side_thresh_min: An array of the lower-limit RGB values expected for
-			the demo calibration markers along the region sides.
+            the demo calibration markers along the region sides.
         side_thresh_max: An array of the upper-limit RGB values expected for
-			the demo calibration markers along the region sides.
+            the demo calibration markers along the region sides.
 
     Methods:
         calibrate()
@@ -64,7 +64,7 @@ class SourceCalibrationModule(object):
         self.image_processor = image_processor
         self.config = image_processor.config
 
-		# Expected color ranges of calibration markers
+        # Expected color ranges of calibration markers
         center_thresh_min = np.array(self.config.get
                                      ('calibration', 'center_color_min').
                                      split(','), np.uint8)
@@ -80,20 +80,20 @@ class SourceCalibrationModule(object):
 
         self.colors = [(center_thresh_min, center_thresh_max),
                        (side_thresh_min, side_thresh_max)]
-
-	if self.config.getboolean('calibration', 'use_cal_data'):
-		self.loadCalibrationData()
+        
+        # Load pre-saved calibration data or create blank cal_data
+        if self.config.getboolean('calibration', 'use_cal_data'):
+            self.loadCalibrationData()
+        else:
+            # Create calibration data object
+            self.image_processor.cal_data = CalibrationData()
 
     def calibrate(self, cal_points=None):
-	"""Calibrates the image processor
+        """Calibrates the image processor
         
         Args: 
             None.
         """
-        # Send status update to tactical display to begin calibration
-        #self.image_processor.tca.tactical.updateCalibration(1)
-
-        self.image_processor.cal_data = CalibrationData()
 
         # Intrinsic
         self.loadIntrinsicParams()
@@ -103,9 +103,7 @@ class SourceCalibrationModule(object):
         if not cal_points:
             cal_points = self.getCalibrationPoints()
         self.calcExtrinsicParams(cal_points)
-
-        # Send status update to tactical display that calibration is complete
-        #self.image_processor.tca.tactical.updateCalibration(2)
+        
 
     def getCalibration(self):
         """Returns calibration data from image processors
@@ -116,7 +114,7 @@ class SourceCalibrationModule(object):
         return self.image_processor.cal_data
 
     def getCalibrationPoints(self):
-	"""Finds the pixel coordinates of calibration markers appearing in the captured image. 
+        """Finds the pixel coordinates of calibration markers appearing in the captured image. 
         
         Args: 
             None.
@@ -152,7 +150,7 @@ class SourceCalibrationModule(object):
             logging.error("%s Calibration Failed: %d/6 points: %s" %
                           (self.image_processor.isi.name, len(cal_points),
                            cal_points))
-            self.image_processor.cal_data = None
+            self.image_processor.cal_data.is_valid = False
             return
 
         # Create array from detected points
@@ -185,6 +183,8 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.translation = translation
         self.image_processor.cal_data.object_points = objectPoints
         self.image_processor.cal_data.image_points = imagePoints
+        
+        self.image_processor.cal_data.is_valid = True
 
     def loadIntrinsicParams(self):
         """Loads intrinsic matrix and distortion coefficients from xml files into ImageProcessor object and calculates distortion map
@@ -200,7 +200,7 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.distortion = np.loadtxt(distortion_file)
 
     def getCalibrationDataFilename(self):
-	"""Generates the calibration data filename and returns it. 
+        """Generates the calibration data filename and returns it. 
         
         Args:
             None.
@@ -214,7 +214,7 @@ class SourceCalibrationModule(object):
         return cal_filename
 
     def saveCalibrationData(self):
-	"""Saves calibration data to the calibration file. 
+        """Saves calibration data to the calibration file. 
         
         Args:
             None.  
@@ -224,7 +224,7 @@ class SourceCalibrationModule(object):
             #self.image_processor.cal_data.save(cal_file)
 
     def loadCalibrationData(self):
-	"""Loads calibration data from the calibration file. 
+        """Loads calibration data from the calibration file. 
         
         Args:
             None.  
@@ -275,14 +275,15 @@ class CalibrationData(object):
         self.intrinsic = None
         self.distortion = None
         self.map1 = None
-        self.map2 = self, self, self, self, self, self, self, self,  None
+        self.map2 = None
         self.rotation = None
         self.translation = None
         self.image_points = None
         self.object_points = None
+        self.is_valid = False
 
     def save(self, file):
-	"""Saves the calibration data to a text file. 
+        """Saves the calibration data to a text file. 
         
         Args:
             file: A string containing the file name where the data will be saved.  
@@ -299,7 +300,7 @@ class CalibrationData(object):
                  self.image_points, self.object_points)
 
     def load(self, file):
-	"""Loads the calibration data from a text file. 
+        """Loads the calibration data from a text file. 
         
         Args:
             file: A string containing the file name from which the data will be retrieved.  
@@ -309,7 +310,7 @@ class CalibrationData(object):
          self.object_points) = np.load(file).files
 
     def __eq__(self):
-	"""Checks to see if calibration data is present. 
+        """Checks to see if calibration data is present. 
         
         Args:
             None.
