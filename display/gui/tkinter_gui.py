@@ -95,6 +95,7 @@ class Viewport(object):
         self.pos = pos
         self.size = size
         self.cal_points = []
+        self.set_center_next = True
         if 'x' in self.pos:
             self.view.place(**pos)
         else:
@@ -124,6 +125,35 @@ class Viewport(object):
         if len(self.cal_points) == 6:
             logging.debug("Saving new calibration points %s" % self.cal_points)
             self.img_proc.scm.calibrate(self.cal_points)
+            self.cal_points = []
+            
+
+    def addCalibrationColor(self, point):
+        """ Collects the color from clicked points and uses it to find calibration points
+        
+        Arguments:
+            point -- x and y coordinate of clicked point
+            
+        """
+        from processors.image.detection import buildThreshold
+        
+        logging.debug(point)
+        
+        frame =  cv.cvtColor(self.img_proc.last_frame, cv.COLOR_BGR2HSV)
+        point = [int(float(point[0] - 2) / float(self.size[0]) *
+                     self.img_proc.isi.width), 
+                 int(float(point[1] - 2) / float(self.size[1]) *
+                     self.img_proc.isi.height)]
+        
+        threshold_seed = frame[point[0], point[1]]
+        detect_min, detect_max = buildThreshold(threshold_seed)
+        
+        if not self.set_center_next:
+            self.image_proc.applyThreshold(detect_min, detect_max, 'center')
+        else:
+            self.image_proc.applyThreshold(detect_min, detect_max, 'side')
+            
+        self.set_center_next = not self.set_center_next
 
     def update(self):
         frame = self.img_proc.last_frame
