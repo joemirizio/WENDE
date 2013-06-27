@@ -13,28 +13,33 @@ class TargetTrackModule(object):
     def __init__(self, dataProcessor):
         self.targets = []
 
-    def processDetection(self, pos):
+    def processDetections(self, unmatchedList):
+        for target in self.targets
+            
         associated = self.associateTrack(pos)
         if not associated:
             self.targets.append(Target(pos))
 
-    def associateTrack(self, pos):
-        for target in self.targets:
-            if (target.prediction and 
-                distance(pos, target.prediction) < KNOWN_GATE):
-                #logging.debug('Det associated: %f from prediction of target %d' %
-                            # (distance(pos, target.prediction), i))
-                target.update(pos)
-                if target.missed_updates > 0:
-                    target.missed_updates -= 1
-                return True
-            elif (not target.prediction and
-                    distance(pos, target.pos) < UNKNOWN_GATE):
-                target.prediction = []
-                target.update(pos)
-                if target.missed_updates > 0:
-                    target.missed_updates -= 1
-                return True
+    def associateTrack(self, pos, target):
+        # TODO reimplement
+        if target.updatedThisCycle:
+            return False
+
+        if (target.prediction and 
+            distance(pos, target.prediction) < KNOWN_GATE):
+            #logging.debug('Det associated: %f from prediction of target %d' %
+                        # (distance(pos, target.prediction), i))
+            target.update(pos)
+            if target.missed_updates > 0:
+                target.missed_updates -= 1
+            return True
+        elif (not target.prediction and
+                distance(pos, target.pos) < UNKNOWN_GATE):
+            target.prediction = []
+            target.update(pos)
+            if target.missed_updates > 0:
+                target.missed_updates -= 1
+            return True
 
         # Got through the whole target list without a hit
         #logging.debug('Det NOT associated')

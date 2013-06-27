@@ -37,10 +37,11 @@ class DataProcessor(object):
                 # Convert from numpy to list
                 pos = pos.tolist()
                 pos = flattenArray(pos)
-
-                self.ttm.processDetection(pos)
-                # TODO Clean reference up
-                self.targets = self.ttm.targets
+	
+	#unique list is output from 
+         self.ttm.processDetection(uniqueList)
+         # TODO Clean reference up
+         self.targets = self.ttm.targets
 
     def clearTargetData(self):
         del self.ttm.targets[:]

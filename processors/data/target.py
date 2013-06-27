@@ -31,9 +31,6 @@ class Target(object):
         self.updatedThisCycle = True
 
     def update(self, pos):
-        # TODO Reimplement
-        if self.updatedThisCycle:
-            return
 
         self.pos = pos[0:2]
         #self.detected_positions.append(self.pos)
