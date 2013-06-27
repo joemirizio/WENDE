@@ -15,6 +15,7 @@ Classes:
 """
 import cv2 as cv
 import numpy as np
+import logging as logging
 
 from image import FRAME_TYPES
 
@@ -26,8 +27,8 @@ DETECT_MIN = np.array([124, 98, 40], np.uint8)
 DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 # Minimum dimensions of bounded contours
-CONTOUR_MIN_WIDTH = 15
-CONTOUR_MIN_HEIGHT = 15
+CONTOUR_MIN_WIDTH = 10
+CONTOUR_MIN_HEIGHT = 10
 
 
 class ObjectDetectionModule(object):
@@ -74,7 +75,30 @@ class ObjectDetectionModule(object):
         """
         blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
-        thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
+        
+        # Wrap HSV values
+        logic_normal = detectMin < detectMax
+        logic_reversed = np.logical_not(logic_normal)
+        if all(logic_normal):
+            # Proceed normally
+            thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
+        else:
+            channels_reversed = hsv_frame[:, :, logic_reversed]
+            mask_reversed = cv.inRange(channels_reversed,
+                                           detectMax[logic_reversed],
+                                           detectMin[logic_reversed])
+            # Check if all are reversed
+            if all(logic_reversed):
+                thresh_frame = np.logical_not(mask_reversed)
+            # Mixed case
+            else:
+                channels_normal = hsv_frame[:, :, logic_normal]
+                mask_normal = cv.inRange(channels_normal,
+                                         detectMin[logic_normal],
+                                         detectMax[logic_normal])
+                thresh_frame = np.logical_and(mask_normal, 
+                                              np.logical_not(mask_reversed))
+            thresh_frame = thresh_frame.astype(np.uint8)
 
         # Calculate contours
         thresh_copy = thresh_frame.copy()
@@ -119,14 +143,18 @@ def buildDetectionThresholds(threshold_seed):
             
     """
     
-    threshold_array = np.array(threshold_seed)
+    hsv_delta = np.array([5, 50, 100], np.uint8)
     
-    detect_min = threshold_array - 50
-    detect_max = threshold_array + 50
+    threshold_array = np.array(threshold_seed, np.uint8)
+    
+    detect_min = threshold_array - hsv_delta
+    detect_max = threshold_array + hsv_delta
     
     for value_min, value_max in zip(detect_min, detect_max):
         if value_min < 0: value_min = 0
         if value_max > 255: value_max = 255
+        
+    if detect_max[0] > 180: detect_max[0] = 180
         
     return detect_min, detect_max
     

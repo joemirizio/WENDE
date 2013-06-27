@@ -82,7 +82,7 @@ class Tkinter_gui(object):
         name = img_proc.isi.name
         self.viewports[name] = Viewport(img_proc, self.frame, pos, size)
         self.viewports[name].view.bind('<Button-1>', lambda e:
-                                 self.viewports[name].addCalibrationPoint([e.x, e.y]))
+                                 self.viewports[name].addCalibrationColor([e.x, e.y]))
         
     def displayAlert(self, label_text):
         self.alert.displayAlert(label_text)
@@ -95,7 +95,7 @@ class Viewport(object):
         self.pos = pos
         self.size = size
         self.cal_points = []
-        self.cal_colors = None
+        self.cal_colors = []
         if 'x' in self.pos:
             self.view.place(**pos)
         else:
@@ -113,6 +113,7 @@ class Viewport(object):
         if len(self.cal_points) < 6:
             self.cal_points.append(point)
         else:
+            # Reassign closest calibration point to new point
             closest_point_index = None
             dist = float('inf')
             for index, cal_point in enumerate(self.cal_points):
@@ -122,10 +123,10 @@ class Viewport(object):
                     dist = calc_dist
             self.cal_points[closest_point_index] = point
 
+        # Save new calibration points and recalibrate image processor
         if len(self.cal_points) == 6:
             logging.debug("Saving new calibration points %s" % self.cal_points)
             self.img_proc.scm.calibrate(self.cal_points)
-            self.cal_points = []
             
 
     def addCalibrationColor(self, point):
@@ -135,9 +136,11 @@ class Viewport(object):
             point -- x and y coordinate of clicked point
             
         """
-        from processors.image.detection import buildThreshold
         
-        logging.debug(point)
+        from processors.image import detection
+        from processors.image.detection import buildDetectionThresholds
+        
+        #logging.debug('point: %s' % point)
         
         frame =  cv.cvtColor(self.img_proc.last_frame, cv.COLOR_BGR2HSV)
         point = [int(float(point[0] - 2) / float(self.size[0]) *
@@ -146,15 +149,22 @@ class Viewport(object):
                      self.img_proc.isi.height)]
         
         # Get color and build threshold
-        threshold_seed = frame[point[0], point[1]]
+        threshold_seed = frame[point[1], point[0]]
         detect_min, detect_max = buildDetectionThresholds(threshold_seed)
-        
+        logging.debug('Clicked Color: %s' % threshold_seed)
+        logging.debug('detection min: %s' % detect_min)
+        logging.debug('detection max: %s' % detect_max)
         # Append colors and modify thresholds when both have been selected
         if self.cal_colors == []:
             self.cal_colors.append([detect_min, detect_max])
+            color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
+            for ref, color in zip(color_ranges, self.cal_colors[0]):
+                ref[0] = color[0]
+                ref[1] = color[1]
+                ref[2] = color[2]
         else:
             self.cal_colors.append([detect_min, detect_max])
-            self.image_proc.scm.setCalibrationColors(self.cal_colors)
+            self.img_proc.scm.setCalibrationColors(self.cal_colors)
             self.cal_colors = []
 
     def update(self):
