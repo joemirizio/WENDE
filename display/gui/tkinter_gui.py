@@ -156,12 +156,18 @@ class Viewport(object):
         logging.debug('detection max: %s' % detect_max)
         # Append colors and modify thresholds when both have been selected
         if self.cal_colors == []:
+            logging.debug(self.cal_colors)
             self.cal_colors.append([detect_min, detect_max])
+            
+            ####################### TEST ONLY
             color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
             for ref, color in zip(color_ranges, self.cal_colors[0]):
                 ref[0] = color[0]
                 ref[1] = color[1]
                 ref[2] = color[2]
+                
+            self.cal_colors = []
+            #######################
         else:
             self.cal_colors.append([detect_min, detect_max])
             self.img_proc.scm.setCalibrationColors(self.cal_colors)

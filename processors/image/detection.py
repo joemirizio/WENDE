@@ -27,8 +27,8 @@ DETECT_MIN = np.array([124, 98, 40], np.uint8)
 DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 # Minimum dimensions of bounded contours
-CONTOUR_MIN_WIDTH = 10
-CONTOUR_MIN_HEIGHT = 10
+CONTOUR_MIN_WIDTH = 5
+CONTOUR_MIN_HEIGHT = 5
 
 
 class ObjectDetectionModule(object):
@@ -83,13 +83,24 @@ class ObjectDetectionModule(object):
             # Proceed normally
             thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
         else:
+            max_hsv = np.array([180, 255, 255], np.uint8)
+            min_hsv = np.array([0, 0, 0], np.uint8)
             channels_reversed = hsv_frame[:, :, logic_reversed]
-            mask_reversed = cv.inRange(channels_reversed,
-                                           detectMax[logic_reversed],
-                                           detectMin[logic_reversed])
+#             mask_reversed = cv.inRange(channels_reversed,
+#                                            detectMax[logic_reversed],
+#                                            detectMin[logic_reversed])
+            mask_reversed = np.logical_or(cv.inRange(channels_reversed, 
+                                                     detectMin[logic_reversed], 
+                                                     max_hsv[logic_reversed]),
+                                          cv.inRange(channels_reversed,
+                                                     min_hsv[logic_reversed],
+                                                     detectMax[logic_reversed])
+                                          )
+            
             # Check if all are reversed
             if all(logic_reversed):
-                thresh_frame = np.logical_not(mask_reversed)
+                thresh_frame = mask.reversed
+#                 thresh_frame = np.logical_not(mask_reversed)
             # Mixed case
             else:
                 channels_normal = hsv_frame[:, :, logic_normal]
@@ -97,7 +108,8 @@ class ObjectDetectionModule(object):
                                          detectMin[logic_normal],
                                          detectMax[logic_normal])
                 thresh_frame = np.logical_and(mask_normal, 
-                                              np.logical_not(mask_reversed))
+                                              mask_reversed)
+#                                              np.logical_not(mask_reversed))
             thresh_frame = thresh_frame.astype(np.uint8)
 
         # Calculate contours
@@ -143,7 +155,7 @@ def buildDetectionThresholds(threshold_seed):
             
     """
     
-    hsv_delta = np.array([5, 50, 100], np.uint8)
+    hsv_delta = np.array([5, 50, 50], np.uint8)
     
     threshold_array = np.array(threshold_seed, np.uint8)
     
