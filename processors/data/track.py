@@ -1,3 +1,9 @@
+"""
+The target track module represents a compilation of three components in the 
+original design: the target track module, the target location module, and
+the target prediction module. This module maintains individual tracks through
+a list of target objects. 
+"""
 import math
 import logging
 from collections import deque
@@ -13,11 +19,31 @@ class TargetTrackModule(object):
     def __init__(self, dataProcessor):
         self.targets = []
 
+    """
+    This method takes in a list of unique tracks from the target discrimination
+    module. These points are the results of matching all the detections from the
+    various image processors compiled into a unique list. This does a first fit 
+    match for detected points and existing targets. Initially the program tries
+    to only allow a single point to modify one target. After all points have 
+    been exhausted they may be used again. This handles merging and splitting.
+    Any leftovr points are marked as new targets.
+    """
     def processDetections(self, unmatchedList):
-        for target in self.targets
+        matchedList = []
+        for target in self.targets:
+            associated = False
+            for i in xrange(len(unmatchedList) - 1, -1, -1):
+                pos = unmatchedList[i]
+                associated = self.associateTrack(pos,target)
+		if associated: 
+                    matchedList.push(pos)
+                    del unmatchedList[i]
+                    break
+             if not associated:
+                 for pos in matchedList:
+                     associated = self.associateTrack(pos,target)
             
-        associated = self.associateTrack(pos)
-        if not associated:
+        for pos in unmatchedList:
             self.targets.append(Target(pos))
 
     def associateTrack(self, pos, target):
