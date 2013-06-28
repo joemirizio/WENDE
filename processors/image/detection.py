@@ -76,42 +76,22 @@ class ObjectDetectionModule(object):
         blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
         
-        # Wrap HSV values
-        logic_normal = detectMin < detectMax
-        logic_reversed = np.logical_not(logic_normal)
-        if all(logic_normal):
-            # Proceed normally
+        # Find pixels in defined HSV ranges
+        if detectMin[0] < detectMax[0]:
             thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
+        
         else:
-            max_hsv = np.array([180, 255, 255], np.uint8)
-            min_hsv = np.array([0, 0, 0], np.uint8)
-            channels_reversed = hsv_frame[:, :, logic_reversed]
-#             mask_reversed = cv.inRange(channels_reversed,
-#                                            detectMax[logic_reversed],
-#                                            detectMin[logic_reversed])
-            mask_reversed = np.logical_or(cv.inRange(channels_reversed, 
-                                                     detectMin[logic_reversed], 
-                                                     max_hsv[logic_reversed]),
-                                          cv.inRange(channels_reversed,
-                                                     min_hsv[logic_reversed],
-                                                     detectMax[logic_reversed])
-                                          )
+            # If the hue is wrapped, process separately from saturation, value (brightness)
+            channel_hue = hsv_frame[:,:,0]
+            thresh_hue = np.logical_not(cv.inRange(channel_hue, 
+                                                   detectMax[0], 
+                                                   detectMin[0]))
+            thresh_sv = cv.inRange(hsv_frame[:,:,1:],
+                                   detectMin[1:],
+                                   detectMax[1:])
+            # Logical combination of the two thresholds, cast into uint8 for findContours
+            thresh_frame = np.logical_and(thresh_hue, thresh_sv).astype(np.uint8)
             
-            # Check if all are reversed
-            if all(logic_reversed):
-                thresh_frame = mask.reversed
-#                 thresh_frame = np.logical_not(mask_reversed)
-            # Mixed case
-            else:
-                channels_normal = hsv_frame[:, :, logic_normal]
-                mask_normal = cv.inRange(channels_normal,
-                                         detectMin[logic_normal],
-                                         detectMax[logic_normal])
-                thresh_frame = np.logical_and(mask_normal, 
-                                              mask_reversed)
-#                                              np.logical_not(mask_reversed))
-            thresh_frame = thresh_frame.astype(np.uint8)
-
         # Calculate contours
         thresh_copy = thresh_frame.copy()
         contours, hier = cv.findContours(thresh_copy, cv.RETR_EXTERNAL,
@@ -155,20 +135,26 @@ def buildDetectionThresholds(threshold_seed):
             
     """
     
-    hsv_delta = np.array([5, 50, 50], np.uint8)
+    # Define HSV range for thresholds
+    delta_hsv = np.array([5, 50, 75], np.int16)
     
-    threshold_array = np.array(threshold_seed, np.uint8)
+    color_input = np.array(threshold_seed, np.int16)
+    detect_min = detect_max = np.empty((3), np.int16)
     
-    detect_min = threshold_array - hsv_delta
-    detect_max = threshold_array + hsv_delta
+    # Allow hue value to wrap
+    detect_min = color_input - delta_hsv
+    detect_max = color_input + delta_hsv
     
-    for value_min, value_max in zip(detect_min, detect_max):
-        if value_min < 0: value_min = 0
-        if value_max > 255: value_max = 255
+    # Wrap hsv
+    if detect_min[0] < 0: detect_min[0] = (180 + detect_min[0])
+    if detect_max[0] > 180: detect_max[0] = detect_max[0] - 180
+    
+    # Cap saturation and threshold values
+    for index in xrange(1, 3):
+        if detect_min[index] < 0: detect_min[index] = 0
+        if detect_max[index] > 255: detect_max[index] = 255
         
-    if detect_max[0] > 180: detect_max[0] = 180
-        
-    return detect_min, detect_max
+    return detect_min.astype(np.uint8), detect_max.astype(np.uint8)
     
 ### This is for blob detection, currently unused
 ##    def processImage(self, frame, avg_frame, frame_type=FRAME_TYPES[0]):

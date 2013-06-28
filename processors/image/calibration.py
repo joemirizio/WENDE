@@ -267,6 +267,22 @@ class SourceCalibrationModule(object):
         """
         
         self.colors = cal_colors
+        
+    def getCalibrationColors(self):
+        """ Gets HSV values used to find calibration points
+        
+        Return Values:
+            colors -- List of color detection thresholds. List contains
+                two colors corresponding to the calibration targets for the
+                center and side. Individual thresholds are stored as 1x3
+                numpy arrays with data type uint8. Organization is:
+                
+                [[center_threshold_min, center_threshold_max],
+                [side_threshold_min, side_threshold_max]]
+                
+        """
+        
+        return self.colors
 
 class CalibrationData(object):
     """Saves or loads calibration data to/from file.

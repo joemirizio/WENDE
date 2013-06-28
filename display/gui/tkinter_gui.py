@@ -137,7 +137,7 @@ class Viewport(object):
             
         """
         
-        from processors.image import detection
+#         from processors.image import detection
         from processors.image.detection import buildDetectionThresholds
         
         #logging.debug('point: %s' % point)
@@ -151,6 +151,7 @@ class Viewport(object):
         # Get color and build threshold
         threshold_seed = frame[point[1], point[0]]
         detect_min, detect_max = buildDetectionThresholds(threshold_seed)
+        
         logging.debug('Clicked Color: %s' % threshold_seed)
         logging.debug('detection min: %s' % detect_min)
         logging.debug('detection max: %s' % detect_max)
@@ -159,15 +160,15 @@ class Viewport(object):
             logging.debug(self.cal_colors)
             self.cal_colors.append([detect_min, detect_max])
             
-            ####################### TEST ONLY
-            color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
-            for ref, color in zip(color_ranges, self.cal_colors[0]):
-                ref[0] = color[0]
-                ref[1] = color[1]
-                ref[2] = color[2]
-                
-            self.cal_colors = []
-            #######################
+#             ####################### TEST ONLY (VISUAL)
+#             color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
+#             for ref, color in zip(color_ranges, self.cal_colors[0]):
+#                 ref[0] = color[0]
+#                 ref[1] = color[1]
+#                 ref[2] = color[2]
+#                 
+#             self.cal_colors = []
+#             #######################
         else:
             self.cal_colors.append([detect_min, detect_max])
             self.img_proc.scm.setCalibrationColors(self.cal_colors)
