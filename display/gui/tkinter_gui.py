@@ -164,7 +164,6 @@ class Viewport(object):
         
         # Append colors and modify thresholds when both have been selected
         if self.cal_colors == []:
-            logging.debug(self.cal_colors)
             self.cal_colors.append([detect_min, detect_max])
             
 #             ####################### TEST ONLY (VISUAL)
@@ -180,6 +179,9 @@ class Viewport(object):
             self.cal_colors.append([detect_min, detect_max])
             self.img_proc.scm.setCalibrationColors(self.cal_colors)
             self.cal_colors = []
+            
+            
+        self.img_proc.scm.display_colors = True
 
     def update(self):
         frame = self.img_proc.last_frame

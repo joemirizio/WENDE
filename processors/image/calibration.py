@@ -63,6 +63,8 @@ class SourceCalibrationModule(object):
     def __init__(self, image_processor):
         self.image_processor = image_processor
         self.config = image_processor.config
+        
+        self.display_colors = True
 
         # Expected color ranges of calibration markers
         center_thresh_min = np.array(self.config.get
@@ -128,13 +130,15 @@ class SourceCalibrationModule(object):
         cal_points = []
         for color in self.colors:
             # Get Contours
-            _, contours = self.image_processor.odm.findObjects(
-                frame, self.image_processor.frame_type, color[0], color[1])
+            _, contours = self.image_processor.odm.findObjects(frame, 
+                                                               self.image_processor.frame_type, 
+                                                               color[0], 
+                                                               color[1])
 
             # Get center points
             for contour in contours:
                 center, radius = cv.minEnclosingCircle(contour)
-                if radius > 10:
+                if radius > 5:
                     cal_points.append(center)
 
         return cal_points
@@ -185,6 +189,7 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.image_points = imagePoints
         
         self.image_processor.cal_data.is_valid = True
+        self.display_colors = False
 
     def loadIntrinsicParams(self):
         """Loads intrinsic matrix and distortion coefficients from xml files into ImageProcessor object and calculates distortion map
@@ -295,7 +300,8 @@ class CalibrationData(object):
         rotation: An array of the rotation parameters.  
         translation: An array of the translation parameters.
         image_points: An integer indicating the number of calibration markers seen in the image.
-        object_points: An array containing the position coordinates for calibration points. 
+        object_points: An array containing the position coordinates for calibration points.
+        is_valid: Boolean value defining whether object contains valid calibration data 
     
     Methods:
         save()
@@ -339,6 +345,8 @@ class CalibrationData(object):
         (self.intrinsic, self.distortion, self.map1,
          self.map2, self.rotation, self.translation, self.image_points,
          self.object_points) = np.load(file).files
+        
+        self.is_valid = True
 
     def __eq__(self):
         """Checks to see if calibration data is present. 

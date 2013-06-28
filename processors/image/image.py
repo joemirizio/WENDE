@@ -106,6 +106,16 @@ class ImageProcessor(object):
         # Find objects from the image source
         self.last_frame, img_data = self.odm.findObjects(self.last_frame,
                                                          self.frame_type)
+        
+        if self.scm.display_colors:
+            self.last_frame, img_data_center = self.odm.findObjects(self.last_frame,
+                                                                    self.frame_type,
+                                                                    self.scm.colors[0][0],
+                                                                    self.scm.colors[0][1])
+            self.last_frame, img_data_side = self.odm.findObjects(self.last_frame,
+                                                                  self.frame_type,
+                                                                  self.scm.colors[1][0],
+                                                                  self.scm.colors[1][1])
 
         # Display calibration points
         if self.cal_data.is_valid and self.frame_type == 'main':
