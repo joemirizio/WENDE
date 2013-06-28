@@ -81,8 +81,16 @@ class Tkinter_gui(object):
     def addView(self, img_proc, pos={'x':0, 'y':0}, size=(0, 0)):
         name = img_proc.isi.name
         self.viewports[name] = Viewport(img_proc, self.frame, pos, size)
-        self.viewports[name].view.bind('<Button-1>', lambda e:
-                                 self.viewports[name].addCalibrationColor([e.x, e.y]))
+        
+        # Bind correct calibration method
+        if img_proc.config.get('calibration','cal_manual_method') == "POINT":
+            self.viewports[name].view.bind('<Button-1>', lambda e:
+                                           self.viewports[name].addCalibrationPoint([e.x, 
+                                                                                     e.y]))
+        elif img_proc.config.get('calibration','cal_manual_method') == "COLOR":
+            self.viewports[name].view.bind('<Button-1>', lambda e:
+                                           self.viewports[name].addCalibrationColor([e.x, 
+                                                                                     e.y]))
         
     def displayAlert(self, label_text):
         self.alert.displayAlert(label_text)
@@ -140,8 +148,6 @@ class Viewport(object):
 #         from processors.image import detection
         from processors.image.detection import buildDetectionThresholds
         
-        #logging.debug('point: %s' % point)
-        
         frame =  cv.cvtColor(self.img_proc.last_frame, cv.COLOR_BGR2HSV)
         point = [int(float(point[0] - 2) / float(self.size[0]) *
                      self.img_proc.isi.width), 
@@ -155,6 +161,7 @@ class Viewport(object):
         logging.debug('Clicked Color: %s' % threshold_seed)
         logging.debug('detection min: %s' % detect_min)
         logging.debug('detection max: %s' % detect_max)
+        
         # Append colors and modify thresholds when both have been selected
         if self.cal_colors == []:
             logging.debug(self.cal_colors)
