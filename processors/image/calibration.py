@@ -64,7 +64,7 @@ class SourceCalibrationModule(object):
         self.image_processor = image_processor
         self.config = image_processor.config
 
-		# Expected color ranges of calibration markers
+        # Expected color ranges of calibration markers
         center_thresh_min = np.array(self.config.get
                                      ('calibration', 'center_color_min').
                                      split(','), np.uint8)
@@ -81,11 +81,11 @@ class SourceCalibrationModule(object):
         self.colors = [(center_thresh_min, center_thresh_max),
                        (side_thresh_min, side_thresh_max)]
 
-	if self.config.getboolean('calibration', 'use_cal_data'):
-		self.loadCalibrationData()
+        if self.config.getboolean('calibration', 'use_cal_data'):
+            self.loadCalibrationData()
 
     def calibrate(self, cal_points=None):
-	"""Calibrates the image processor
+        """Calibrates the image processor
         
         Args: 
             None.
@@ -116,7 +116,7 @@ class SourceCalibrationModule(object):
         return self.image_processor.cal_data
 
     def getCalibrationPoints(self):
-	"""Finds the pixel coordinates of calibration markers appearing in the captured image. 
+        """Finds the pixel coordinates of calibration markers appearing in the captured image. 
         
         Args: 
             None.
@@ -200,34 +200,34 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.distortion = np.loadtxt(distortion_file)
 
     def getCalibrationDataFilename(self):
-	"""Generates the calibration data filename and returns it. 
-        
-        Args:
-            None.
-            
-        Return:
-            A string containing the calibration data filename.
-        """
+        """Generates the calibration data filename and returns it.
+    
+            Args:
+                None.
+    
+            Return:
+                A string containing the calibration data filename.
+            """
         filename, ext = os.path.splitext(self.config.get("calibration",
                                                          "cal_data_file"))
         cal_filename = ''.join([filename, self.image_processor.isi.name, ext])
         return cal_filename
 
     def saveCalibrationData(self):
-	"""Saves calibration data to the calibration file. 
-        
-        Args:
-            None.  
+        """Saves calibration data to the calibration file. 
+            
+            Args:
+                None.  
         """
         with open(self.getCalibrationDataFilename(), 'w') as cal_file:
             pickle.dump(self.image_processor.cal_data, cal_file)
             #self.image_processor.cal_data.save(cal_file)
 
     def loadCalibrationData(self):
-	"""Loads calibration data from the calibration file. 
-        
-        Args:
-            None.  
+        """Loads calibration data from the calibration file. 
+            
+            Args:
+                None.  
         """
         with open(self.getCalibrationDataFilename(), 'r') as cal_file:
             self.image_processor.cal_data = pickle.load(cal_file)
@@ -282,10 +282,10 @@ class CalibrationData(object):
         self.object_points = None
 
     def save(self, file):
-	"""Saves the calibration data to a text file. 
-        
-        Args:
-            file: A string containing the file name where the data will be saved.  
+        """Saves the calibration data to a text file. 
+            
+            Args:
+                file: A string containing the file name where the data will be saved.  
         """
         logging.debug("%s %s %s %s %s %s %s %s" % (self.intrinsic,
                                                    self.distortion,
@@ -299,17 +299,17 @@ class CalibrationData(object):
                  self.image_points, self.object_points)
 
     def load(self, file):
-	"""Loads the calibration data from a text file. 
+        """Loads the calibration data from a text file. 
         
-        Args:
-            file: A string containing the file name from which the data will be retrieved.  
+            Args:
+                file: A string containing the file name from which the data will be retrieved.  
         """
         (self.intrinsic, self.distortion, self.map1,
          self.map2, self.rotation, self.translation, self.image_points,
          self.object_points) = np.load(file).files
 
     def __eq__(self):
-	"""Checks to see if calibration data is present. 
+        """Checks to see if calibration data is present. 
         
         Args:
             None.
