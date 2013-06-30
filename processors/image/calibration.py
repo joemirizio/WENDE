@@ -19,20 +19,11 @@ from math import sin, cos, pi
 # ex. 12 makes units inches, 1 makes unit feet
 SCALE = 1
 SIDE_ANGLE = pi/3  # 120 degrees
-DISTANCES = (5, 10, 12)
+DISTANCES_NORMAL = (5, 10, 12)
+DISTANCES_SMALL = (5, 6, 7)
 
-# Calibration point position calculations
-DISTANCES = [distance * SCALE for distance in DISTANCES]
 SIDE_POINTS = [sin(SIDE_ANGLE), cos(SIDE_ANGLE), 0]
 CENTER_POINTS = [0, 1, 0]
-
-# Location of calibration markers in global coordinates
-RIGHT_POINTS = [[distance * coordinate for coordinate in SIDE_POINTS]
-                for distance in DISTANCES]
-CENTER_POINTS = [[distance * coordinate for coordinate in CENTER_POINTS]
-                 for distance in DISTANCES]
-LEFT_POINTS = [[-1 * x, y, z] for x, y, z in RIGHT_POINTS]
-
 
 class SourceCalibrationModule(object):
     """Performs external calibration for the system.
@@ -64,7 +55,7 @@ class SourceCalibrationModule(object):
         self.image_processor = image_processor
         self.config = image_processor.config
         
-        self.display_colors = True
+        self.display_colors = False
 
         # Expected color ranges of calibration markers
         center_thresh_min = np.array(self.config.get
@@ -79,7 +70,7 @@ class SourceCalibrationModule(object):
         side_thresh_max = np.array(self.config.get
                                    ('calibration', 'side_color_max').
                                    split(','), np.uint8)
-
+        
         self.colors = [[center_thresh_min, center_thresh_max],
                        [side_thresh_min, side_thresh_max]]
         
@@ -89,6 +80,12 @@ class SourceCalibrationModule(object):
         else:
             # Create calibration data object
             self.image_processor.cal_data = CalibrationData()
+            
+        # Set calibration target distances
+        if self.config.get('calibration', 'zone_size') == 'NORMAL':
+            self.setCalibrationDistances(DISTANCES_NORMAL)
+        elif self.config.get('calibration', 'zone_size') == 'SMALL':
+            self.setCalibrationDistances(DISTANCES_SMALL)
 
     def calibrate(self, cal_points=None):
         """Calibrates the image processor
@@ -164,10 +161,10 @@ class SourceCalibrationModule(object):
         # create appropriate object points array.
         # Right Camera (center points farther left than side points)
         if cal_points[0][0] < cal_points[5][0]:
-            objectPoints = np.array((CENTER_POINTS + RIGHT_POINTS), np.float32)
+            objectPoints = np.array((self.center_points + self.right_points), np.float32)
         else:
-            objectPoints = np.array((CENTER_POINTS + LEFT_POINTS), np.float32)
-
+            objectPoints = np.array((self.center_points + self.left_points), np.float32)
+            
         # Calculate extrinsic parameters
         logging.debug("-------------------------------")
         logging.debug("objectPoints: %s" % objectPoints)
@@ -288,6 +285,24 @@ class SourceCalibrationModule(object):
         """
         
         return self.colors
+    
+    def setCalibrationDistances(self, zone_distances=(5, 10, 12)):
+        """ Sets Distances for safe, alert, and prediction zone boundaries
+        
+        Arguments:
+            zone_size -- Three element iterable containing boundary lengths
+            
+        """
+        
+        # Calibration point position calculations
+        DISTANCES = [distance * SCALE for distance in zone_distances]
+        
+        # Location of calibration markers in global coordinates
+        self.right_points = [[distance * coordinate for coordinate in SIDE_POINTS]
+                        for distance in DISTANCES]
+        self.center_points = [[distance * coordinate for coordinate in CENTER_POINTS]
+                         for distance in DISTANCES]
+        self.left_points = [[-1 * x, y, z] for x, y, z in self.right_points]
 
 class CalibrationData(object):
     """Saves or loads calibration data to/from file.

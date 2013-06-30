@@ -136,7 +136,7 @@ def buildDetectionThresholds(threshold_seed):
     """
     
     # Define HSV range for thresholds
-    delta_hsv = np.array([5, 50, 75], np.int16)
+    delta_hsv = np.array([5, 75, 75], np.int16)
     
     color_input = np.array(threshold_seed, np.int16)
     detect_min = detect_max = np.empty((3), np.int16)
