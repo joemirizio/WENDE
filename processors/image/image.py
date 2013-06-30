@@ -97,7 +97,8 @@ class ImageProcessor(object):
         Returns:
             An array storing the contour points of valid target objects.
         """
-	self.last_frame = self.isi.read()
+
+        self.last_frame = self.isi.read()
 
         if self.avg_frame is None:
             self.avg_frame = self.last_frame
@@ -105,9 +106,19 @@ class ImageProcessor(object):
         # Find objects from the image source
         self.last_frame, img_data = self.odm.findObjects(self.last_frame,
                                                          self.frame_type)
+        
+        if self.scm.display_colors:
+            self.last_frame, img_data_center = self.odm.findObjects(self.last_frame,
+                                                                    self.frame_type,
+                                                                    self.scm.colors[0][0],
+                                                                    self.scm.colors[0][1])
+            self.last_frame, img_data_side = self.odm.findObjects(self.last_frame,
+                                                                  self.frame_type,
+                                                                  self.scm.colors[1][0],
+                                                                  self.scm.colors[1][1])
 
         # Display calibration points
-        if self.cal_data and self.frame_type == 'main':
+        if self.cal_data.is_valid and self.frame_type == 'main':
             for num, cal_point in enumerate(self.cal_data.image_points, 1):
                 point = (cal_point[0], cal_point[1])
                 color_intensity = ((num - 1) % 3) / 3.0 * 200 + 55
@@ -117,7 +128,7 @@ class ImageProcessor(object):
                 cv.circle(self.last_frame, point, 5, [0, 0, 0], thickness=2)
 
         # Display calibration status
-        cal_status_color = [0, 255, 0] if self.cal_data else [0, 0, 255]
+        cal_status_color = [0, 255, 0] if self.cal_data.is_valid else [0, 0, 255]
         cal_status_pos = (self.isi.width - 25, 25)
         cv.circle(self.last_frame, cal_status_pos, 20, [0, 0, 0], thickness=5)
         cv.circle(self.last_frame, cal_status_pos, 20, cal_status_color,

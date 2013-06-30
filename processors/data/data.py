@@ -23,7 +23,7 @@ class DataProcessor(object):
     def process(self, data, img_proc):
         from display.tactical.tactical import flattenArray
         # Only process if calibrated
-        if not img_proc.cal_data:
+        if not img_proc.cal_data.is_valid:
             return
 
         for contour in data:

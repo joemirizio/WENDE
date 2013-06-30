@@ -15,6 +15,7 @@ Classes:
 """
 import cv2 as cv
 import numpy as np
+import logging as logging
 
 from image import FRAME_TYPES
 
@@ -26,8 +27,8 @@ DETECT_MIN = np.array([124, 98, 40], np.uint8)
 DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 # Minimum dimensions of bounded contours
-CONTOUR_MIN_WIDTH = 15
-CONTOUR_MIN_HEIGHT = 15
+CONTOUR_MIN_WIDTH = 5
+CONTOUR_MIN_HEIGHT = 5
 
 
 class ObjectDetectionModule(object):
@@ -72,10 +73,25 @@ class ObjectDetectionModule(object):
             image frame with contours and bounding boxes drawn. The second
             element is an array containing vectors of contour points.
         """
-	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
+        blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
-        thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
-
+        
+        # Find pixels in defined HSV ranges
+        if detectMin[0] < detectMax[0]:
+            thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
+        
+        else:
+            # If the hue is wrapped, process separately from saturation, value (brightness)
+            channel_hue = hsv_frame[:,:,0]
+            thresh_hue = np.logical_not(cv.inRange(channel_hue, 
+                                                   detectMax[0], 
+                                                   detectMin[0]))
+            thresh_sv = cv.inRange(hsv_frame[:,:,1:],
+                                   detectMin[1:],
+                                   detectMax[1:])
+            # Logical combination of the two thresholds, cast into uint8 for findContours
+            thresh_frame = np.logical_and(thresh_hue, thresh_sv).astype(np.uint8)
+            
         # Calculate contours
         thresh_copy = thresh_frame.copy()
         contours, hier = cv.findContours(thresh_copy, cv.RETR_EXTERNAL,
@@ -105,7 +121,41 @@ class ObjectDetectionModule(object):
         out_frame = frames[frame_type]
 
         return (out_frame, contours)
+    
 
+def buildDetectionThresholds(threshold_seed):
+    """ Creates detection min and max corresponding to input color
+    
+    Arguments:
+        threshold_seed -- list containing HSV value to build thresholds around
+        
+    Outputs:
+        detection_min, detection_max -- 3x1 numpy arrays containing HSV values
+            defining the detection thresholds
+            
+    """
+    
+    # Define HSV range for thresholds
+    delta_hsv = np.array([5, 75, 75], np.int16)
+    
+    color_input = np.array(threshold_seed, np.int16)
+    detect_min = detect_max = np.empty((3), np.int16)
+    
+    # Allow hue value to wrap
+    detect_min = color_input - delta_hsv
+    detect_max = color_input + delta_hsv
+    
+    # Wrap hsv
+    if detect_min[0] < 0: detect_min[0] = (180 + detect_min[0])
+    if detect_max[0] > 180: detect_max[0] = detect_max[0] - 180
+    
+    # Cap saturation and threshold values
+    for index in xrange(1, 3):
+        if detect_min[index] < 0: detect_min[index] = 0
+        if detect_max[index] > 255: detect_max[index] = 255
+        
+    return detect_min.astype(np.uint8), detect_max.astype(np.uint8)
+    
 ### This is for blob detection, currently unused
 ##    def processImage(self, frame, avg_frame, frame_type=FRAME_TYPES[0]):
 ##        # Blur and average with previous frames
