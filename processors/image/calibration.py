@@ -13,6 +13,8 @@ import logging
 import pickle
 from math import sin, cos, pi
 
+from detection import DetectionThresholds
+
 # CONSTANTS
 
 # Scaling factor for global coordinates wrt feet,
@@ -26,6 +28,47 @@ SIDE_POINTS = [sin(SIDE_ANGLE), cos(SIDE_ANGLE), 0]
 CENTER_POINTS = [0, 1, 0]
 
 MIN_CAL_RADIUS = 8
+ZERO_ARRAY = np.zeros((3), np.uint8)
+ONE_ARRAY = np.ones((3), np.uint8)
+
+class CalibrationThresholds(object):
+    """ Holds calibration color minimum and maximum thresholds
+    
+    Attributes:
+        center_min -- HSV values for center minimum threshold
+        center_max -- HSV values for center maximum threshold
+        side_min -- HSV values for center minimum threshold
+        side_max -- HSV values for center maximum threshold
+        
+    Methods:
+        setThresholds()
+        getThresholds()
+        
+    """
+    
+    def __init__(self, center_min=None, center_max=None, side_min=None, side_max=None):
+        
+        self.center = DetectionThresholds(center_min, center_max)
+        self.side = DetectionThresholds(side_min, side_max)
+        
+    def setThresholds(self, which_color, detect_min, detect_max, side_min=None, side_max=None):
+        
+        if which_color == 'center':
+            self.center.setThresholds(detect_min, detect_max)
+        elif which_color == 'side':
+            self.side.setThresholds(detect_min, detect_max)
+        elif which_color == 'all':
+            self.center.setThresholds(detect_min, detect_max)
+            self.side.setThresholds(side_min, side_max)
+            
+    def getThresholds(self, which_color=None):
+        
+        if which_color == 'center':
+            return self.center
+        elif which_color == 'side':
+            return self.side
+        else:
+            return [self.center, self.side]
 
 class SourceCalibrationModule(object):
     """Performs external calibration for the system.
@@ -53,11 +96,13 @@ class SourceCalibrationModule(object):
         loadCalibrationData()
         calcDistortionMaps()
     """
+    
+    CAL_THRESHOLDS = CalibrationThresholds()
+    DISPLAY_COLORS = False
+    
     def __init__(self, image_processor):
         self.image_processor = image_processor
         self.config = image_processor.config
-        
-        self.display_colors = False
 
         # Expected color ranges of calibration markers
         center_thresh_min = np.array(self.config.get
@@ -73,8 +118,15 @@ class SourceCalibrationModule(object):
                                    ('calibration', 'side_color_max').
                                    split(','), np.uint8)
         
-        self.colors = [[center_thresh_min, center_thresh_max],
-                       [side_thresh_min, side_thresh_max]]
+#         self.colors = [[center_thresh_min, center_thresh_max],
+#                        [side_thresh_min, side_thresh_max]]
+        logging.debug(self.getCalibrationThresholds())
+        if self.getCalibrationThresholds()[0].min == None:
+            self.setCalibrationThresholds('all', 
+                                          [DetectionThresholds(center_thresh_min, 
+                                                             center_thresh_max),
+                                          DetectionThresholds(side_thresh_min,
+                                                             side_thresh_max)])
         
         # Load pre-saved calibration data or create blank cal_data
         if self.config.getboolean('calibration', 'use_cal_data'):
@@ -127,12 +179,12 @@ class SourceCalibrationModule(object):
 
         # Find centroids of calibration points
         cal_points = []
-        for color in self.colors:
+        for color in self.getCalibrationThresholds():
             # Get Contours
             _, contours = self.image_processor.odm.findObjects(frame, 
                                                                self.image_processor.frame_type, 
-                                                               color[0], 
-                                                               color[1])
+                                                               color.min, 
+                                                               color.max)
 
             # Get center points
             for contour in contours:
@@ -188,10 +240,10 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.image_points = imagePoints
         
         self.image_processor.cal_data.is_valid = True
-        self.display_colors = False
+        self.setDisplayColors(False)
 
     def loadIntrinsicParams(self):
-        """Loads intrinsic matrix and distortion coefficients from xml files into ImageProcessor object and calculates distortion map
+        """Loads intrinsic matrix and distortion coefficients and calculates distortion map
         
         Args:
             None.
@@ -256,37 +308,60 @@ class SourceCalibrationModule(object):
             cal_data.intrinsic, cal_data.distortion,
             None, camera_matrix, size, cv.CV_32FC1)
         
-    def setCalibrationColors(self, cal_colors):
+    def setCalibrationThresholds(self, which_color, cal_thresholds):
         """ Sets new HSV values used to find calibration points
         
         Arguments:
-            cal_colors -- List of color detection thresholds. List contains
-                two colors corresponding to the calibration targets for the
-                center and side. Individual thresholds are stored as 1x3
-                numpy arrays with data type uint8. Organization is:
-                
-                [[center_threshold_min, center_threshold_max],
-                [side_threshold_min, side_threshold_max]]
+            cal_thresholds -- List of color detection thresholds. List contains
+                either one or two DetectionThreshold objects
                 
         """
         
-        self.colors = cal_colors
+        if which_color == 'all':
+            SourceCalibrationModule.CAL_THRESHOLDS.setThresholds('all', 
+                                                             cal_thresholds[0].min, 
+                                                             cal_thresholds[0].max,
+                                                             cal_thresholds[1].min, 
+                                                             cal_thresholds[1].max)
+        elif which_color == 'center' or 'side':
+            SourceCalibrationModule.CAL_THRESHOLDS.setThresholds(which_color, 
+                                                             cal_thresholds[0].min, 
+                                                             cal_thresholds[0].max)
         
-    def getCalibrationColors(self):
+    def getCalibrationThresholds(self, which_color=None):
         """ Gets HSV values used to find calibration points
         
+        Arguments:
+            which_color -- 'center', 'side', to get just one threshold, or None
+                to return both objects
+        
         Return Values:
-            colors -- List of color detection thresholds. List contains
-                two colors corresponding to the calibration targets for the
-                center and side. Individual thresholds are stored as 1x3
-                numpy arrays with data type uint8. Organization is:
-                
-                [[center_threshold_min, center_threshold_max],
-                [side_threshold_min, side_threshold_max]]
+            thresholds -- List of DetectionThreshold objects. List length is
+                determined by which_color argument. Organized as center, side
                 
         """
         
-        return self.colors
+        if not which_color:
+            thresholds = SourceCalibrationModule.CAL_THRESHOLDS.getThresholds()
+        else:
+            thresholds = SourceCalibrationModule.CAL_THRESHOLDS.getThresholds(which_color)
+        
+        return thresholds
+    
+    def setDisplayColors(self, bool):
+        """ Sets class attribute for calibration color display
+        
+        Arguments:
+            bool -- boolean True or False
+            
+        """
+        
+        SourceCalibrationModule.DISPLAY_COLORS = bool
+        
+    def getDisplayColors(self):
+        """ Gets current value for display colors class attribute """
+        
+        return SourceCalibrationModule.DISPLAY_COLORS
     
     def setCalibrationDistances(self, zone_distances=(5, 10, 12)):
         """ Sets Distances for safe, alert, and prediction zone boundaries
@@ -375,4 +450,3 @@ class CalibrationData(object):
             A boolean
         """
         return self.rotation and self.translation and self.image_points == 6
-

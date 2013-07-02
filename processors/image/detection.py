@@ -23,16 +23,46 @@ from image import FRAME_TYPES
 # BW_THRESHOLD = 20
 
 # Binary filter threshold limits
-DETECT_MIN = np.array([124, 98, 40], np.uint8)
-DETECT_MAX = np.array([255, 236, 244], np.uint8)
+TARGET_THRESHOLD_MIN = [124, 98, 40]
+TARGET_THRESHOLD_MAX = [255, 236, 244]
+
+# DETECT_MIN = np.array([124, 98, 40], np.uint8)
+# DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 # Delta values for threshold building
-DELTA_HSV = np.array([3, 50, 100], np.int16)
+DELTA_HSV = np.array([10, 50, 75], np.int16)
 
 # Minimum dimensions of bounded contours
 CONTOUR_MIN_WIDTH = 5
 CONTOUR_MIN_HEIGHT = 5
 
+class DetectionThresholds(object):
+    """ Storage container for minimum and maximum detection thresholds
+    
+    Attributes:
+        min -- HSV values for detection minimum threshold
+        max -- HSV values for detection maximum threshold
+        
+    Methods:
+        getThresholds()
+        
+    """
+    
+    def __init__(self, detect_min=None, detect_max=None):
+        
+        if not detect_min is None:
+            self.min = np.array(detect_min, np.uint8)
+            self.max = np.array(detect_max, np.uint8)
+        else:
+            self.min = detect_min
+            self.max = detect_max
+        
+    def setThresholds(self, detect_min, detect_max):
+        self.min = np.array(detect_min, np.uint8)
+        self.max = np.array(detect_max, np.uint8)
+        
+    def getThresholds(self):
+        return self.min, self.max
 
 class ObjectDetectionModule(object):
     """Scans an image for potential targets and provides size/location
@@ -45,12 +75,15 @@ class ObjectDetectionModule(object):
     Methods:
         findObjects()
     """
+    
+    TARGET_THRESHOLDS = DetectionThresholds(TARGET_THRESHOLD_MIN, TARGET_THRESHOLD_MAX)
+    
     def __init__(self, image_processor):
         self.image_processor = image_processor
         self.config = image_processor.config
 
     def findObjects(self, frame, frame_type=FRAME_TYPES[0],
-                    detectMin=DETECT_MIN, detectMax=DETECT_MAX):
+                    detectMin=TARGET_THRESHOLDS.min, detectMax=TARGET_THRESHOLDS.max):
 	"""A frame is scanned for target objects by finding contours, which
         are then drawn on the frame.
 
@@ -124,17 +157,15 @@ class ObjectDetectionModule(object):
         out_frame = frames[frame_type]
 
         return (out_frame, contours)
-    
 
 def buildDetectionThresholds(threshold_seed):
     """ Creates detection min and max corresponding to input color
     
     Arguments:
-        threshold_seed -- list containing HSV value to build thresholds around
+        color_seed -- list containing HSV value to build thresholds around
         
     Outputs:
-        detection_min, detection_max -- 3x1 numpy arrays containing HSV values
-            defining the detection thresholds
+        detection_thresholds -- DetectionThresholds object
             
     """
     
@@ -154,40 +185,6 @@ def buildDetectionThresholds(threshold_seed):
         if detect_min[index] < 0: detect_min[index] = 0
         if detect_max[index] > 255: detect_max[index] = 255
         
-    return detect_min.astype(np.uint8), detect_max.astype(np.uint8)
-    
-### This is for blob detection, currently unused
-##    def processImage(self, frame, avg_frame, frame_type=FRAME_TYPES[0]):
-##        # Blur and average with previous frames
-##        src_frame = cv.GaussianBlur(frame, (19, 19), 0)
-##        cv.accumulateWeighted(src_frame, avg_frame, AVG_WEIGHT)
-##        conv_frame = cv.convertScaleAbs(avg_frame)
-##
-##        # Subtract current and average frames
-##        diff_frame = cv.absdiff(src_frame, conv_frame)
-##
-##        # Convert to grayscale then to black/white
-##        gray_frame = cv.cvtColor(diff_frame, cv.COLOR_RGB2GRAY)
-##        _, bw_frame = cv.threshold(gray_frame, BW_THRESHOLD, 255,
-##                                   cv.THRESH_BINARY)
-##
-##        # Calculate contours
-##        bw_copy = bw_frame.copy()
-##        contours, hier = cv.findContours(bw_copy, cv.RETR_EXTERNAL,
-##                                         cv.CHAIN_APPROX_SIMPLE)
-##
-##        # Draw countours and bounding boxes
-##        main_frame = frame.copy()
-##        for contour in contours:
-##            rect = cv.boundingRect(contour)
-##            top  = rect[0:2]
-##            bot  = (rect[0] + rect[2], rect[1] + rect[3])
-##            cv.rectangle(main_frame, top, bot, (255, 0, 0), 1)
-##        cv.drawContours(main_frame, contours, -1, (0, 255, 0), -1)
-##
-##        # Select desired frame to display
-##        frames = dict(zip(FRAME_TYPES, (main_frame, frame, src_frame,
-##                                        conv_frame, gray_frame, bw_frame)))
-##        out_frame = frames[frame_type]
-##
-##        return (out_frame, avg_frame, contours
+    detection_thresholds = DetectionThresholds(detect_min, detect_max)
+        
+    return detection_thresholds
