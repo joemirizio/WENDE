@@ -15,6 +15,7 @@ TIME_STEP = 0.5
 PREDICTION_RADIUS = 12
 
 class Target(object):
+    TURN_THRESHOLD_DEGREES = 10
     def __init__(self, pos):
         self.pos = pos
         self.kalman = None
@@ -28,7 +29,10 @@ class Target(object):
         self.valid = VerifyValidity(pos)
         self.last_update = datetime.now()
         self.predLineIntersect = None
+        self.predLineIntersectInitial = None
         self.updatedThisCycle = True
+        self.first_turn = False
+        self.second_turn = False
 
     def update(self, pos):
         # TODO Reimplement
@@ -57,6 +61,21 @@ class Target(object):
             # Calculate prediction line when target is located in alert zone
             if distance(self.pos, ORIGIN) > 5 and distance(self.pos, ORIGIN) < 10:
                 self.predLineIntersect = prediction.predict(self.prediction_positions, PREDICTION_RADIUS)
+                if not self.predLineIntersectInitial and self.predLineIntersect:
+                    self.predLineIntersectInitial = self.predLineIntersect[:]
+                    
+                # check for turn
+        if (self.predLineIntersectInitial and
+            math.fabs(angle_diff(self.predLineIntersectInitial, self.predLineIntersect)) > self.TURN_THRESHOLD_DEGREES):
+            self.prediction_positions.clear()
+            self.predLineIntersectInitial = None
+            self.predLineIntersect = None
+            if self.first_turn is False:
+                self.first_turn = True
+                logging.debug('FIRST TURN DETECTED')
+            else: # second turn
+                self.second_turn = True
+                logging.debug('SECOND TURN DETECTED')
 
         # Update last time modified
         self.last_update = datetime.now()
@@ -125,3 +144,13 @@ def makeKalman(pos):
     cv.SetIdentity(kalman.error_cov_post, cv.RealScalar(1))
 
     return kalman
+
+def angle_diff(a, b):
+    # given two cartesian points on a circle
+    # return the angular difference in degrees
+    radius = math.sqrt(a[0]**2 + a[1]**2)
+    ang_a = (180.0 / math.pi) * math.acos(a[0] / radius)
+    ang_b = (180.0 / math.pi) * math.acos(b[0] / radius)
+    #logging.debug('a: %1.20f\tb: %1.20f' % (ang_a, ang_b))
+    return ang_b - ang_a
+    
