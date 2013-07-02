@@ -179,10 +179,8 @@ class Viewport(object):
         else:
             self.cal_colors.append([detect_min, detect_max])
             self.img_proc.scm.setCalibrationColors(self.cal_colors)
+            self.img_proc.scm.display_colors = True
             self.cal_colors = []
-            
-            
-        self.img_proc.scm.display_colors = True
 
     def update(self):
         frame = self.img_proc.last_frame
