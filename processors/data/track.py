@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 The target track module represents a compilation of three components in the 
 original design: the target track module, the target location module, and
@@ -32,16 +33,25 @@ class TargetTrackModule(object):
         matchedList = []
         for target in self.targets:
             associated = False
+            print "--current target--"
+            print target
+            print "--unmatched list--"
+            print unmatchedList
+            print "--matched list--"
+            print matchedList                     
             for i in xrange(len(unmatchedList) - 1, -1, -1):
                 pos = unmatchedList[i]
+                print "-curret pos-"
+                print pos
                 associated = self.associateTrack(pos,target)
 		if associated: 
-                    matchedList.push(pos)
+                    matchedList.append(pos)
                     del unmatchedList[i]
                     break
-             if not associated:
-                 for pos in matchedList:
-                     associated = self.associateTrack(pos,target)
+                print "not associated"
+            if not associated:
+                for pos in matchedList:
+                    associated = self.associateTrack(pos,target)
             
         for pos in unmatchedList:
             self.targets.append(Target(pos))
@@ -49,12 +59,16 @@ class TargetTrackModule(object):
     def associateTrack(self, pos, target):
         # TODO reimplement
         if target.updatedThisCycle:
+            print "already associated"
             return False
 
+        print "target prediction"
+        print target.prediction
         if (target.prediction and 
             distance(pos, target.prediction) < KNOWN_GATE):
             #logging.debug('Det associated: %f from prediction of target %d' %
-                        # (distance(pos, target.prediction), i))
+            #             (distance(pos, target.prediction), i))
+            print 'Det associated: %f from predictian of target ' %(distance(pos,target.prediction))
             target.update(pos)
             if target.missed_updates > 0:
                 target.missed_updates -= 1
@@ -83,3 +97,24 @@ class TargetTrackModule(object):
 
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+
+if __name__ == '__main__':
+    track = TargetTrackModule(0)
+    for q in range(10000):
+        x1 = .001*(q-5000)
+        y1 = x1+7
+        x2 = -x1
+        y2 = -x2+7
+        if distance([x1,y1],[x2,y2]) < .6:
+           unmatchedList = [[x1,y1]]
+        else:
+            unmatchedList = [[x1,y1],[x2,y2]]
+        print"-----------------------------------------------New Targets----------------"
+        print unmatchedList
+        track.processDetections(unmatchedList)
+        for target1 in track.targets:
+            if target1.updatedThisCycle:
+                target1.updatedThisCycle = False
+            print target1
+
+
