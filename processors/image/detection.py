@@ -26,6 +26,9 @@ from image import FRAME_TYPES
 DETECT_MIN = np.array([124, 98, 40], np.uint8)
 DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
+# Delta values for threshold building
+DELTA_HSV = np.array([3, 50, 100], np.int16)
+
 # Minimum dimensions of bounded contours
 CONTOUR_MIN_WIDTH = 5
 CONTOUR_MIN_HEIGHT = 5
@@ -135,15 +138,12 @@ def buildDetectionThresholds(threshold_seed):
             
     """
     
-    # Define HSV range for thresholds
-    delta_hsv = np.array([5, 75, 75], np.int16)
-    
     color_input = np.array(threshold_seed, np.int16)
     detect_min = detect_max = np.empty((3), np.int16)
     
     # Allow hue value to wrap
-    detect_min = color_input - delta_hsv
-    detect_max = color_input + delta_hsv
+    detect_min = color_input - DELTA_HSV
+    detect_max = color_input + DELTA_HSV
     
     # Wrap hsv
     if detect_min[0] < 0: detect_min[0] = (180 + detect_min[0])

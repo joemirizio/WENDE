@@ -25,6 +25,8 @@ DISTANCES_SMALL = (5, 6, 7)
 SIDE_POINTS = [sin(SIDE_ANGLE), cos(SIDE_ANGLE), 0]
 CENTER_POINTS = [0, 1, 0]
 
+MIN_CAL_RADIUS = 8
+
 class SourceCalibrationModule(object):
     """Performs external calibration for the system.
 
@@ -135,7 +137,7 @@ class SourceCalibrationModule(object):
             # Get center points
             for contour in contours:
                 center, radius = cv.minEnclosingCircle(contour)
-                if radius > 5:
+                if radius > MIN_CAL_RADIUS:
                     cal_points.append(center)
 
         return cal_points
