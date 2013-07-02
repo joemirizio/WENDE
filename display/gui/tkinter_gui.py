@@ -104,7 +104,7 @@ class Viewport(object):
         self.pos = pos
         self.size = size
         self.cal_points = []
-        self.cal_colors = []
+        self.cal_thresholds = []
         if 'x' in self.pos:
             self.view.place(**pos)
         else:
@@ -148,6 +148,7 @@ class Viewport(object):
         
 #         from processors.image import detection
         from processors.image.detection import buildDetectionThresholds
+        from processors.image.calibration import SourceCalibrationModule
         
         frame =  cv.cvtColor(self.img_proc.last_frame, cv.COLOR_BGR2HSV)
         point = [int(float(point[0] - 2) / float(self.size[0]) *
@@ -157,30 +158,22 @@ class Viewport(object):
         
         # Get color and build threshold
         threshold_seed = frame[point[1], point[0]]
-        detect_min, detect_max = buildDetectionThresholds(threshold_seed)
+        cal_thresholds = buildDetectionThresholds(threshold_seed)
         
         logging.debug('Clicked Color: %s' % threshold_seed)
-        logging.debug('detection min: %s' % detect_min)
-        logging.debug('detection max: %s' % detect_max)
+        logging.debug('detection min: %s' % cal_thresholds.min)
+        logging.debug('detection max: %s' % cal_thresholds.max)
         
         # Append colors and modify thresholds when both have been selected
-        if self.cal_colors == []:
-            self.cal_colors.append([detect_min, detect_max])
+        if self.cal_thresholds == []:
+            self.cal_thresholds.append(cal_thresholds)
+            self.img_proc.scm.setCalibrationThresholds('center', self.cal_thresholds)
+            self.img_proc.scm.setDisplayColors(True)
             
-#             ####################### TEST ONLY (VISUAL)
-#             color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
-#             for ref, color in zip(color_ranges, self.cal_colors[0]):
-#                 ref[0] = color[0]
-#                 ref[1] = color[1]
-#                 ref[2] = color[2]
-#                 
-#             self.cal_colors = []
-#             #######################
         else:
-            self.cal_colors.append([detect_min, detect_max])
-            self.img_proc.scm.setCalibrationColors(self.cal_colors)
-            self.img_proc.scm.display_colors = True
-            self.cal_colors = []
+            self.cal_thresholds.append(cal_thresholds)
+            self.img_proc.scm.setCalibrationThresholds('all', self.cal_thresholds)
+            self.cal_thresholds = []
 
     def update(self):
         frame = self.img_proc.last_frame
@@ -257,7 +250,8 @@ class ColorDialog(tkSimpleDialog.Dialog):
         sat_range = [0, 255]
         val_range = [0, 255]
 
-        self.color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
+        self.color_ranges = [detection.ObjectDetectionModule.TARGET_THRESHOLDS.min, 
+                             detection.ObjectDetectionModule.TARGET_THRESHOLDS.max]
         self.colors = []
         for i in range(2):
             hue = tk.Scale(root, from_=hue_range[0], to=hue_range[1])
