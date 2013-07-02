@@ -39,16 +39,6 @@ class TargetTrackModule(object):
         # Got through the whole target list without a hit
         #logging.debug('Det NOT associated')
         return False
-    
-    def incrementUpdateCount(self):
-        for target in self.targets:
-            target.missed_updates += 1
-            
-    def clearStaleTargets(self):
-        for target in self.targets:
-            if target.missed_updates > MAX_MISSED_UPDATES:
-                logging.debug('Dropping track due to missed updates')
-                self.targets.remove(target)
 
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)

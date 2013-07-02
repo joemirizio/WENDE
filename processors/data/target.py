@@ -64,7 +64,7 @@ class Target(object):
                 if not self.predLineIntersectInitial and self.predLineIntersect:
                     self.predLineIntersectInitial = self.predLineIntersect[:]
                     
-                # check for turn
+        # check for turn
         if (self.predLineIntersectInitial and
             math.fabs(angle_diff(self.predLineIntersectInitial, self.predLineIntersect)) > self.TURN_THRESHOLD_DEGREES):
             self.prediction_positions.clear()
