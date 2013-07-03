@@ -206,6 +206,7 @@ class SourceCalibrationModule(object):
                           (self.image_processor.isi.name, len(cal_points),
                            cal_points))
             self.image_processor.cal_data.is_valid = False
+            self.showDisplayColors(False)
             return
 
         # Create array from detected points
@@ -240,7 +241,7 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.image_points = imagePoints
         
         self.image_processor.cal_data.is_valid = True
-        self.setDisplayColors(False)
+        self.showDisplayColors(False)
 
     def loadIntrinsicParams(self):
         """Loads intrinsic matrix and distortion coefficients and calculates distortion map
@@ -348,7 +349,7 @@ class SourceCalibrationModule(object):
         
         return thresholds
     
-    def setDisplayColors(self, bool):
+    def showDisplayColors(self, bool):
         """ Sets class attribute for calibration color display
         
         Arguments:
