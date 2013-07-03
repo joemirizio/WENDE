@@ -158,7 +158,7 @@ class Viewport(object):
         # Format as array and switch to format [height, width] for indexing
         point = np.array([point[1], point[0]])
         
-        # Get color and build threshold 
+        # Create box around clicked point
         if (point-1. < [0,0]).any():
             surrounding_box = frame[point[0]:point[0]+3, point[1]:point[1]+3]
         elif (point+1 > [self.img_proc.isi.height, self.img_proc.isi.width]).any():
@@ -178,11 +178,12 @@ class Viewport(object):
         if self.cal_thresholds == []:
             self.cal_thresholds.append(cal_thresholds)
             self.img_proc.scm.setCalibrationThresholds('center', self.cal_thresholds)
-            self.img_proc.scm.showDisplayColors(True)
+            self.img_proc.scm.setDisplayColors(True, False)
         # Set side calibration colors and delete thresholds
         else:
             self.cal_thresholds.append(cal_thresholds)
             self.img_proc.scm.setCalibrationThresholds('all', self.cal_thresholds)
+            self.img_proc.scm.setDisplayColors(True, True)
             self.cal_thresholds = []
 
     def update(self):

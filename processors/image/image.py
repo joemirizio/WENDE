@@ -107,11 +107,12 @@ class ImageProcessor(object):
         self.last_frame, img_data = self.odm.findObjects(self.last_frame,
                                                          self.frame_type)
         
-        if self.scm.getDisplayColors():
+        if self.scm.getDisplayColors()[0]:
             self.last_frame, img_data_center = self.odm.findObjects(self.last_frame,
                                                                     self.frame_type,
                                                                     self.scm.getCalibrationThresholds('center').min,
                                                                     self.scm.getCalibrationThresholds('center').max)
+        if self.scm.getDisplayColors()[1]:
             self.last_frame, img_data_side = self.odm.findObjects(self.last_frame,
                                                                   self.frame_type,
                                                                   self.scm.getCalibrationThresholds('side').min,
