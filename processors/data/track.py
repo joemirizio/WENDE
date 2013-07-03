@@ -33,22 +33,22 @@ class TargetTrackModule(object):
         matchedList = []
         for target in self.targets:
             associated = False
-            print "--current target--"
-            print target
-            print "--unmatched list--"
-            print unmatchedList
-            print "--matched list--"
-            print matchedList                     
+            #print "--current target--"
+            #print target
+            #print "--unmatched list--"
+            #print unmatchedList
+            #print "--matched list--"
+            #print matchedList                     
             for i in xrange(len(unmatchedList) - 1, -1, -1):
                 pos = unmatchedList[i]
-                print "-curret pos-"
-                print pos
+                #print "-curret pos-"
+                #print pos
                 associated = self.associateTrack(pos,target)
 		if associated: 
                     matchedList.append(pos)
                     del unmatchedList[i]
                     break
-                print "not associated"
+                #print "not associated"
             if not associated:
                 for pos in matchedList:
                     associated = self.associateTrack(pos,target)
@@ -59,17 +59,17 @@ class TargetTrackModule(object):
     def associateTrack(self, pos, target):
         # TODO reimplement
         if target.updatedThisCycle:
-            print "already associated"
+            #print "already associated"
             return False
 
-        print "target prediction"
-        print target.prediction
+        #print "target prediction"
+        #print target.prediction
         if (target.prediction and 
             distance(pos, target.prediction) < KNOWN_GATE):
             #logging.debug('Det associated: %f from prediction of target %d' %
             #             (distance(pos, target.prediction), i))
-            print 'Det associated: %f from predictian of target ' %(distance(pos,target.prediction))
-            target.update(pos)
+            #print 'Det associated: %f from predictian of target ' %(distance(pos,target.prediction))
+            #target.update(pos)
             if target.missed_updates > 0:
                 target.missed_updates -= 1
             return True
