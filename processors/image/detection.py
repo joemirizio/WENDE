@@ -30,7 +30,7 @@ TARGET_THRESHOLD_MAX = [255, 236, 244]
 # DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 # Delta values for threshold building
-DELTA_HSV = np.array([10, 50, 75], np.int16)
+DELTA_HSV = np.array([8, 50, 75], np.int16)
 
 # Minimum dimensions of bounded contours
 CONTOUR_MIN_WIDTH = 5

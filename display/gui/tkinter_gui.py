@@ -145,30 +145,41 @@ class Viewport(object):
             
         """
         
-#         from processors.image import detection
         from processors.image.detection import buildDetectionThresholds
         from processors.image.calibration import SourceCalibrationModule
         
+        # Get last frame and convert point using viewpoint size
         frame =  cv.cvtColor(self.img_proc.last_frame, cv.COLOR_BGR2HSV)
         point = [int(float(point[0] - 2) / float(self.size[0]) *
                      self.img_proc.isi.width), 
                  int(float(point[1] - 2) / float(self.size[1]) *
                      self.img_proc.isi.height)]
         
-        # Get color and build threshold
-        threshold_seed = frame[point[1], point[0]]
-        cal_thresholds = buildDetectionThresholds(threshold_seed)
+        # Format as array and switch to format [height, width] for indexing
+        point = np.array([point[1], point[0]])
         
-        logging.debug('Clicked Color: %s' % threshold_seed)
+        # Get color and build threshold 
+        if (point-1. < [0,0]).any():
+            surrounding_box = frame[point[0]:point[0]+3, point[1]:point[1]+3]
+        elif (point+1 > [self.img_proc.isi.height, self.img_proc.isi.width]).any():
+            surrounding_box = frame[point[0]-2:point[0]+1, point[1]-2:point[1]+1]
+        else:
+            surrounding_box = frame[point[0]-1:point[0]+2, point[1]-1:point[1]+2]
+            
+        # Average HSV values in box and build thresholds
+        color_average = np.mean(surrounding_box, axis=(0,1)).astype(np.uint8)
+        cal_thresholds = buildDetectionThresholds(color_average)
+        
+        logging.debug('Clicked Color: %s' % color_average)
         logging.debug('detection min: %s' % cal_thresholds.min)
         logging.debug('detection max: %s' % cal_thresholds.max)
         
-        # Append colors and modify thresholds when both have been selected
+        # Set center calibration colors and show detections
         if self.cal_thresholds == []:
             self.cal_thresholds.append(cal_thresholds)
             self.img_proc.scm.setCalibrationThresholds('center', self.cal_thresholds)
-            self.img_proc.scm.setDisplayColors(True)
-            
+            self.img_proc.scm.showDisplayColors(True)
+        # Set side calibration colors and delete thresholds
         else:
             self.cal_thresholds.append(cal_thresholds)
             self.img_proc.scm.setCalibrationThresholds('all', self.cal_thresholds)
