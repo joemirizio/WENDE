@@ -98,7 +98,7 @@ class SourceCalibrationModule(object):
     """
     
     CAL_THRESHOLDS = CalibrationThresholds()
-    DISPLAY_COLORS = False
+    DISPLAY_COLORS = False, False
     
     def __init__(self, image_processor):
         self.image_processor = image_processor
@@ -120,7 +120,9 @@ class SourceCalibrationModule(object):
         
 #         self.colors = [[center_thresh_min, center_thresh_max],
 #                        [side_thresh_min, side_thresh_max]]
-        logging.debug(self.getCalibrationThresholds())
+
+        # Initialize calibration colors to those in config file
+        # This is no longer needed, but must initialize to something
         if self.getCalibrationThresholds()[0].min == None:
             self.setCalibrationThresholds('all', 
                                           [DetectionThresholds(center_thresh_min, 
@@ -145,7 +147,8 @@ class SourceCalibrationModule(object):
         """Calibrates the image processor
         
         Args: 
-            None.
+            cal_points -- list of lists containing calibration points
+                [[x, y], [...], ...]
         """
 
         # Intrinsic
@@ -206,7 +209,7 @@ class SourceCalibrationModule(object):
                           (self.image_processor.isi.name, len(cal_points),
                            cal_points))
             self.image_processor.cal_data.is_valid = False
-            self.showDisplayColors(False)
+            self.setDisplayColors(False, False)
             return
 
         # Create array from detected points
@@ -241,7 +244,7 @@ class SourceCalibrationModule(object):
         self.image_processor.cal_data.image_points = imagePoints
         
         self.image_processor.cal_data.is_valid = True
-        self.showDisplayColors(False)
+        self.setDisplayColors(False, False)
 
     def loadIntrinsicParams(self):
         """Loads intrinsic matrix and distortion coefficients and calculates distortion map
@@ -349,7 +352,7 @@ class SourceCalibrationModule(object):
         
         return thresholds
     
-    def showDisplayColors(self, bool):
+    def setDisplayColors(self, bool_center, bool_side):
         """ Sets class attribute for calibration color display
         
         Arguments:
@@ -357,7 +360,7 @@ class SourceCalibrationModule(object):
             
         """
         
-        SourceCalibrationModule.DISPLAY_COLORS = bool
+        SourceCalibrationModule.DISPLAY_COLORS = bool_center, bool_side
         
     def getDisplayColors(self):
         """ Gets current value for display colors class attribute """
