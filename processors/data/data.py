@@ -20,27 +20,15 @@ class DataProcessor(object):
         self.config = tca.config
         self.ttm = TargetTrackModule(self)
 
-    def process(self, data, img_proc):
-        from display.tactical.tactical import flattenArray
-        # Only process if calibrated
-        if not img_proc.cal_data.is_valid:
-            return
+    def process(self, data, img_processors):
+        for proc in img_processors:
+            if not proc.cal_data:
+                return
 
-        for contour in data:
-            area = cv2.contourArea(contour)
-            if area > AREA_THRESHOLD:
-                center, radius = cv2.minEnclosingCircle(contour)
-                center = np.array([center[0], center[1] + radius])
-
-                pos = convertToGlobal(img_proc, center)
-
-                # Convert from numpy to list
-                pos = pos.tolist()
-                pos = flattenArray(pos)
-
-                self.ttm.processDetection(pos)
-                # TODO Clean reference up
-                self.targets = self.ttm.targets
+        for pos in data:
+            self.ttm.processDetection(pos)
+            # TODO Clean reference up
+            self.targets = self.ttm.targets
 
     def clearTargetData(self):
         del self.ttm.targets[:]
