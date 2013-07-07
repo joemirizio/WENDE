@@ -221,7 +221,8 @@ class Alert(object):
             self.clear()
 
     def displayAlert(self, alert_text):
-        self.label_text.set(alert_text)
+        ts = datetime.datetime.now().strftime("%H:%M:%S ")
+        self.label_text.set(ts + alert_text)
         self.expire_time = (datetime.datetime.now() +
             datetime.timedelta(seconds=ALERT_DURATION))
 
