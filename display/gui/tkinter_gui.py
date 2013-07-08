@@ -32,23 +32,24 @@ class Tkinter_gui(object):
 
         # Main frame
         self.frame = tk.Frame(self.root)
-        self.frame.grid(columnspan=2, rowspan=2, sticky=(tk.N, tk.S))
+        self.frame.grid(columnspan=3, rowspan=3, sticky=(tk.N, tk.S))
 
         # Tactical frame
         self.tactical_frame = tk.Frame(self.frame, 
                 width=TacticalDisplay.WIDTH, 
                 height=TacticalDisplay.HEIGHT)
-        self.tactical_frame.grid(column=1, row=0, rowspan=2)
+        self.tactical_frame.grid(column=0, row=0, columnspan=2, rowspan=2)
 
         size = DEFAULT_VIEWPORT_SIZE
 
         # Alerts
         self.alert = Alert(self.root)
 
-        pos = [0, 0]
+        # Raw Feed
+        pos = [0, 3]
         for img_proc in image_processors:
             self.addView(img_proc, pos, size)
-            pos[1] = pos[1] + 1
+            pos[0] = pos[0] + 1
 
         self.root.bind("<Escape>", lambda e: e.widget.quit())
 
