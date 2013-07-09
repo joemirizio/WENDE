@@ -81,8 +81,16 @@ class Tkinter_gui(object):
     def addView(self, img_proc, pos={'x':0, 'y':0}, size=(0, 0)):
         name = img_proc.isi.name
         self.viewports[name] = Viewport(img_proc, self.frame, pos, size)
-        self.viewports[name].view.bind('<Button-1>', lambda e:
-                                 self.viewports[name].addCalibrationPoint([e.x, e.y]))
+        
+        # Bind correct calibration method
+        if img_proc.config.get('calibration','cal_manual_method') == "POINT":
+            self.viewports[name].view.bind('<Button-1>', lambda e:
+                                           self.viewports[name].addCalibrationPoint([e.x, 
+                                                                                     e.y]))
+        elif img_proc.config.get('calibration','cal_manual_method') == "COLOR":
+            self.viewports[name].view.bind('<Button-1>', lambda e:
+                                           self.viewports[name].addCalibrationColor([e.x, 
+                                                                                     e.y]))
         
     def displayAlert(self, label_text):
         self.alert.displayAlert(label_text)
@@ -95,6 +103,7 @@ class Viewport(object):
         self.pos = pos
         self.size = size
         self.cal_points = []
+        self.cal_thresholds = []
         if 'x' in self.pos:
             self.view.place(**pos)
         else:
@@ -112,6 +121,7 @@ class Viewport(object):
         if len(self.cal_points) < 6:
             self.cal_points.append(point)
         else:
+            # Reassign closest calibration point to new point
             closest_point_index = None
             dist = float('inf')
             for index, cal_point in enumerate(self.cal_points):
@@ -121,9 +131,60 @@ class Viewport(object):
                     dist = calc_dist
             self.cal_points[closest_point_index] = point
 
+        # Save new calibration points and recalibrate image processor
         if len(self.cal_points) == 6:
             logging.debug("Saving new calibration points %s" % self.cal_points)
             self.img_proc.scm.calibrate(self.cal_points)
+            
+
+    def addCalibrationColor(self, point):
+        """ Collects the color from clicked points and uses it to find calibration points
+        
+        Arguments:
+            point -- x and y coordinate of clicked point
+            
+        """
+        
+        from processors.image.detection import buildDetectionThresholds
+        from processors.image.calibration import SourceCalibrationModule
+        
+        # Get last frame and convert point using viewpoint size
+        frame =  cv.cvtColor(self.img_proc.last_frame, cv.COLOR_BGR2HSV)
+        point = [int(float(point[0] - 2) / float(self.size[0]) *
+                     self.img_proc.isi.width), 
+                 int(float(point[1] - 2) / float(self.size[1]) *
+                     self.img_proc.isi.height)]
+        
+        # Format as array and switch to format [height, width] for indexing
+        point = np.array([point[1], point[0]])
+        
+        # Create box around clicked point
+        if (point-1. < [0,0]).any():
+            surrounding_box = frame[point[0]:point[0]+3, point[1]:point[1]+3]
+        elif (point+1 > [self.img_proc.isi.height, self.img_proc.isi.width]).any():
+            surrounding_box = frame[point[0]-2:point[0]+1, point[1]-2:point[1]+1]
+        else:
+            surrounding_box = frame[point[0]-1:point[0]+2, point[1]-1:point[1]+2]
+            
+        # Average HSV values in box and build thresholds
+        color_average = np.mean(surrounding_box, axis=(0,1)).astype(np.uint8)
+        cal_thresholds = buildDetectionThresholds(color_average)
+        
+        logging.debug('Clicked Color: %s' % color_average)
+        logging.debug('detection min: %s' % cal_thresholds.min)
+        logging.debug('detection max: %s' % cal_thresholds.max)
+        
+        # Set center calibration colors and show detections
+        if self.cal_thresholds == []:
+            self.cal_thresholds.append(cal_thresholds)
+            self.img_proc.scm.setCalibrationThresholds('center', self.cal_thresholds)
+            self.img_proc.scm.setDisplayColors(True, False)
+        # Set side calibration colors and delete thresholds
+        else:
+            self.cal_thresholds.append(cal_thresholds)
+            self.img_proc.scm.setCalibrationThresholds('all', self.cal_thresholds)
+            self.img_proc.scm.setDisplayColors(True, True)
+            self.cal_thresholds = []
 
     def update(self):
         frame = self.img_proc.last_frame
@@ -160,7 +221,8 @@ class Alert(object):
             self.clear()
 
     def displayAlert(self, alert_text):
-        self.label_text.set(alert_text)
+        ts = datetime.datetime.now().strftime("%H:%M:%S ")
+        self.label_text.set(ts + alert_text)
         self.expire_time = (datetime.datetime.now() +
             datetime.timedelta(seconds=ALERT_DURATION))
 
@@ -200,7 +262,8 @@ class ColorDialog(tkSimpleDialog.Dialog):
         sat_range = [0, 255]
         val_range = [0, 255]
 
-        self.color_ranges = [detection.DETECT_MIN, detection.DETECT_MAX]
+        self.color_ranges = [detection.ObjectDetectionModule.TARGET_THRESHOLDS.min, 
+                             detection.ObjectDetectionModule.TARGET_THRESHOLDS.max]
         self.colors = []
         for i in range(2):
             hue = tk.Scale(root, from_=hue_range[0], to=hue_range[1])

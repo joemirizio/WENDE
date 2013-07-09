@@ -10,11 +10,12 @@ import prediction
 ORIGIN = [0, 0]
 
 PROCESS_NOISE = 1
-MEASUREMENT_NOISE = 1
-TIME_STEP = 0.5
+MEASUREMENT_NOISE = 1e3
+TIME_STEP = 0.1
 PREDICTION_RADIUS = 12
 
 class Target(object):
+    TURN_THRESHOLD_DEGREES = 4
     def __init__(self, pos):
         self.pos = pos
         self.kalman = None
@@ -28,7 +29,13 @@ class Target(object):
         self.valid = VerifyValidity(pos)
         self.last_update = datetime.now()
         self.predLineIntersect = None
+        self.predLineIntersectInitial = None
         self.updatedThisCycle = True
+        self.first_turn = False
+        self.second_turn = False
+        self.max_velocity = None
+        self.left_safe = None
+        self.left_alert = None
 
     def update(self, pos):
 
@@ -43,6 +50,12 @@ class Target(object):
         self.kal_meas[1, 0] = pos[1]
         # TODO Implement newer OpenCV Kalman functions
         tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
+        
+        velocity = (tmp[2, 0], tmp[3, 0])
+        if magnitude(velocity) > magnitude(self.max_velocity):
+            self.max_velocity = velocity[:]
+        
+        #logging.debug('velocity: %f' % velocity)
 
         self.filtered_positions.append([tmp[0, 0], tmp[1, 0]])
         self.prediction_positions.append([tmp[0, 0], tmp[1, 0]])
@@ -54,6 +67,26 @@ class Target(object):
             # Calculate prediction line when target is located in alert zone
             if distance(self.pos, ORIGIN) > 5 and distance(self.pos, ORIGIN) < 10:
                 self.predLineIntersect = prediction.predict(self.prediction_positions, PREDICTION_RADIUS)
+                if not self.predLineIntersectInitial and self.predLineIntersect:
+                    self.predLineIntersectInitial = self.predLineIntersect[:]
+               
+        # check for turn
+        if (len(self.prediction_positions) > 10
+            and math.fabs(angle_diff(self.max_velocity, velocity)) > self.TURN_THRESHOLD_DEGREES):
+            self.max_velocity = None
+            self.prediction_positions.clear()
+            self.predLineIntersectInitial = None
+            self.predLineIntersect = None
+            #TODO initialize new kalman with appropriate velocity
+            #    i.e. ninety degrees from self.max_velocity
+            if self.first_turn is False:
+                self.first_turn = True
+                logging.debug('FIRST TURN DETECTED')
+                self.kalman = makeKalman(pos)
+            else: # second turn
+                self.second_turn = True
+                logging.debug('SECOND TURN DETECTED')
+                self.kalman = makeKalman(pos)
 
         # Update last time modified
         self.last_update = datetime.now()
@@ -83,14 +116,12 @@ def distance(p1, p2):
 
 
 #This function takes in the target position and returns a kalman filter
-def makeKalman(pos):
+def makeKalman(pos, x_dot_init=0, y_dot_init=0):
     kalman = cv.CreateKalman(dynam_params=4, measure_params=2)
 
     # Set previous state prediction
     x_init = pos[0]
     y_init = pos[1]
-    x_dot_init = 0
-    y_dot_init = 0
     kalman.state_pre[0, 0] = x_init
     kalman.state_pre[1, 0] = y_init
     kalman.state_pre[2, 0] = x_dot_init
@@ -122,3 +153,19 @@ def makeKalman(pos):
     cv.SetIdentity(kalman.error_cov_post, cv.RealScalar(1))
 
     return kalman
+
+def angle_diff(a, b):
+    # given two cartesian points on a circle
+    # return the angular difference in degrees
+    radius_a = math.sqrt(a[0]**2 + a[1]**2)
+    radius_b = math.sqrt(b[0]**2 + b[1]**2)
+    ang_a = (180.0 / math.pi) * math.acos(a[0] / radius_a)
+    ang_b = (180.0 / math.pi) * math.acos(b[0] / radius_b)
+    #logging.debug('a: %1.20f\tb: %1.20f' % (ang_a, ang_b))
+    return ang_b - ang_a
+    
+def magnitude(vector):
+    if vector is None or len(vector) is not 2:
+        return None
+    return math.sqrt(vector[0]**2 + vector[1]**2)
+

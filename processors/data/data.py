@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import cv2
 
+from discrimination import TargetDisciminationModule
 from track import TargetTrackModule
 from target import Target
 
@@ -18,30 +19,22 @@ class DataProcessor(object):
         self.coverages = {}
         self.tca = tca
         self.config = tca.config
+        # Target Discimination Module
+        self.tdm = TargetDisciminationModule(self)
+        # Target Track Module
         self.ttm = TargetTrackModule(self)
 
     def process(self, data, img_proc):
-        from display.tactical.tactical import flattenArray
         # Only process if calibrated
-        if not img_proc.cal_data:
+        if not img_proc.cal_data.is_valid:
             return
+        
+        filtered_positions = self.tdm.discriminate(data, img_proc)
 
-        for contour in data:
-            area = cv2.contourArea(contour)
-            if area > AREA_THRESHOLD:
-                center, radius = cv2.minEnclosingCircle(contour)
-                center = np.array([center[0], center[1] + radius])
+        self.ttm.processDetection(filtered_positions)
 
-                pos = convertToGlobal(img_proc, center)
-
-                # Convert from numpy to list
-                pos = pos.tolist()
-                pos = flattenArray(pos)
-	
-	#unique list is output from 
-         self.ttm.processDetection(uniqueList)
-         # TODO Clean reference up
-         self.targets = self.ttm.targets
+        # TODO Clean reference up
+        self.targets = self.ttm.targets
 
     def clearTargetData(self):
         del self.ttm.targets[:]
@@ -95,4 +88,9 @@ def convertToGlobal(imageProc, coordinates):
     
     position = np.array(np.linalg.inv(rotation) * 
         (s * np.linalg.inv(intrinsic) * imgPoint - translation))[:2]
+
+    # Convert from numpy to list
+    from display.tactical.tactical import flattenArray
+    position = flattenArray(position.tolist())
+
     return position

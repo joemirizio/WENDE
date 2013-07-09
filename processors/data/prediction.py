@@ -17,7 +17,7 @@ import itertools
 #       Radius of the prediction line from the origin.
 #       Should be in same units as x and y (i.e. meters)
 
-NUM_PREDICTION_VALS = 25
+NUM_PREDICTION_VALS = 20
 
 def predict(positions, pred_line_r):
 
