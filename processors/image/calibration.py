@@ -223,13 +223,13 @@ class SourceCalibrationModule(object):
             objectPoints = np.array((self.center_points + self.left_points), np.float32)
             
         # Calculate extrinsic parameters
-        logging.debug("-------------------------------")
-        logging.debug("objectPoints: %s" % objectPoints)
-        logging.debug("imagePoint: %s" % imagePoints)
-        logging.debug("intrinsic: %s"
-                      % self.image_processor.cal_data.intrinsic)
-        logging.debug("distortion: %s"
-                      % self.image_processor.cal_data.distortion)
+#         logging.debug("-------------------------------")
+#         logging.debug("objectPoints: %s" % objectPoints)
+#         logging.debug("imagePoint: %s" % imagePoints)
+#         logging.debug("intrinsic: %s"
+#                       % self.image_processor.cal_data.intrinsic)
+#         logging.debug("distortion: %s"
+#                       % self.image_processor.cal_data.distortion)
         _, rvec, tvec = cv.solvePnP(objectPoints, imagePoints,
                                     self.image_processor.cal_data.intrinsic,
                                     self.image_processor.cal_data.distortion)

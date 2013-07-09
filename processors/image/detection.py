@@ -30,7 +30,8 @@ TARGET_THRESHOLD_MAX = [255, 236, 244]
 # DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 # Delta values for threshold building
-DELTA_HSV = np.array([10, 50, 75], np.int16)
+DELTA_HSV = np.array([12, 50, 60], np.int16)
+DELTA_MAX_RATIO = 0.25
 
 # Minimum dimensions of bounded contours
 CONTOUR_MIN_WIDTH = 5
@@ -66,7 +67,7 @@ class DetectionThreshold(object):
 
 class ObjectDetectionModule(object):
     """Scans an image for potential targets and provides size/location
-	information about these targets.
+    information about these targets.
 
     Attributes:
         image_processor: An ImageProcessor object.
@@ -84,7 +85,7 @@ class ObjectDetectionModule(object):
 
     def findObjects(self, frame, frame_type=FRAME_TYPES[0],
                     detection_threshold=TARGET_THRESHOLDS):
-	"""A frame is scanned for target objects by finding contours, which
+        """A frame is scanned for target objects by finding contours, which
         are then drawn on the frame.
 
         Takes the provided image frame, applies a Gaussian blur, and
@@ -173,7 +174,7 @@ def buildDetectionThresholds(threshold_seed):
     
     # Allow hue value to wrap
     detect_min = color_input - DELTA_HSV
-    detect_max = color_input + DELTA_HSV
+    detect_max = color_input + np.hstack((DELTA_HSV[0], DELTA_HSV[1:] * DELTA_MAX_RATIO))
     
     # Wrap hsv
     if detect_min[0] < 0: detect_min[0] = (180 + detect_min[0])
