@@ -119,7 +119,9 @@ class ObjectDetectionModule(object):
         else:
             # If the hue is wrapped, process separately from saturation, value (brightness)
             channel_hue = hsv_frame[:,:,0]
-            thresh_hue = np.array(detectMax[0]), np.array(detectMin[0])
+            thresh_hue = np.logical_not(cv.inRange(channel_hue, 
+                                                   np.array(detectMax[0]), 
+                                                   np.array(detectMin[0])))
             thresh_sv = cv.inRange(hsv_frame[:,:,1:],
                                    detectMin[1:],
                                    detectMax[1:])
