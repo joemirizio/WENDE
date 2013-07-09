@@ -69,8 +69,8 @@ class TacticalDisplay(object):
         target_pos = self.remapPosition(target.pos)
         #logging.debug("Mapped pos: (%d, %d)" % (target_pos[0], target_pos[1]))
         target_pos_points = self.getBoundingBox(0.25, pos=target_pos)
-        id_pos = [target_pos[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
-                  target_pos[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
+        #id_pos = [target_pos[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
+        #          target_pos[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
         #id_value = "Child 1"
         label_pos = [
                 target_pos[0] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[0],
@@ -84,7 +84,7 @@ class TacticalDisplay(object):
             tgtTrack = TargetTrack(target)
             tgtTrack.icon = self.canvas.create_oval(target_pos_points, fill="#AA66CC", outline="#9933CC", width=4)
             # Create target ID
-            tgtTrack.id = tk.Label(self.canvas, text="Child #", bg="white", anchor='center')
+            #tgtTrack.id = tk.Label(self.canvas, text="Child #", bg="white", anchor='center')
             # Create label
             tgtTrack.label = tk.Label(self.canvas, text=label_text, bg='white', anchor='s')
             # Add label_toggle
@@ -117,17 +117,17 @@ class TacticalDisplay(object):
         
         # Update target label
         tgtTrack.label.config(text=label_text)
-        tgtTrack.id.config(text=id_value)
+        #tgtTrack.id.config(text=id_value)
         
         # Toggle visibility
         if tgtTrack.display_label:
             tgtTrack.label.place(x=label_pos[0], y=label_pos[1])
-            tgtTrack.id.place(x=id_pos[0], y=label_pos[1])
+            #tgtTrack.id.place(x=id_pos[0], y=label_pos[1])
         else:
             tgtTrack.label.place_forget()
             
         tgtTrack.label_pos = label_pos
-        tgtTrack.id_pos = id_pos
+        #tgtTrack.id_pos = id_pos
 
         # Draw prediction line and label
         if tgtTrack.target.predLineIntersect:
@@ -253,8 +253,8 @@ class TargetTrack(object):
         self.display_label = True
         self.icon_prediction = None
         self.label_prediction = None
-        self.id = None
-        self.id_pos = None
+        #self.id = None
+        #self.id_pos = None
         #self.display_id = True
     
     def removeDisplayObjects(self, canvas):
