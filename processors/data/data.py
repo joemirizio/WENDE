@@ -6,6 +6,7 @@ import cv2
 from discrimination import TargetDisciminationModule
 from track import TargetTrackModule
 from target import Target
+from image import correlation
 
 AREA_THRESHOLD = 50
 DETECT_THRESHOLD = 0.75
@@ -19,19 +20,29 @@ class DataProcessor(object):
         self.coverages = {}
         self.tca = tca
         self.config = tca.config
+        # Target correlation module
+        self.corr = correlation.CorrelationModule(self)
         # Target Discimination Module
         self.tdm = TargetDisciminationModule(self)
         # Target Track Module
         self.ttm = TargetTrackModule(self)
 
-    def process(self, data, img_proc):
-        # Only process if calibrated
-        if not img_proc.cal_data.is_valid:
-            return
+    def process(self, data, img_processors):
+        filtered_positions = []
         
-        filtered_positions = self.tdm.discriminate(data, img_proc)
+        # Only process if calibrated
+        for img_proc in img_processors:
+            if not img_proc.cal_data:
+                return
+            data = img_proc.process()
+            filtered_positions.append(self.tdm.discriminate(data, img_proc))
+        print filtered_positions
+       
+#        [[[x1,y1],[x2,y2],[x3,y3]],...]
 
-        self.ttm.processDetection(filtered_positions)
+        unique_positions = self.corr.checkUnique(img_processors,filtered_positions)
+
+        self.ttm.processDetection(unique_positions)
 
         # TODO Clean reference up
         self.targets = self.ttm.targets
