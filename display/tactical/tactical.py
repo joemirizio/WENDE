@@ -22,7 +22,7 @@ class TacticalDisplay(object):
         self.data_proc = data_proc
         self.tgtTracks = {}
         self.canvas = tk.Canvas(self.display, bg="#FFFFFF",
-                width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING, 
+                width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING * 2, 
                 height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING)
         self.canvas.grid()
 
