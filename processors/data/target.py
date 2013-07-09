@@ -72,6 +72,7 @@ class Target(object):
                
         # check for turn
         if (len(self.prediction_positions) > 10
+            and magnitude(self.max_velocity) > 0.0
             and math.fabs(angle_diff(self.max_velocity, velocity)) > self.TURN_THRESHOLD_DEGREES):
             self.max_velocity = None
             self.prediction_positions.clear()
