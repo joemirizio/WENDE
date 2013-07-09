@@ -13,12 +13,12 @@ class TargetDisciminationModule(object):
 
     def __init__(self, data_processor):
         self.data_processor = data_processor
-        self.valid_targets = []
                                                       
     def discriminate(self, contour_data, img_process):
         from data import distance
         from data import convertToGlobal
 
+        valid_targets = []
         for contour in contour_data:
             # Check for acceptable contour area
             area = cv2.contourArea(contour)
@@ -35,6 +35,6 @@ class TargetDisciminationModule(object):
                     lower_area = 0.5 * expected_contour
                     # Add to target list if size conditions satisfied
                     if area > lower_area and area < upper_area:
-                        self.valid_targets.append(pos)
+                        valid_targets.append(pos)
                 
-        return self.valid_targets
+        return valid_targets
