@@ -5,18 +5,18 @@ from collections import deque
 from target import Target
 from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 
-KNOWN_GATE = 1 # for use after at least two detections (known vel)
+KNOWN_GATE = 1.0 # for use after at least two detections (known vel)
 UNKNOWN_GATE = 1.5  # for use after only one detection (unkown vel)
-MAXED_MISSED_UPDATES = 2
 
 class TargetTrackModule(object):
     def __init__(self, dataProcessor):
         self.targets = []
+        self.config = dataProcessor.config
 
     def processDetection(self, pos):
         associated = self.associateTrack(pos)
         if not associated:
-            self.targets.append(Target(pos))
+            self.targets.append(Target(pos, self.config))
 
     def associateTrack(self, pos):
         for target in self.targets:
