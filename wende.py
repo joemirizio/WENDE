@@ -56,15 +56,13 @@ class App(object):
         self.ui.start(self.main)
 
     def main(self):
-        ENCLOS_CIRCLE = []
-        uniqueObj = []
-        
-        # Process through the image 
 
-#        for i, img_proc in enumerate(self.image_processors):
-#            ENCLOS_CIRCLE.append(img_proc.process())
-#        uniqueObj = self.corr.checkUnique(self.image_processors, ENCLOS_CIRCLE)
-        self.data_processor.process( self.image_processors)
+        # Image Processors
+        for image_processor in self.image_processors:
+            image_processor.process()
+    
+        # Data Processor
+        self.data_processor.process()
 
         #TODO Remove after testing
         for target in self.data_processor.targets:
@@ -88,6 +86,9 @@ if __name__ == "__main__":
     logging.basicConfig(
             level=getattr(logging, config.get('logger', 'log_level')),
             format=config.get('logger', 'log_format', raw=True))
+    logger = logging.getLogger()
+    hdlr = logging.FileHandler('/Users/joemirizio/Desktop/wende.log')
+    logger.addHandler(hdlr)
 
     # Run application
     App(config).run()

@@ -31,7 +31,7 @@ class CorrelationModule(object):
         for imgProcPair in imgProcPermutations:
             # Cycle through each coordinate in the first image processor 
             for point in imgProcPair[0]:
-                point = np.array([point[0][0], point[0][1] + point[1]])
+                point = np.array(point)
                 point = convertToGlobal(img_processors[0], point)
                 point = point.tolist()
                 point = list(itertools.chain.from_iterable(point))
@@ -39,7 +39,7 @@ class CorrelationModule(object):
                 uniqueTarg.append(tuple(point))
             # Cycle through each coordinate in the second image processor
             for point in imgProcPair[1]:
-                point = np.array([point[0][0], point[0][1] + point[1]])
+                point = np.array(point)
                 point = convertToGlobal(img_processors[1], point)
                 point = point.tolist()
                 point = list(itertools.chain.from_iterable(point))
@@ -56,7 +56,7 @@ class CorrelationModule(object):
                     uniqueTarg.remove(tuple(gblPoint1))
                     uniqueTarg.remove(tuple(gblPoint2))
             # Removes duplicate points from detection list  
-            uniqueTarg = set(uniqueTarg)
+            uniqueTarg = list(set(uniqueTarg))
         return uniqueTarg
        
 def distance(p1, p2):

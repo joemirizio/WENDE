@@ -65,6 +65,7 @@ class ImageProcessor(object):
     """
     def __init__(self, tca, image_source, frame_type=0):
         self.last_frame = None
+        self.last_detected_positions = None
         self.__avg_frame = None
         self.frame_type = FRAME_TYPES[frame_type]
         self.cal_data = None
@@ -142,6 +143,7 @@ class ImageProcessor(object):
         cv.circle(self.last_frame, cal_status_pos, 20, [255, 255, 255],
                   thickness=2)
 
+        self.last_detected_positions = img_data
         return img_data
 
     @property

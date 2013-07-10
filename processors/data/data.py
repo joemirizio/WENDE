@@ -27,25 +27,35 @@ class DataProcessor(object):
         # Target Track Module
         self.ttm = TargetTrackModule(self)
 
-    def process(self, img_processors):
+    def process(self):
         filtered_positions = []
         
-        # Only process if calibrated
-        for img_proc in img_processors:
-            if not img_proc.cal_data:
-                return
-            data = img_proc.process()
-            filtered_positions.append(self.tdm.discriminate(data, img_proc))
-        #print filtered_positions
+        for image_processor in self.tca.image_processors:
+            # Only process if calibrated
+            if not image_processor.cal_data.is_valid:
+                continue
+
+            # Discriminate positions
+            discriminated_positions = self.tdm.discriminate(
+                    image_processor.last_detected_positions,
+                    image_processor)
+
+            filtered_positions.append(discriminated_positions)
        
 #        [[[x1,y1],[x2,y2],[x3,y3]],...]
 
-        unique_positions = self.corr.checkUnique(img_processors,filtered_positions)
+        unique_positions = self.corr.checkUnique(self.tca.image_processors,
+                                                 filtered_positions)
+        logging.debug("-" * 20)
+        logging.debug("UNIQUE POSITIONS: %s" % unique_positions)
 
         self.ttm.processDetections(unique_positions)
 
         # TODO Clean reference up
         self.targets = self.ttm.targets
+        # TODO remove
+        for target in self.ttm.targets:
+            logging.debug("TARGET: %s" % target)
 
     def clearTargetData(self):
         del self.ttm.targets[:]
