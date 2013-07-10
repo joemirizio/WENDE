@@ -6,7 +6,7 @@ import cv2
 from discrimination import TargetDisciminationModule
 from track import TargetTrackModule
 from target import Target
-from image import correlation
+import correlation
 
 AREA_THRESHOLD = 50
 DETECT_THRESHOLD = 0.75
@@ -27,7 +27,7 @@ class DataProcessor(object):
         # Target Track Module
         self.ttm = TargetTrackModule(self)
 
-    def process(self, data, img_processors):
+    def process(self, img_processors):
         filtered_positions = []
         
         # Only process if calibrated

@@ -15,6 +15,7 @@ Classes:
 """
 import cv2 as cv
 import numpy as np
+import logging as logging
 
 from image import FRAME_TYPES
 
@@ -22,12 +23,18 @@ from image import FRAME_TYPES
 # BW_THRESHOLD = 20
 
 # Binary filter threshold limits
-DETECT_MIN = np.array([124, 98, 40], np.uint8)
-DETECT_MAX = np.array([255, 236, 244], np.uint8)
+TARGET_THRESHOLD_MIN = [124, 98, 40]
+TARGET_THRESHOLD_MAX = [255, 236, 244]
+
+# DETECT_MIN = np.array([124, 98, 40], np.uint8)
+# DETECT_MAX = np.array([255, 236, 244], np.uint8)
+
+# Delta values for threshold building
+DELTA_HSV = np.array([10, 50, 75], np.int16)
 
 # Minimum dimensions of bounded contours
-CONTOUR_MIN_WIDTH = 15
-CONTOUR_MIN_HEIGHT = 15
+CONTOUR_MIN_WIDTH = 5
+CONTOUR_MIN_HEIGHT = 5
 
 class DetectionThreshold(object):
     """ Storage container for minimum and maximum detection thresholds
@@ -98,7 +105,7 @@ class ObjectDetectionModule(object):
             image frame with contours and bounding boxes drawn. The second
             element is an array containing vectors of contour points.
         """
-	blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
+        blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
         
         detect_min = detection_threshold.min
