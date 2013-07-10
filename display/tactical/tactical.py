@@ -9,8 +9,8 @@ MAXLEN_DEQUE = PERSIST_TIME * 50 # Just.. just save pretty much all of them for 
 
 class TacticalDisplay(object):
     
-    PADDING = 50
-    WIDTH = 800
+    PADDING = 30
+    WIDTH = 700
     HEIGHT = WIDTH / 2
     SIZE = (WIDTH, HEIGHT)
     MAX_RANGE = 12

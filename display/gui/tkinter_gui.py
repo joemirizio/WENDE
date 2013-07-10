@@ -41,26 +41,7 @@ class Tkinter_gui(object):
         self.tactical_frame.grid(column=0, row=0, columnspan=2, rowspan=2)
         
         # Calibration Frame
-        self.cal_frame = tk.Frame(self.frame, width=400, height=400, bg='red')
-        
-        self.zone_type = tk.StringVar()
-        self.zone_type.set("NORMAL")
-        # Buttons for zone size
-        tk.Label(self.cal_frame, text="Zone Type").pack(anchor=tk.W, fill=tk.X)
-        tk.Radiobutton(self.cal_frame, text="Normal",
-                       variable=self.zone_type, value="NORMAL", indicatoron=0,
-                       command=self.callbackSetZone()).pack(anchor=tk.W, fill=tk.X)
-        tk.Radiobutton(self.cal_frame, text="Small",
-                       variable=self.zone_type, value="SMALL", indicatoron=0,
-                       command=self.callbackSetZone()).pack(anchor=tk.W, fill=tk.X)
-        # Simple separator
-        separator = tk.Frame(self.cal_frame, height=2, bd=1, relief=tk.SUNKEN)
-        separator.pack(fill=tk.X, padx=5, pady=5)
-        # Calibration Button
-        tk.Button(self.cal_frame, text="Calibrate System", 
-                  command=self.callbackCalibrate()).pack(anchor=tk.W, fill=tk.X)
-        
-        self.cal_frame.grid(column=2, row=0)
+        self.menu = MenuBar(self.frame).grid(column=0, row=4, columnspan=2)
 
         size = DEFAULT_VIEWPORT_SIZE
 
@@ -118,11 +99,6 @@ class Tkinter_gui(object):
     def displayAlert(self, label_text):
         self.alert.displayAlert(label_text)
         
-    def callbackCalibrate(self):
-        pass
-
-    def callbackSetZone(self):
-        pass
 
 class Viewport(object):
     def __init__(self, img_proc, parent, pos={'x':0, 'y':0}, size=[0, 0]):
@@ -311,3 +287,57 @@ class ColorDialog(tkSimpleDialog.Dialog):
             ref[2] = color[2].get()
 
         logging.debug("Colors: %s" % self.color_ranges)
+
+class MenuBar(tk.Frame):
+    
+    def __init__(self, parent):
+        
+        tk.Frame.__init__(self, parent, borderwidth='2')
+        self.parent = parent
+        self.zone_type = tk.StringVar()
+        self.zone_type.set("NORMAL")
+        self.font = tkFont.Font(family='Arial', size=12, weight=tkFont.NORMAL)
+        self.font_bold = self.font.copy().config(weight=tkFont.BOLD)
+        
+        # Build Menu Interface
+        self.createMenuItems()
+        
+    def createMenuItems(self):
+        
+        # Clear Button
+        tk.Button(self, text="Clear Data", font=("Verdana", 12, "bold"), bg='red',
+                  padx=10, pady=2, relief=tk.FLAT,
+                  command=self.callbackClear()).pack(side=tk.LEFT, padx=10)
+                  
+        # Simple separator
+        separator = tk.Frame(self, width=2, height=2, bg='black', bd=1, relief=tk.FLAT)
+        separator.pack(side=tk.LEFT, padx=10, pady=5, fill=tk.Y)
+        
+        # Calibrate Button
+        tk.Button(self, text="Calibrate System", font=("Verdana", 14, "bold"),
+                  padx=10, pady=2, bg='green', relief=tk.FLAT, 
+                  command=self.callbackCalibrate()).pack(side=tk.LEFT, padx=10)
+                  
+        # Simple separator
+        separator = tk.Frame(self, width=2, height=2, bg='black', bd=1, relief=tk.FLAT)
+        separator.pack(side=tk.LEFT, padx=10, pady=5, fill=tk.Y)
+        
+        # Zone Size Label
+        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold")).pack(fill=tk.X, side=tk.TOP)
+        
+        # Zone size select buttons
+        tk.Radiobutton(self, text="Normal", font=("Verdana", 10),
+                       variable=self.zone_type, value="NORMAL", indicatoron=0,
+                       command=self.callbackSetZone(), padx=5, pady=0).pack(side=tk.LEFT, padx=2)
+        tk.Radiobutton(self, text="Small", font=("Verdana", 10),
+                       variable=self.zone_type, value="SMALL", indicatoron=0,
+                       command=self.callbackSetZone(), padx=5, pady=0).pack(side=tk.LEFT, padx=2)
+                       
+    def callbackClear(self):
+        pass
+    
+    def callbackCalibrate(self):
+        pass
+
+    def callbackSetZone(self):
+        pass
