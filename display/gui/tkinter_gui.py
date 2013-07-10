@@ -41,7 +41,7 @@ class Tkinter_gui(object):
         self.tactical_frame.grid(column=0, row=0, columnspan=2, rowspan=2)
         
         # Calibration Frame
-        self.menu = MenuBar(self.frame).grid(column=0, row=4, columnspan=2)
+        self.menu = MenuCal(self.frame).grid(column=3, row=0, rowspan=2)
 
         size = DEFAULT_VIEWPORT_SIZE
 
@@ -287,17 +287,16 @@ class ColorDialog(tkSimpleDialog.Dialog):
             ref[2] = color[2].get()
 
         logging.debug("Colors: %s" % self.color_ranges)
+        
 
 class MenuBar(tk.Frame):
     
     def __init__(self, parent):
         
-        tk.Frame.__init__(self, parent, borderwidth='2')
+        tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
         self.parent = parent
         self.zone_type = tk.StringVar()
         self.zone_type.set("NORMAL")
-        self.font = tkFont.Font(family='Arial', size=12, weight=tkFont.NORMAL)
-        self.font_bold = self.font.copy().config(weight=tkFont.BOLD)
         
         # Build Menu Interface
         self.createMenuItems()
@@ -316,28 +315,107 @@ class MenuBar(tk.Frame):
         # Calibrate Button
         tk.Button(self, text="Calibrate System", font=("Verdana", 14, "bold"),
                   padx=10, pady=2, bg='green', relief=tk.FLAT, 
-                  command=self.callbackCalibrate()).pack(side=tk.LEFT, padx=10)
+                  command=self.callbackCalibrate).pack(side=tk.LEFT, padx=10)
                   
         # Simple separator
         separator = tk.Frame(self, width=2, height=2, bg='black', bd=1, relief=tk.FLAT)
         separator.pack(side=tk.LEFT, padx=10, pady=5, fill=tk.Y)
         
-        # Zone Size Label
-        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold")).pack(fill=tk.X, side=tk.TOP)
-        
-        # Zone size select buttons
-        tk.Radiobutton(self, text="Normal", font=("Verdana", 10),
-                       variable=self.zone_type, value="NORMAL", indicatoron=0,
-                       command=self.callbackSetZone(), padx=5, pady=0).pack(side=tk.LEFT, padx=2)
-        tk.Radiobutton(self, text="Small", font=("Verdana", 10),
-                       variable=self.zone_type, value="SMALL", indicatoron=0,
-                       command=self.callbackSetZone(), padx=5, pady=0).pack(side=tk.LEFT, padx=2)
+        # Zone Type
+        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold")).pack(side=tk.TOP)
+        self.zone_type = MultiRadio(self,
+                                    text=("Normal", "Small"), value=("NORMAL", "SMALL"),
+                                    callback=self.callbackSetZone,
+                                    side=tk.LEFT).pack(side=tk.LEFT)
                        
     def callbackClear(self):
         pass
     
     def callbackCalibrate(self):
-        pass
+        if self.method.variable == "POINT":
+            pass
+        else:
+            pass
 
     def callbackSetZone(self):
-        pass
+        if self.zone.variable == "NORMAL":
+            pass
+        else:
+            pass
+    
+class MenuCal(tk.Frame):
+    
+    def __init__(self, parent):
+        
+        tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
+        self.parent = parent
+        self.method = None
+        self.size = None
+        
+        # Build Menu Interface
+        self.createMenuItems()
+        
+    def createMenuItems(self):
+        
+        # Calibrate Button
+        tk.Button(self, text="Calibrate\nSystem", font=("Verdana", 14, "bold"),
+                  pady=10, padx=2, bg='green', relief=tk.FLAT, 
+                  command=self.callbackCalibrate).pack(side=tk.TOP, pady=10)
+                  
+        # Simple separator (Horizontal)
+        separator = tk.Frame(self, width=2, height=2, bg='blue', bd=1, relief=tk.FLAT)
+        separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
+                  
+        # Calibration Method
+        tk.Label(self, text="Calibration\nMethod", font=("Verdana", 10, "bold")).pack(side=tk.TOP)
+        self.method = MultiRadio(self,
+                                    text=("Point", "Color"), value=("POINT", "COLOR"), 
+                                    callback=self.callbackCalibrate, 
+                                    side=tk.TOP, fill=tk.X).pack(fill=tk.X, side=tk.TOP)
+                                    
+        # Simple separator (Horizontal)
+        separator = tk.Frame(self, width=2, height=1, bd=1, relief=tk.FLAT)
+        separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
+        
+        # Zone Type
+        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold")).pack(side=tk.TOP)
+        self.size = MultiRadio(self,
+                                    text=("Normal", "Small"), value=("NORMAL", "SMALL"),
+                                    callback=self.callbackSetZone,
+                                    side=tk.TOP, fill=tk.X).pack(fill=tk.X, side=tk.TOP)
+                       
+    def callbackCalibrate(self):
+        if self.method.variable == "POINT":
+            pass
+        else:
+            pass
+
+    def callbackSetZone(self):
+        if self.zone.variable == "NORMAL":
+            pass
+        else:
+            pass
+    
+class MultiRadio(tk.Frame):
+    
+    def __init__(self, parent, text, value, callback, side=tk.TOP, fill=tk.NONE):
+        
+        tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
+        
+        self.variable = tk.StringVar()
+        self.text = text
+        self.value = value
+        self.callback = callback
+        self.side = side
+        self.fill = fill
+        
+        self.createRadio()
+        
+    def createRadio(self):
+        
+        # Zone size select buttons
+        for txt, val, in zip(self.text, self.value):
+            tk.Radiobutton(self, text=txt, font=("Verdana", 10),
+                           variable=self.variable, value=val, indicatoron=0,
+                           command=self.callback, padx=0, pady=0).pack(side=self.side, fill=self.fill)
+        
