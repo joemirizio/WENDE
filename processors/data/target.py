@@ -34,6 +34,8 @@ class Target(object):
         self.first_turn = False
         self.second_turn = False
         self.max_velocity = None
+        self.left_safe = None
+        self.left_alert = None
 
     def update(self, pos):
         # TODO Reimplement

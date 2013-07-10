@@ -23,8 +23,8 @@ class Tkinter_gui(object):
         self.key_events = {}
 
         # Fullscreen
-        w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-        self.root.geometry("%dx%d+0+0" % (w, h))
+        #w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        #self.root.geometry("%dx%d+0+0" % (w, h))
         #self.root.wm_state('zoomed')
         #self.root.overrideredirect(True)
         #self.root.attributes('-topmost', True)
@@ -76,7 +76,14 @@ class Tkinter_gui(object):
             self.addView(img_proc, pos, size)
             pos[0] = pos[0] + 2
             
-        # Add logging window
+        # Add alert frame
+        self.alert_frame = tk.Frame(self.bot_frame, borderwidth=1)
+         
+        # Alerts
+        self.alert = Alert(self.alert_frame)
+         
+        self.alert_frame.grid(row=0, column=1)
+        #tk.Button(self.bot_frame).grid(column=1)
             
         ########### END MAIN SUBFRAMES ############
         
@@ -86,9 +93,6 @@ class Tkinter_gui(object):
         self.bot_frame.grid(row=2, column=0, columnspan=3)
         
         
-        # Alerts
-        self.alert = Alert(self.root)
-
         self.root.bind("<Escape>", lambda e: e.widget.quit())
 
     def callbackShell(self):
@@ -135,6 +139,9 @@ class Tkinter_gui(object):
         
     def displayAlert(self, label_text):
         self.alert.displayAlert(label_text)
+        
+    def logAlert(self, label_text):
+        self.alert.logAlert(label_text)
         
 
 class Viewport(object):
@@ -252,9 +259,16 @@ class Viewport(object):
 class Alert(object):
     def __init__(self, root):
         self.label_text = tk.StringVar()
-        font = tkFont.Font(family="Arial", size=24)
-        self.alert_label = tk.Label(root, font=font, textvariable=self.label_text, anchor=tk.SW)
-        self.alert_label.grid()
+        font = tkFont.Font(family="Arial", size=12)
+        
+        # Alert label
+        self.alert_label = tk.Label(root, font=font, textvariable=self.label_text)
+        self.alert_label.grid(row=0, sticky=(tk.N + tk.S))
+        
+        # Alert logging window
+        self.alert_log = tk.Text(root, state='disabled', width=45, height=12, wrap='word', relief=tk.FLAT)
+        self.alert_log.grid(row=1, sticky=tk.S)
+        
         self.expire_time = None
         
     def update(self):
@@ -262,9 +276,25 @@ class Alert(object):
             self.clear()
 
     def displayAlert(self, alert_text):
-        self.label_text.set(alert_text)
+        ts = datetime.datetime.now().strftime("%H:%M:%S\n")
+        self.label_text.set(ts + alert_text)
         self.expire_time = (datetime.datetime.now() +
             datetime.timedelta(seconds=ALERT_DURATION))
+        
+    def logAlert(self, alert_text):
+        ts = datetime.datetime.now().strftime("%H:%M:%S ")
+        self.label_text.set(ts + alert_text)
+        
+        numlines = self.alert_log.index('end - 1 line').split('.')[0]
+        self.alert_log['state'] = 'normal'
+        
+        if numlines == 5:
+            self.alert_log.delete(1.0, 2.0)
+        if self.alert_log.index('end-1c')!='1.0':
+            self.alert_log.insert('end', '\n')
+        
+        self.alert_log.insert('end', self.label_text.get())
+        self.alert_log['state'] = 'disabled'
 
     def clear(self):
         self.label_text.set('')
@@ -384,7 +414,7 @@ class MenuCal(tk.Frame):
     
     def __init__(self, parent):
         
-        tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
+        tk.Frame.__init__(self, parent, borderwidth=30, relief=tk.FLAT)
         self.parent = parent
         self.method = None
         self.size = None
@@ -438,7 +468,7 @@ class MenuMain(tk.Frame):
     
     def __init__(self, parent):
         
-        tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
+        tk.Frame.__init__(self, parent, borderwidth=30, relief=tk.FLAT)
         self.parent = parent
         self.power = False
         self.text_power = tk.StringVar()

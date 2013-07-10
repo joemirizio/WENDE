@@ -10,7 +10,7 @@ MAXLEN_DEQUE = PERSIST_TIME * 50 # Just.. just save pretty much all of them for 
 class TacticalDisplay(object):
     
     PADDING = 30
-    WIDTH = 700
+    WIDTH = 800
     HEIGHT = WIDTH / 2
     SIZE = (WIDTH, HEIGHT)
     MAX_RANGE = 12
@@ -45,11 +45,20 @@ class TacticalDisplay(object):
             self.displayTarget(target)
 
             # Display alerts
-            # TODO Clean up
-            if distance((0, 0), target.pos) > 10 and distance((0, 0), target.pos) < 10.3:
-                self.data_proc.tca.ui.displayAlert("Target has left the Alert zone")
-            elif distance((0, 0), target.pos) > 5 and distance((0, 0), target.pos) < 5.3:
-                self.data_proc.tca.ui.displayAlert("Target entered the Alert zone")
+            if distance((0, 0), target.pos) < 5:
+                target.left_safe = False
+            if distance((0, 0), target.pos) < 10:
+                target.left_alert = False
+            
+            if distance((0, 0), target.pos) >= 10 and target.left_alert == False:
+                self.data_proc.tca.ui.displayAlert("Target has left the ALERT zone!!!")
+                self.data_proc.tca.ui.logAlert("Target has left the ALERT zone!!!")
+                target.left_alert = True
+                target.left_safe = True
+            elif distance((0, 0), target.pos) >= 5 and target.left_safe == False:
+                self.data_proc.tca.ui.displayAlert("Target has entered the ALERT zone!!!")
+                self.data_proc.tca.ui.logAlert("Target has entered the ALERT zone!!!")
+                target.left_safe = True
 
     def updateCalibration(self, message):
         if message == 1:
