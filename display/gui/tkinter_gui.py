@@ -65,10 +65,10 @@ class Tkinter_gui(object):
         size = DEFAULT_VIEWPORT_SIZE
 
         # Alerts
-        self.alert = Alert(self.root)
+        self.alert = Alert(self.frame)
 
         # Raw Feed
-        pos = [0, 3]
+        pos = [0, 2]
         for img_proc in image_processors:
             self.addView(img_proc, pos, size)
             pos[0] = pos[0] + 1
@@ -246,11 +246,11 @@ class Alert(object):
         
         # Alert label
         self.alert_label = tk.Label(root, font=font, textvariable=self.label_text)
-        self.alert_label.grid(column=2, row=0, columnspan=1, rowspan=1)
+        self.alert_label.grid(column=2, row=1, columnspan=1, rowspan=1)
         
         # Alert logging window
-        self.alert_log = tk.Text(root, state='disabled', width=60, height=20, wrap='none')
-        self.alert_log.grid(column=2, row=1, columnspan=1, rowspan=2)
+        self.alert_log = tk.Text(root, state='disabled', width=40, height=20, wrap='none')
+        self.alert_log.grid(column=2, row=2, columnspan=1, rowspan=1)
         
         self.expire_time = None
         
