@@ -33,29 +33,66 @@ class Tkinter_gui(object):
         # Main frame
         self.frame = tk.Frame(self.root)
         self.frame.grid(columnspan=3, rowspan=3, sticky=(tk.N, tk.S))
+        
+        # Separate main frame into functional rows TODO -- Separate into methods/classes
+        self.top_frame = tk.Frame(self.frame)
+        self.mid_frame = tk.Frame(self.frame)
+        self.bot_frame = tk.Frame(self.frame)
+        
+        # Top holds the display and menus (pack)
+        # Mid holds info bar (pack)
+        # Bottom holds feeds and (grid)
+        
+        ########### TOP FRAME START ############
+        
+        # Main menu frame
+        self.menu_main = MenuMain(self.top_frame).pack(side=tk.LEFT)
 
         # Tactical frame
-        self.tactical_frame = tk.Frame(self.frame, 
+        self.tactical_frame = tk.Frame(self.top_frame, 
                 width=TacticalDisplay.WIDTH, 
                 height=TacticalDisplay.HEIGHT)
-        self.tactical_frame.grid(column=0, row=0, columnspan=2, rowspan=2)
+        self.tactical_frame.pack(side=tk.LEFT)
         
-        # Calibration Frame
-        self.menu = MenuCal(self.frame).grid(column=3, row=0, rowspan=2)
-
+        # Calibration menu frame
+        self.menu_cal = MenuCal(self.top_frame).pack(side=tk.LEFT)
+        
+        ########### MID FRAME START ############
+        # Shell mid frame
+        texts = ("Shell", "Shell", "Shell", "Shell", "Shell", "Shell", "Shell")
+        values = ("SHELL", "SHELL", "SHELL", "SHELL", "SHELL", "SHELL", "SHELL")
+        MultiRadio(self.mid_frame,
+                   text=texts, value=values,
+                   callback=self.callbackShell,
+                   side=tk.LEFT).pack(side=tk.TOP)
+        
+        ########### BOT FRAME START ############
+        
         size = DEFAULT_VIEWPORT_SIZE
 
+        # Raw Feeds
+        pos = [0, 0]
+        for img_proc in image_processors:
+            self.addView(img_proc, pos, size)
+            pos[0] = pos[0] + 2
+            
+        # Add logging window
+            
+        ########### END MAIN SUBFRAMES ############
+        
+        # Grid Frames
+        self.top_frame.grid(row=0, column=0, columnspan=3)
+        self.mid_frame.grid(row=1, column=0, columnspan=3)
+        self.bot_frame.grid(row=2, column=0, columnspan=3)
+        
+        
         # Alerts
         self.alert = Alert(self.root)
 
-        # Raw Feed
-        pos = [0, 3]
-        for img_proc in image_processors:
-            self.addView(img_proc, pos, size)
-            pos[0] = pos[0] + 1
-
         self.root.bind("<Escape>", lambda e: e.widget.quit())
 
+    def callbackShell(self):
+        pass
 
     def addKeyEvent(self, key, event):
         if key in self.key_events:
@@ -84,7 +121,7 @@ class Tkinter_gui(object):
 
     def addView(self, img_proc, pos={'x':0, 'y':0}, size=(0, 0)):
         name = img_proc.isi.name
-        self.viewports[name] = Viewport(img_proc, self.frame, pos, size)
+        self.viewports[name] = Viewport(img_proc, self.bot_frame, pos, size)
         
         # Bind correct calibration method
         if img_proc.config.get('calibration','cal_manual_method') == "POINT":
@@ -395,6 +432,60 @@ class MenuCal(tk.Frame):
             pass
         else:
             pass
+        
+        
+class MenuMain(tk.Frame):
+    
+    def __init__(self, parent):
+        
+        tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
+        self.parent = parent
+        self.power = False
+        self.text_power = tk.StringVar()
+        self.button_power = None
+        self.button_clear = None
+        
+        self.text_power.set("Start\nSystem")
+        
+        # Build Menu Interface
+        self.createMenuItems()
+        
+    def createMenuItems(self):
+        
+        # Power Button
+        self.button_power = tk.Button(self, textvariable=self.text_power, font=("Verdana", 14, "bold"),
+                  pady=10, padx=2, bg='green', relief=tk.FLAT, 
+                  command=self.callbackPower)
+        self.button_power.pack(side=tk.TOP, pady=10)
+                  
+        # Simple separator (Horizontal)
+        separator = tk.Frame(self, width=2, height=1, bd=1, relief=tk.FLAT)
+        separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
+                  
+        # Clear Button
+        self.button_clear = tk.Button(self, text="Clear\nTargets", font=("Verdana", 14, "bold"),
+                  pady=10, padx=2, bg='yellow', relief=tk.FLAT, 
+                  command=self.callbackClear)
+        self.button_clear.pack(side=tk.TOP, pady=10)
+                  
+    def callbackPower(self):
+        
+        # Start system
+        # ......
+        self.power = not self.power
+        
+        # Change button text and color
+        
+        if self.power:
+            self.text_power.set("Stop\nSystem")
+            self.button_power.config(bg='red')
+        else:
+            self.text_power.set("Start\nSystem")
+            self.button_power.config(bg='green')
+            
+    def callbackClear(self):
+        pass
+    
     
 class MultiRadio(tk.Frame):
     
