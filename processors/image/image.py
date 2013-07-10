@@ -27,7 +27,6 @@ import os
 
 # Frames to conditionally display
 FRAME_TYPES = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
-AREA_THRESHOLD = 50
 
 from calibration import SourceCalibrationModule
 from detection import ObjectDetectionModule
@@ -99,8 +98,7 @@ class ImageProcessor(object):
         Returns:
             An array storing the contour points of valid target objects.
         """
-        enclosCircle = [] 
-	    
+
         self.last_frame = self.isi.read()
 
         if self.avg_frame is None:
@@ -126,7 +124,7 @@ class ImageProcessor(object):
                                                                   side_threshold)
 
         # Display calibration points
-        if self.cal_data and self.frame_type == 'main':
+        if self.cal_data.is_valid and self.frame_type == 'main':
             for num, cal_point in enumerate(self.cal_data.image_points, 1):
                 point = (cal_point[0], cal_point[1])
                 color_intensity = ((num - 1) % 3) / 3.0 * 200 + 55
@@ -136,14 +134,14 @@ class ImageProcessor(object):
                 cv.circle(self.last_frame, point, 5, [0, 0, 0], thickness=2)
 
         # Display calibration status
-        cal_status_color = [0, 255, 0] if self.cal_data else [0, 0, 255]
+        cal_status_color = [0, 255, 0] if self.cal_data.is_valid else [0, 0, 255]
         cal_status_pos = (self.isi.width - 25, 25)
         cv.circle(self.last_frame, cal_status_pos, 20, [0, 0, 0], thickness=5)
         cv.circle(self.last_frame, cal_status_pos, 20, cal_status_color,
                   thickness=-1)
         cv.circle(self.last_frame, cal_status_pos, 20, [255, 255, 255],
                   thickness=2)
-        
+
         return img_data
 
     @property

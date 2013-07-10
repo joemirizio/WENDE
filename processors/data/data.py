@@ -36,13 +36,13 @@ class DataProcessor(object):
                 return
             data = img_proc.process()
             filtered_positions.append(self.tdm.discriminate(data, img_proc))
-        print filtered_positions
+        #print filtered_positions
        
 #        [[[x1,y1],[x2,y2],[x3,y3]],...]
 
         unique_positions = self.corr.checkUnique(img_processors,filtered_positions)
 
-        self.ttm.processDetection(unique_positions)
+        self.ttm.processDetections(unique_positions)
 
         # TODO Clean reference up
         self.targets = self.ttm.targets
