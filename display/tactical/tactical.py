@@ -51,13 +51,13 @@ class TacticalDisplay(object):
                 target.left_alert = False
             
             if distance((0, 0), target.pos) >= 10 and target.left_alert == False:
-                self.data_proc.tca.ui.displayAlert("Target has left the Alert zone!")
-                self.data_proc.tca.ui.logAlert("Target has left the Alert zone!")
+                self.data_proc.tca.ui.displayAlert("Target has left the ALERT zone!!!")
+                self.data_proc.tca.ui.logAlert("Target has left the ALERT zone!!!")
                 target.left_alert = True
                 target.left_safe = True
             elif distance((0, 0), target.pos) >= 5 and target.left_safe == False:
-                self.data_proc.tca.ui.displayAlert("Target entered the Alert zone!")
-                self.data_proc.tca.ui.logAlert("Target entered the Alert zone!")
+                self.data_proc.tca.ui.displayAlert("Target has entered the ALERT zone!!!")
+                self.data_proc.tca.ui.logAlert("Target has entered the ALERT zone!!!")
                 target.left_safe = True
 
     def updateCalibration(self, message):
