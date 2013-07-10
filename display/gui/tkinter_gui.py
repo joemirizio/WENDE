@@ -118,6 +118,9 @@ class Tkinter_gui(object):
     def displayAlert(self, label_text):
         self.alert.displayAlert(label_text)
         
+    def logAlert(self, label_text):
+        self.alert.logAlert(label_text)
+        
     def callbackCalibrate(self):
         pass
 
@@ -239,9 +242,16 @@ class Viewport(object):
 class Alert(object):
     def __init__(self, root):
         self.label_text = tk.StringVar()
-        font = tkFont.Font(family="Arial", size=24)
-        self.alert_label = tk.Label(root, font=font, textvariable=self.label_text, anchor=tk.SW)
-        self.alert_label.grid()
+        font = tkFont.Font(family="Arial", size=12)
+        
+        # Alert label
+        self.alert_label = tk.Label(root, font=font, textvariable=self.label_text)
+        self.alert_label.grid(column=2, row=0, columnspan=1, rowspan=1)
+        
+        # Alert logging window
+        self.alert_log = tk.Text(root, state='disabled', width=60, height=20, wrap='none')
+        self.alert_log.grid(column=2, row=1, columnspan=1, rowspan=2)
+        
         self.expire_time = None
         
     def update(self):
@@ -249,9 +259,25 @@ class Alert(object):
             self.clear()
 
     def displayAlert(self, alert_text):
-        self.label_text.set(alert_text)
+        ts = datetime.datetime.now().strftime("%H:%M:%S ")
+        self.label_text.set(ts + alert_text)
         self.expire_time = (datetime.datetime.now() +
             datetime.timedelta(seconds=ALERT_DURATION))
+        
+    def logAlert(self, alert_text):
+        ts = datetime.datetime.now().strftime("%H:%M:%S ")
+        self.label_text.set(ts + alert_text)
+        
+        numlines = self.alert_log.index('end - 1 line').split('.')[0]
+        self.alert_log['state'] = 'normal'
+        
+        if numlines == 5:
+            self.alert_log.delete(1.0, 2.0)
+        if self.alert_log.index('end-1c')!='1.0':
+            self.alert_log.insert('end', '\n')
+        logging.debug(self.label_text)
+        self.alert_log.insert('end', self.label_text.get())
+        self.alert_log['state'] = 'disabled'
 
     def clear(self):
         self.label_text.set('')
