@@ -61,19 +61,6 @@ class TacticalDisplay(object):
                 self.data_proc.tca.ui.logAlert("Target has entered the ALERT zone!!!")
                 target.left_safe = True
 
-    def updateCalibration(self, message):
-        if message == 1:
-            status = "Starting Calibration Process"
-            status_pos = [80,350]
-        elif message == 2:
-            status = "Calibration Complete"
-            status_pos = [80,370]
-        else:
-            status = "Uncalibrated System"
-            status_pos = [80,330]
-
-        self.canvas.create_text(status_pos, text=status)
-
     def displayTarget(self, target):
         # Remap target position
         target_pos = self.remapPosition(target.pos)
