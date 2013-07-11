@@ -15,6 +15,9 @@ DEFAULT_VIEWPORT_SIZE = (400, 300)
 VIEWPORT_PADDING = 10
 ALERT_DURATION = 5
 
+LOGGER_WIDTH = 49
+PAD_MENU = 63
+
 class Tkinter_gui(object):
     def __init__(self, name, image_processors={}):
         self.root = tk.Tk()
@@ -31,13 +34,13 @@ class Tkinter_gui(object):
         self.root.focus_set()
 
         # Main frame
-        self.frame = tk.Frame(self.root)
-        self.frame.grid(columnspan=3, rowspan=3, sticky=(tk.N, tk.S))
+        self.frame = tk.Frame(self.root, relief=tk.FLAT)
+        self.frame.grid(rowspan=3, sticky=(tk.N, tk.S))
         
         # Separate main frame into functional rows TODO -- Separate into methods/classes
-        self.top_frame = tk.Frame(self.frame)
-        self.mid_frame = tk.Frame(self.frame)
-        self.bot_frame = tk.Frame(self.frame)
+        self.top_frame = tk.Frame(self.frame, bg='dark slate gray')
+        self.mid_frame = tk.Frame(self.frame, bg='light slate gray')
+        self.bot_frame = tk.Frame(self.frame, bg='dark slate gray')
         
         # Top holds the display and menus (pack)
         # Mid holds info bar (pack)
@@ -46,25 +49,23 @@ class Tkinter_gui(object):
         ########### TOP FRAME START ############
         
         # Main menu frame
-        self.menu_main = MenuMain(self.top_frame).pack(side=tk.LEFT)
+        self.menu_main = MenuMain(self.top_frame, relief=tk.FLAT, bg='dark slate gray')
+        self.menu_main.pack(side=tk.LEFT, padx=PAD_MENU)
 
         # Tactical frame
         self.tactical_frame = tk.Frame(self.top_frame, 
                 width=TacticalDisplay.WIDTH, 
-                height=TacticalDisplay.HEIGHT)
+                height=TacticalDisplay.HEIGHT, relief=tk.FLAT, bg='dark slate gray')
         self.tactical_frame.pack(side=tk.LEFT)
         
         # Calibration menu frame
-        self.menu_cal = MenuCal(self.top_frame).pack(side=tk.LEFT)
+        self.menu_cal = MenuCal(self.top_frame, relief=tk.FLAT, bg='dark slate gray')
+        self.menu_cal.pack(side=tk.LEFT, padx=PAD_MENU)
         
         ########### MID FRAME START ############
-        # Shell mid frame
-        texts = ("Shell", "Shell", "Shell", "Shell", "Shell", "Shell", "Shell")
-        values = ("SHELL", "SHELL", "SHELL", "SHELL", "SHELL", "SHELL", "SHELL")
-        MultiRadio(self.mid_frame,
-                   text=texts, value=values,
-                   callback=self.callbackShell,
-                   side=tk.LEFT).pack(side=tk.TOP)
+        
+        self.info_bar = InfoBar(self.mid_frame, image_processors, relief=tk.FLAT, bg='light slate gray')
+        self.info_bar.pack(pady=0, fill=tk.X)
         
         ########### BOT FRAME START ############
         
@@ -77,7 +78,7 @@ class Tkinter_gui(object):
             pos[0] = pos[0] + 2
             
         # Add alert frame
-        self.alert_frame = tk.Frame(self.bot_frame, borderwidth=1)
+        self.alert_frame = tk.Frame(self.bot_frame, relief=tk.FLAT)
          
         # Alerts
         self.alert = Alert(self.alert_frame)
@@ -88,9 +89,9 @@ class Tkinter_gui(object):
         ########### END MAIN SUBFRAMES ############
         
         # Grid Frames
-        self.top_frame.grid(row=0, column=0, columnspan=3)
-        self.mid_frame.grid(row=1, column=0, columnspan=3)
-        self.bot_frame.grid(row=2, column=0, columnspan=3)
+        self.top_frame.grid(row=0, column=0)
+        self.mid_frame.grid(row=1, column=0)
+        self.bot_frame.grid(row=2, column=0)
         
         
         self.root.bind("<Escape>", lambda e: e.widget.quit())
@@ -119,6 +120,8 @@ class Tkinter_gui(object):
             viewport.update()
         # Update alert
         self.alert.update()
+        # Update viewport labels
+        self.info_bar.update()
         # Update GUI elements
         self.root.update()
         self.root.after(0, update_func)
@@ -263,11 +266,11 @@ class Alert(object):
         
         # Alert label
         self.alert_label = tk.Label(root, font=font, textvariable=self.label_text)
-        self.alert_label.grid(row=0, sticky=(tk.N + tk.S))
+        self.alert_label.grid(row=0, column=0, sticky=(tk.N + tk.S))
         
         # Alert logging window
-        self.alert_log = tk.Text(root, state='disabled', width=45, height=12, wrap='word', relief=tk.FLAT)
-        self.alert_log.grid(row=1, sticky=tk.S)
+        self.alert_log = tk.Text(root, state='disabled', width=LOGGER_WIDTH, height=12, wrap='word', relief=tk.FLAT)
+        self.alert_log.grid(row=1, column=0, sticky=tk.S)
         
         self.expire_time = None
         
@@ -355,77 +358,23 @@ class ColorDialog(tkSimpleDialog.Dialog):
 
         logging.debug("Colors: %s" % self.color_ranges)
         
-
-class MenuBar(tk.Frame):
-    
-    def __init__(self, parent):
         
-        tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
-        self.parent = parent
-        self.zone_type = tk.StringVar()
-        self.zone_type.set("NORMAL")
-        
-        # Build Menu Interface
-        self.createMenuItems()
-        
-    def createMenuItems(self):
-        
-        # Clear Button
-        tk.Button(self, text="Clear Data", font=("Verdana", 12, "bold"), bg='red',
-                  padx=10, pady=2, relief=tk.FLAT,
-                  command=self.callbackClear()).pack(side=tk.LEFT, padx=10)
-                  
-        # Simple separator
-        separator = tk.Frame(self, width=2, height=2, bg='black', bd=1, relief=tk.FLAT)
-        separator.pack(side=tk.LEFT, padx=10, pady=5, fill=tk.Y)
-        
-        # Calibrate Button
-        tk.Button(self, text="Calibrate System", font=("Verdana", 14, "bold"),
-                  padx=10, pady=2, bg='green', relief=tk.FLAT, 
-                  command=self.callbackCalibrate).pack(side=tk.LEFT, padx=10)
-                  
-        # Simple separator
-        separator = tk.Frame(self, width=2, height=2, bg='black', bd=1, relief=tk.FLAT)
-        separator.pack(side=tk.LEFT, padx=10, pady=5, fill=tk.Y)
-        
-        # Zone Type
-        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold")).pack(side=tk.TOP)
-        self.zone_type = MultiRadio(self,
-                                    text=("Normal", "Small"), value=("NORMAL", "SMALL"),
-                                    callback=self.callbackSetZone,
-                                    side=tk.LEFT).pack(side=tk.LEFT)
-                       
-    def callbackClear(self):
-        pass
-    
-    def callbackCalibrate(self):
-        if self.method.variable == "POINT":
-            pass
-        else:
-            pass
-
-    def callbackSetZone(self):
-        if self.zone.variable == "NORMAL":
-            pass
-        else:
-            pass
-    
 class MenuCal(tk.Frame):
     
-    def __init__(self, parent):
+    def __init__(self, parent, **options):
         
-        tk.Frame.__init__(self, parent, borderwidth=30, relief=tk.FLAT)
+        tk.Frame.__init__(self, parent, options)
         self.parent = parent
         self.method = None
         self.size = None
         
         # Build Menu Interface
-        self.createMenuItems()
+        self.createItems()
         
-    def createMenuItems(self):
+    def createItems(self):
         
         # Calibrate Button
-        tk.Button(self, text="Calibrate\nSystem", font=("Verdana", 14, "bold"),
+        tk.Button(self, text="Calibrate\nSystem", font=("Verdana", 12, "bold"),
                   pady=10, padx=2, bg='green', relief=tk.FLAT, 
                   command=self.callbackCalibrate).pack(side=tk.TOP, pady=10)
                   
@@ -466,9 +415,9 @@ class MenuCal(tk.Frame):
         
 class MenuMain(tk.Frame):
     
-    def __init__(self, parent):
+    def __init__(self, parent, **options):
         
-        tk.Frame.__init__(self, parent, borderwidth=30, relief=tk.FLAT)
+        tk.Frame.__init__(self, parent, options)
         self.parent = parent
         self.power = False
         self.text_power = tk.StringVar()
@@ -478,9 +427,9 @@ class MenuMain(tk.Frame):
         self.text_power.set("Start\nSystem")
         
         # Build Menu Interface
-        self.createMenuItems()
+        self.createItems()
         
-    def createMenuItems(self):
+    def createItems(self):
         
         # Power Button
         self.button_power = tk.Button(self, textvariable=self.text_power, font=("Verdana", 14, "bold"),
@@ -493,7 +442,7 @@ class MenuMain(tk.Frame):
         separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
                   
         # Clear Button
-        self.button_clear = tk.Button(self, text="Clear\nTargets", font=("Verdana", 14, "bold"),
+        self.button_clear = tk.Button(self, text="Clear\nTargets", font=("Verdana", 12, "bold"),
                   pady=10, padx=2, bg='yellow', relief=tk.FLAT, 
                   command=self.callbackClear)
         self.button_clear.pack(side=tk.TOP, pady=10)
@@ -515,6 +464,64 @@ class MenuMain(tk.Frame):
             
     def callbackClear(self):
         pass
+    
+class InfoBar(tk.Frame):
+    
+    def __init__(self, parent, image_processors, **options):
+        
+        tk.Frame.__init__(self, parent, options)
+        self.parent = parent
+        self.image_processors = image_processors
+        self.string_caltext = []
+        self.label_caltext = []
+        self.label_calcolor = []
+        self.label_alert = None
+        
+        # Build Menu Interface
+        self.createItems()
+        
+    def createItems(self):
+        
+        # Frame for viewport info labels
+        pos = 0
+        for feed in xrange(len(self.image_processors)):
+            # Create subframe
+            frame = tk.Frame(self, relief=tk.FLAT, padx=0, pady=0)
+            # Create text and labels
+            string_caltext = tk.StringVar()
+            self.string_caltext.append(string_caltext)
+            
+            label = tk.Label(frame, textvariable=string_caltext, font=("Verdana", 10, "bold"), 
+                             borderwidth=0, width=LOGGER_WIDTH/2, bg=self.cget('bg'), padx=0, pady=0)
+            label.pack(side=tk.LEFT, fill=tk.BOTH, expand=1, padx=0, pady=0)
+            self.label_caltext.append(label)
+            
+            label = tk.Label(frame, borderwidth=0, width=LOGGER_WIDTH/2, padx=0, pady=0)
+            label.pack(side=tk.LEFT, fill=tk.BOTH, expand=1, padx=0, pady=0)
+            self.label_calcolor.append(label)
+            
+            # Grid and change position
+            frame.grid(row=0, column=pos, sticky=(tk.W + tk.E))
+            pos = pos + 2
+            
+        # Frame for alert info label
+        frame = tk.Frame(self, relief=tk.FLAT, padx=0, pady=0)
+        self.label_alert = tk.Label(frame, text="Alert Messages", font=("Verdana", 10, "bold"), 
+                                    width=LOGGER_WIDTH, bg=self.cget('bg'))
+        self.label_alert.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+        frame.grid(row=0, column=1, sticky=(tk.W + tk.E))
+        
+    def update(self):
+        
+        pos = 0
+        for img_proc in self.image_processors:
+            if img_proc.cal_data.is_valid:
+                self.string_caltext[pos].set("Calibrated")
+                self.label_calcolor[pos].config(bg='green')
+            else:
+                self.string_caltext[pos].set("Uncalibrated")
+                self.label_calcolor[pos].config(bg='red')
+            pos = pos + 1
     
     
 class MultiRadio(tk.Frame):
@@ -540,3 +547,57 @@ class MultiRadio(tk.Frame):
                            variable=self.variable, value=val, indicatoron=0,
                            command=self.callback, padx=0, pady=0).pack(side=self.side, fill=self.fill)
         
+# Horizontal Menu (Unused)
+class MenuBar(tk.Frame):
+    
+    def __init__(self, parent, **options):
+        
+        tk.Frame.__init__(self, parent, options)
+        self.parent = parent
+        self.zone_type = tk.StringVar()
+        self.zone_type.set("NORMAL")
+        
+        # Build Menu Interface
+        self.createItems()
+        
+    def createItems(self):
+        
+        # Clear Button
+        tk.Button(self, text="Clear Data", font=("Verdana", 12, "bold"), bg='red',
+                  padx=10, pady=2, relief=tk.FLAT,
+                  command=self.callbackClear()).pack(side=tk.LEFT, padx=10)
+                  
+        # Simple separator
+        separator = tk.Frame(self, width=2, height=2, bg='black', bd=1, relief=tk.FLAT)
+        separator.pack(side=tk.LEFT, padx=10, pady=5, fill=tk.Y)
+        
+        # Calibrate Button
+        tk.Button(self, text="Calibrate System", font=("Verdana", 14, "bold"),
+                  padx=10, pady=2, bg='green', relief=tk.FLAT, 
+                  command=self.callbackCalibrate).pack(side=tk.LEFT, padx=10)
+                  
+        # Simple separator
+        separator = tk.Frame(self, width=2, height=2, bg='black', bd=1, relief=tk.FLAT)
+        separator.pack(side=tk.LEFT, padx=10, pady=5, fill=tk.Y)
+        
+        # Zone Type
+        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold")).pack(side=tk.TOP)
+        self.zone_type = MultiRadio(self,
+                                    text=("Normal", "Small"), value=("NORMAL", "SMALL"),
+                                    callback=self.callbackSetZone,
+                                    side=tk.LEFT).pack(side=tk.LEFT)
+                       
+    def callbackClear(self):
+        pass
+    
+    def callbackCalibrate(self):
+        if self.method.variable == "POINT":
+            pass
+        else:
+            pass
+
+    def callbackSetZone(self):
+        if self.zone.variable == "NORMAL":
+            pass
+        else:
+            pass

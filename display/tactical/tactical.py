@@ -10,7 +10,7 @@ MAXLEN_DEQUE = PERSIST_TIME * 50 # Just.. just save pretty much all of them for 
 class TacticalDisplay(object):
     
     PADDING = 30
-    WIDTH = 800
+    WIDTH = 700
     HEIGHT = WIDTH / 2
     SIZE = (WIDTH, HEIGHT)
     MAX_RANGE = 12
@@ -21,9 +21,10 @@ class TacticalDisplay(object):
         self.display = display
         self.data_proc = data_proc
         self.tgtTracks = {}
-        self.canvas = tk.Canvas(self.display, bg="#FFFFFF",
+        self.canvas = tk.Canvas(self.display, bg="dark slate gray",
                 width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING * 2, 
-                height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING)
+                height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING, 
+                relief=tk.FLAT, borderwidth=0)
         self.canvas.grid()
 
         self.drawBackground()
@@ -207,9 +208,9 @@ class TacticalDisplay(object):
         safe_points = self.getBoundingBox(5.0)
 
         # Currently set so the point of wedge at 250
-        pred_zone = self.canvas.create_arc(pred_points, start=start_angle, extent=sweep_angle, fill="#33B5E5", outline="#0099CC", width=4)
-        alrt_zone = self.canvas.create_arc(alrt_points, start=start_angle, extent=sweep_angle, fill="#FF4444", outline="#CC0000", width=4)
-        safe_zone = self.canvas.create_arc(safe_points, start=start_angle, extent=sweep_angle, fill="#99CC00", outline="#669900", width=4)
+        pred_zone = self.canvas.create_arc(pred_points, start=start_angle, extent=sweep_angle, fill="#33B5E5", outline="black", width=4)
+        alrt_zone = self.canvas.create_arc(alrt_points, start=start_angle, extent=sweep_angle, fill="#FF4444", outline="black", width=4)
+        safe_zone = self.canvas.create_arc(safe_points, start=start_angle, extent=sweep_angle, fill="#99CC00", outline="black", width=4)
 
         #self.canvas.create_text([80,330], text="Uncalibrated System")
             
