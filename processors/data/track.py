@@ -66,7 +66,7 @@ class TargetTrackModule(object):
         for pos in unmatchedList:
             logging.debug("New Target:")
             logging.debug(pos)
-            self.targets.append(Target(pos))
+            self.targets.append(Target(pos, self.config))
 
     def associateTrack(self, pos, target):
         # TODO reimplement

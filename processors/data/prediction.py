@@ -48,6 +48,13 @@ def predict(positions, pred_line_r):
     b = 2 * slope * y_incpt
     c = y_incpt**2 - pred_line_r**2
 
+    # Verify roots are not imaginary
+    try:
+        check_imaginary = sqrt(b**2 - 4*a*c)
+    except:
+        logging.error("Imaginary roots. Cannot predict location.")
+        return
+
     x_pred = (-b + sqrt(b**2 - 4*a*c)) / (2*a)
     y_pred = slope * x_pred + y_incpt
     if y_pred > 0:

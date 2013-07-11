@@ -86,9 +86,10 @@ if __name__ == "__main__":
     logging.basicConfig(
             level=getattr(logging, config.get('logger', 'log_level')),
             format=config.get('logger', 'log_format', raw=True))
-    logger = logging.getLogger()
-    hdlr = logging.FileHandler('/Users/joemirizio/Desktop/wende.log')
-    logger.addHandler(hdlr)
+    if config.getboolean('logger', 'use_log_file'):
+        logger = logging.getLogger()
+        hdlr = logging.FileHandler(config.get('logger', 'log_file'))
+        logger.addHandler(hdlr)
 
     # Run application
     App(config).run()
