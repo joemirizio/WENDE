@@ -14,7 +14,7 @@ class TargetDisciminationModule(object):
     def __init__(self, data_processor):
         self.data_processor = data_processor
                                                       
-    def discriminate(self, contour_data, img_process):
+    def discriminate(self, contour_data, image_processor):
         from data import distance
         from data import convertToGlobal
 
@@ -25,7 +25,7 @@ class TargetDisciminationModule(object):
             if area > MIN_AREA_THRESHOLD and area < MAX_AREA_THRESHOLD:
                 # Check to see if object is within the demo area boundaries 
                 center, radius = cv2.minEnclosingCircle(contour)
-                pos = convertToGlobal(img_process, center)
+                pos = convertToGlobal(image_processor, center)
                 position_in_demo_area = (math.fabs(pos[0]) * math.tan(0.5236) <
                                          math.fabs(pos[1]))
                 if distance(pos, ORIGIN) <= 12 and position_in_demo_area:
@@ -37,4 +37,5 @@ class TargetDisciminationModule(object):
                     if area > lower_area and area < upper_area:
                         valid_targets.append(pos)
                 
+        image_processor.valid_targets = valid_targets
         return valid_targets

@@ -61,16 +61,17 @@ class TargetCorrelationModule(object):
         unique_positions = []
         for image_processor in image_processors:
             #
-            if image_processor.cal_data.is_valid:
+            if not image_processor.cal_data.is_valid:
                 continue
 
-            for position in image_processor.last_detected_positions:
+            for position in image_processor.valid_targets:
                 #
                 position_matched = False
                 for i, unique_position in enumerate(unique_positions):
                     #
                     if distance(position, unique_position) < 0.5:
-                        unique_positions[i] = np.mean(position, unique_position)
+                        unique_positions[i] = np.mean((position,
+                                                       unique_position), axis = 0)
                         position_matched = True
                         break
                 #

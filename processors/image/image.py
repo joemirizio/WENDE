@@ -66,6 +66,7 @@ class ImageProcessor(object):
     def __init__(self, tca, image_source, frame_type=0):
         self.last_frame = None
         self.last_detected_positions = None
+        self.valid_targets = None
         self.__avg_frame = None
         self.frame_type = FRAME_TYPES[frame_type]
         self.cal_data = None
