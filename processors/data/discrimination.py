@@ -35,6 +35,6 @@ class TargetDisciminationModule(object):
                     lower_area = 0.5 * expected_contour
                     # Add to target list if size conditions satisfied
                     if area > lower_area and area < upper_area:
-                        valid_targets.append(center)
+                        valid_targets.append(pos)
                 
         return valid_targets

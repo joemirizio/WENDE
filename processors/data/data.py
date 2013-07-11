@@ -6,7 +6,7 @@ import cv2
 from discrimination import TargetDisciminationModule
 from track import TargetTrackModule
 from target import Target
-import correlation
+from correlation import TargetCorrelationModule
 
 AREA_THRESHOLD = 50
 DETECT_THRESHOLD = 0.75
@@ -21,7 +21,7 @@ class DataProcessor(object):
         self.tca = tca
         self.config = tca.config
         # Target correlation module
-        self.corr = correlation.CorrelationModule(self)
+        self.tcm = TargetCorrelationModule(self)
         # Target Discimination Module
         self.tdm = TargetDisciminationModule(self)
         # Target Track Module
@@ -36,16 +36,14 @@ class DataProcessor(object):
                 continue
 
             # Discriminate positions
-            discriminated_positions = self.tdm.discriminate(
-                    image_processor.last_detected_positions,
-                    image_processor)
+            self.tdm.discriminate(image_processor.last_detected_positions,
+                                  image_processor)
 
-            filtered_positions.append(discriminated_positions)
        
 #        [[[x1,y1],[x2,y2],[x3,y3]],...]
 
-        unique_positions = self.corr.checkUnique(self.tca.image_processors,
-                                                 filtered_positions)
+        unique_positions = self.tcm.checkUnique(self.tca.image_processors)
+
         logging.debug("-" * 20)
         logging.debug("UNIQUE POSITIONS: %s" % unique_positions)
 
@@ -91,6 +89,9 @@ def convertToGlobal(imageProc, coordinates):
 
     """
     
+    # Convert to numpy array
+    coordinates = np.array(coordinates)
+
     imgPoint = np.ones( (3, 1), np.float32 )
     imgPoint[0, 0] = coordinates[0]
     imgPoint[1, 0] = coordinates[1]
