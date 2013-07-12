@@ -6,6 +6,7 @@ from collections import deque
 
 from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 import prediction
+from processors.image.calibration import DISTANCES_NORMAL, DISTANCES_SMALL
 
 ORIGIN = [0, 0]
 
@@ -16,6 +17,7 @@ class Target(object):
     MEASUREMENT_NOISE = 1e3
     TIME_STEP = 0.1
     PREDICTION_RADIUS = 12
+    SAFE_RADIUS = 5
     TURN_THRESHOLD_DEGREES = 4
     
     def __init__(self, pos, config=None):
@@ -46,6 +48,12 @@ class Target(object):
             Target.TIME_STEP = config.getfloat('track', 'time_step')
             Target.PREDICTION_RADIUS = config.getfloat('track', 'prediction_radius')
             Target.TURN_THRESHOLD_DEGREES = config.getfloat('track', 'turn_threshold')
+            if config.get('calibration', 'zone_size') == 'NORMAL':
+                Target.PREDICTION_RADIUS = DISTANCES_NORMAL[2]
+                Target.SAFE_RADIUS = DISTANCES_NORMAL[1]
+            elif config.get('calibration', 'zone_size') == 'SMALL':
+                Target.PREDICTION_RADIUS = DISTANCES_SMALL[2]
+                Target.SAFE_RADIUS = DISTANCES_SMALL[1]
 
     def update(self, pos):
 
@@ -60,6 +68,8 @@ class Target(object):
         self.kal_meas[1, 0] = pos[1]
         # TODO Implement newer OpenCV Kalman functions
         tmp = cv.KalmanCorrect(self.kalman, self.kal_meas)
+        if math.isnan(tmp[0, 0]):
+            logging.error('Kalman correct returned nan')
         
         velocity = (tmp[2, 0], tmp[3, 0])
         if magnitude(velocity) > magnitude(self.max_velocity):
@@ -118,6 +128,7 @@ class Target(object):
     
     #This function takes in the target position and returns a kalman filter
     def makeKalman(self, pos, x_dot_init=0, y_dot_init=0):
+        logging.debug('Creating new kalman instance')
         kalman = cv.CreateKalman(dynam_params=4, measure_params=2)
     
         # Set previous state prediction
@@ -157,15 +168,12 @@ class Target(object):
 
 # This function is called during init to determine if a track is a running dog
 def VerifyValidity(pos):
-    return distance(pos, ORIGIN) < 5
+    return distance(pos, ORIGIN) < Target.SAFE_RADIUS
 
 
 #This function computes the distance between two points
 def distance(p1, p2):
-    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
-
-
-    
+    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)   
 
 def angle_diff(a, b):
     # given two cartesian points on a circle
