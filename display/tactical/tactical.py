@@ -79,7 +79,7 @@ class TacticalDisplay(object):
         if target not in self.tgtTracks:
             # Create target icon
             tgtTrack = TargetTrack(target)
-            tgtTrack.icon = self.canvas.create_oval(target_pos_points, fill="#AA66CC", outline="#9933CC", width=4)
+            tgtTrack.icon = self.canvas.create_oval(target_pos_points, fill="#AA66CC", outline="black", width=3)
             # Create target ID
             #tgtTrack.id = tk.Label(self.canvas, text="Child #", bg="white", anchor='center')
             # Create label
