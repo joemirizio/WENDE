@@ -10,7 +10,7 @@ MAXLEN_DEQUE = PERSIST_TIME * 50 # Just.. just save pretty much all of them for 
 class TacticalDisplay(object):
     
     PADDING = 30
-    WIDTH = 700
+    WIDTH = 650
     HEIGHT = WIDTH / 2
     SIZE = (WIDTH, HEIGHT)
     MAX_RANGE = 12
@@ -25,7 +25,7 @@ class TacticalDisplay(object):
                 width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING * 2, 
                 height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING, 
                 relief=tk.FLAT, borderwidth=0)
-        self.canvas.grid()
+        self.canvas.pack(padx=0, pady=0, fill=tk.BOTH, expand=1)
 
         self.drawBackground()
 

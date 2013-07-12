@@ -16,7 +16,7 @@ VIEWPORT_PADDING = 10
 ALERT_DURATION = 5
 
 LOGGER_WIDTH = 49
-PAD_MENU = 63
+PAD_MENU = 76
 
 class Tkinter_gui(object):
     def __init__(self, name, image_processors={}):
@@ -34,7 +34,7 @@ class Tkinter_gui(object):
         self.root.focus_set()
 
         # Main frame
-        self.frame = tk.Frame(self.root, relief=tk.FLAT)
+        self.frame = tk.Frame(self.root)
         self.frame.grid(rowspan=3, sticky=(tk.N, tk.S))
         
         # Separate main frame into functional rows TODO -- Separate into methods/classes
@@ -49,22 +49,20 @@ class Tkinter_gui(object):
         ########### TOP FRAME START ############
         
         # Main menu frame
-        self.menu_main = MenuMain(self.top_frame, relief=tk.FLAT, bg='dark slate gray')
+        self.menu_main = MenuMain(self.top_frame, bg='dark slate gray')
         self.menu_main.pack(side=tk.LEFT, padx=PAD_MENU)
 
         # Tactical frame
-        self.tactical_frame = tk.Frame(self.top_frame, 
-                width=TacticalDisplay.WIDTH, 
-                height=TacticalDisplay.HEIGHT, relief=tk.FLAT, bg='dark slate gray')
-        self.tactical_frame.pack(side=tk.LEFT)
+        self.tactical_frame = tk.Frame(self.top_frame, bg='dark slate gray')
+        self.tactical_frame.pack(side=tk.LEFT, padx=0, fill=tk.BOTH, expand=1)
         
         # Calibration menu frame
-        self.menu_cal = MenuCal(self.top_frame, relief=tk.FLAT, bg='dark slate gray')
+        self.menu_cal = MenuCal(self.top_frame, bg='dark slate gray')
         self.menu_cal.pack(side=tk.LEFT, padx=PAD_MENU)
         
         ########### MID FRAME START ############
         
-        self.info_bar = InfoBar(self.mid_frame, image_processors, relief=tk.FLAT, bg='light slate gray')
+        self.info_bar = InfoBar(self.mid_frame, image_processors, bg='light slate gray')
         self.info_bar.pack(pady=0, fill=tk.X)
         
         ########### BOT FRAME START ############
@@ -78,13 +76,12 @@ class Tkinter_gui(object):
             pos[0] = pos[0] + 2
             
         # Add alert frame
-        self.alert_frame = tk.Frame(self.bot_frame, relief=tk.FLAT)
+        self.alert_frame = tk.Frame(self.bot_frame, bg='light slate gray')
          
         # Alerts
         self.alert = Alert(self.alert_frame)
          
         self.alert_frame.grid(row=0, column=1)
-        #tk.Button(self.bot_frame).grid(column=1)
             
         ########### END MAIN SUBFRAMES ############
         
@@ -265,12 +262,16 @@ class Alert(object):
         font = tkFont.Font(family="Arial", size=12)
         
         # Alert label
-        self.alert_label = tk.Label(root, font=font, textvariable=self.label_text)
-        self.alert_label.grid(row=0, column=0, sticky=(tk.N + tk.S))
+        self.alert_label = tk.Label(root, font=font,
+                                    textvariable=self.label_text, bg='light slate gray')
+        self.alert_label.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        #self.alert_label.grid(row=0, column=0, sticky=(tk.N + tk.S))
         
         # Alert logging window
-        self.alert_log = tk.Text(root, state='disabled', width=LOGGER_WIDTH, height=12, wrap='word', relief=tk.FLAT)
-        self.alert_log.grid(row=1, column=0, sticky=tk.S)
+        self.alert_log = tk.Text(root, state='disabled', width=LOGGER_WIDTH+2,
+                                 height=14, wrap='word', relief=tk.FLAT)
+        self.alert_log.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
+        #self.alert_log.grid(row=1, column=0, sticky=tk.S)
         
         self.expire_time = None
         
@@ -432,7 +433,8 @@ class MenuMain(tk.Frame):
     def createItems(self):
         
         # Power Button
-        self.button_power = tk.Button(self, textvariable=self.text_power, font=("Verdana", 14, "bold"),
+        self.button_power = tk.Button(self, textvariable=self.text_power,
+                                      font=("Verdana", 14, "bold"),
                   pady=10, padx=2, bg='green', relief=tk.FLAT, 
                   command=self.callbackPower)
         self.button_power.pack(side=tk.TOP, pady=10)
