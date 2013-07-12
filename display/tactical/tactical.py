@@ -46,9 +46,9 @@ class TacticalDisplay(object):
             self.displayTarget(target)
 
             # Display alerts
-            if distance((0, 0), target.pos) < 5:
+            if distance((0, 0), target.pos) < 4.8:
                 target.left_safe = False
-            if distance((0, 0), target.pos) < 10:
+            if distance((0, 0), target.pos) < 9.8:
                 target.left_alert = False
             
             if distance((0, 0), target.pos) >= 10 and target.left_alert == False:
