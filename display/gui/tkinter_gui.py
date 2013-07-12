@@ -73,10 +73,10 @@ class Tkinter_gui(object):
         size = DEFAULT_VIEWPORT_SIZE
 
         # Raw Feeds
-        pos = [0, 0]
+        pos = [2, 0]
         for img_proc in image_processors:
             self.addView(img_proc, pos, size)
-            pos[0] = pos[0] + 2
+            pos[0] = pos[0] - 2
             
         # Add alert frame
         self.alert_frame = tk.Frame(self.bot_frame, relief=tk.FLAT)
