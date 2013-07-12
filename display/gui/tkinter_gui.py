@@ -5,6 +5,7 @@ import tkSimpleDialog
 import numpy as np
 from PIL import Image
 from PIL import ImageTk
+from Tkinter import Scrollbar
 import logging
 import math
 import datetime
@@ -267,10 +268,16 @@ class Alert(object):
         # Alert label
         self.alert_label = tk.Label(root, font=font, textvariable=self.label_text)
         self.alert_label.grid(row=0, column=0, sticky=(tk.N + tk.S))
+
+        # Set scrollbar
+        self.scrollbar = Scrollbar(root)
+        self.scrollbar.grid(row=1, column=1, sticky=tk.NS)
         
         # Alert logging window
-        self.alert_log = tk.Text(root, state='disabled', width=LOGGER_WIDTH, height=12, wrap='word', relief=tk.FLAT)
+        self.alert_log = tk.Text(root, state='disabled', width=LOGGER_WIDTH, height=12, wrap='word', relief=tk.FLAT, yscrollcommand=self.scrollbar.set)
         self.alert_log.grid(row=1, column=0, sticky=tk.S)
+        
+        self.scrollbar.config(command=self.alert_log.yview)
         
         self.expire_time = None
         
@@ -291,7 +298,7 @@ class Alert(object):
         numlines = self.alert_log.index('end - 1 line').split('.')[0]
         self.alert_log['state'] = 'normal'
         
-        if numlines == 5:
+        if numlines == 10:
             self.alert_log.delete(1.0, 2.0)
         if self.alert_log.index('end-1c')!='1.0':
             self.alert_log.insert('end', '\n')
