@@ -17,7 +17,7 @@ VIEWPORT_PADDING = 10
 ALERT_DURATION = 5
 
 LOGGER_WIDTH = 49
-PAD_MENU = 76
+PAD_MENU = 85
 
 COLOR_LIGHT = 'light slate gray'
 COLOR_DARK = 'dark slate gray'
@@ -42,19 +42,7 @@ class Tkinter_gui(object):
         self.frame.grid(rowspan=3, sticky=(tk.N, tk.S))
         
         ### Top Frame
-        self.top_frame = tk.Frame(self.frame, bg=COLOR_DARK)
-        
-        # Main menu frame
-        self.menu_main = MenuMain(self.top_frame, bg=COLOR_DARK)
-        self.menu_main.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.BOTH, expand=1)
-
-        # Tactical frame
-        self.tactical_frame = tk.Frame(self.top_frame, bg=COLOR_DARK)
-        self.tactical_frame.pack(side=tk.LEFT, padx=0, fill=tk.BOTH, expand=1)
-        
-        # Calibration menu frame
-        self.menu_cal = MenuCal(self.top_frame, bg=COLOR_DARK)
-        self.menu_cal.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.BOTH, expand=1)
+        self.top_frame = TopFrame(self.frame, bg=COLOR_DARK)
         
         ### Bottom Frame
         self.bot_frame = BotFrame(self.frame, self, image_processors, 
@@ -349,6 +337,32 @@ class ColorDialog(tkSimpleDialog.Dialog):
 
         logging.debug("Colors: %s" % self.color_ranges)
         
+class TopFrame(tk.Frame):
+    
+    def __init__(self, parent, **options):
+        tk.Frame.__init__(self, parent, options)
+        self.bg = self.cget('bg')
+        
+        self.menu_main = None
+        self.tactical_frame = None
+        self.menu_cal = None
+        
+        self.createItems()
+        
+    def createItems(self):
+        
+        # Main menu frame
+        self.menu_main = MenuMain(self, bg=self.bg)
+        self.menu_main.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.X, expand=1)
+
+        # Tactical frame
+        self.tactical_frame = tk.Frame(self, bg=self.bg)
+        self.tactical_frame.pack(side=tk.LEFT, padx=0, fill=tk.BOTH, expand=1)
+        
+        # Calibration menu frame
+        self.menu_cal = MenuCal(self, bg=self.bg)
+        self.menu_cal.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.X, expand=1)
+        
 class BotFrame(tk.Frame):
     
     def __init__(self, parent, ui, image_processors, **options):
@@ -442,22 +456,22 @@ class MenuCal(tk.Frame):
                   command=self.callbackCalibrate).pack(side=tk.TOP, pady=10)
                   
         # Simple separator (Horizontal)
-        separator = tk.Frame(self, width=2, height=2, bg='blue', bd=1, relief=tk.FLAT)
+        separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
         separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
                   
         # Calibration Method
-        tk.Label(self, text="Calibration\nMethod", font=("Verdana", 10, "bold")).pack(side=tk.TOP)
+        tk.Label(self, text="Calibration\nMethod", font=("Verdana", 10, "bold"), bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
         self.method = MultiRadio(self,
                                     text=("Point", "Color"), value=("POINT", "COLOR"), 
                                     callback=self.callbackCalibrate, 
                                     side=tk.TOP, fill=tk.X).pack(fill=tk.X, side=tk.TOP)
                                     
         # Simple separator (Horizontal)
-        separator = tk.Frame(self, width=2, height=1, bd=1, relief=tk.FLAT)
+        separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
         separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
         
         # Zone Type
-        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold")).pack(side=tk.TOP)
+        tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold"), bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
         self.size = MultiRadio(self,
                                     text=("Normal", "Small"), value=("NORMAL", "SMALL"),
                                     callback=self.callbackSetZone,
@@ -502,7 +516,7 @@ class MenuMain(tk.Frame):
         self.button_power.pack(side=tk.TOP, pady=10)
                   
         # Simple separator (Horizontal)
-        separator = tk.Frame(self, width=2, height=1, bd=1, relief=tk.FLAT)
+        separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
         separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
                   
         # Clear Button

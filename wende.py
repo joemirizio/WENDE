@@ -31,7 +31,7 @@ class App(object):
             self.ui = gui.HighGUI(window_title, image_processors)
 
         # Tactical display
-        self.tactical = TacticalDisplay(self.ui.tactical_frame, self.data_processor)
+        self.tactical = TacticalDisplay(self.ui.top_frame.tactical_frame, self.data_processor)
         
         # Key bindings
         #TODO Clean up syntax, implement dynamic frame types

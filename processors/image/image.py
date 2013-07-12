@@ -128,15 +128,6 @@ class ImageProcessor(object):
                 cv.circle(self.last_frame, point, 5, color, thickness=-1)
                 cv.circle(self.last_frame, point, 5, [0, 0, 0], thickness=2)
 
-        # Display calibration status
-        cal_status_color = [0, 255, 0] if self.cal_data.is_valid else [0, 0, 255]
-        cal_status_pos = (self.isi.width - 25, 25)
-        cv.circle(self.last_frame, cal_status_pos, 20, [0, 0, 0], thickness=5)
-        cv.circle(self.last_frame, cal_status_pos, 20, cal_status_color,
-                  thickness=-1)
-        cv.circle(self.last_frame, cal_status_pos, 20, [255, 255, 255],
-                  thickness=2)
-
         return img_data
 
     @property
