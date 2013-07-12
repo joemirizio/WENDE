@@ -5,6 +5,7 @@ import tkSimpleDialog
 import numpy as np
 from PIL import Image
 from PIL import ImageTk
+from Tkinter import Scrollbar
 import logging
 import math
 import datetime
@@ -70,10 +71,10 @@ class Tkinter_gui(object):
         size = DEFAULT_VIEWPORT_SIZE
 
         # Raw Feeds
-        pos = [0, 0]
+        pos = [2, 0]
         for img_proc in image_processors:
             self.addView(img_proc, pos, size)
-            pos[0] = pos[0] + 2
+            pos[0] = pos[0] - 2
             
         # Add alert frame
         self.alert_frame = tk.Frame(self.bot_frame, bg='light slate gray')
@@ -266,12 +267,18 @@ class Alert(object):
                                     textvariable=self.label_text, bg='light slate gray')
         self.alert_label.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         #self.alert_label.grid(row=0, column=0, sticky=(tk.N + tk.S))
+
+        # Set scrollbar
+        self.scrollbar = Scrollbar(root)
+        self.scrollbar.grid(row=1, column=1, sticky=tk.NS)
         
         # Alert logging window
         self.alert_log = tk.Text(root, state='disabled', width=LOGGER_WIDTH+2,
-                                 height=14, wrap='word', relief=tk.FLAT)
+                                 height=14, wrap='word', relief=tk.FLAT, yscrollcommand=self.scrollbar.set)
         self.alert_log.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
         #self.alert_log.grid(row=1, column=0, sticky=tk.S)
+        
+        self.scrollbar.config(command=self.alert_log.yview)
         
         self.expire_time = None
         
@@ -292,7 +299,7 @@ class Alert(object):
         numlines = self.alert_log.index('end - 1 line').split('.')[0]
         self.alert_log['state'] = 'normal'
         
-        if numlines == 5:
+        if numlines == 10:
             self.alert_log.delete(1.0, 2.0)
         if self.alert_log.index('end-1c')!='1.0':
             self.alert_log.insert('end', '\n')

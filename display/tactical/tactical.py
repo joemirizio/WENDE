@@ -46,9 +46,9 @@ class TacticalDisplay(object):
             self.displayTarget(target)
 
             # Display alerts
-            if distance((0, 0), target.pos) < 5:
+            if distance((0, 0), target.pos) < 4.8:
                 target.left_safe = False
-            if distance((0, 0), target.pos) < 10:
+            if distance((0, 0), target.pos) < 9.8:
                 target.left_alert = False
             
             if distance((0, 0), target.pos) >= 10 and target.left_alert == False:
@@ -60,19 +60,6 @@ class TacticalDisplay(object):
                 self.data_proc.tca.ui.displayAlert("Target has entered the ALERT zone!!!")
                 self.data_proc.tca.ui.logAlert("Target has entered the ALERT zone!!!")
                 target.left_safe = True
-
-    def updateCalibration(self, message):
-        if message == 1:
-            status = "Starting Calibration Process"
-            status_pos = [80,350]
-        elif message == 2:
-            status = "Calibration Complete"
-            status_pos = [80,370]
-        else:
-            status = "Uncalibrated System"
-            status_pos = [80,330]
-
-        self.canvas.create_text(status_pos, text=status)
 
     def displayTarget(self, target):
         # Remap target position
