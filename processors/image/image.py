@@ -30,6 +30,7 @@ FRAME_TYPES = ('main', 'orig', 'blur', 'avg', 'gray', 'bw')
 
 from calibration import SourceCalibrationModule
 from detection import ObjectDetectionModule
+from detection import DetectionThreshold
 from image_source import ImageSourceInterface
 from image_sources import Camera
 from image_sources import ImageFile
@@ -108,15 +109,19 @@ class ImageProcessor(object):
                                                          self.frame_type)
         
         if self.scm.getDisplayColors()[0]:
+            center_threshold = DetectionThreshold(
+                    self.scm.getCalibrationThresholds('center').min,
+                    self.scm.getCalibrationThresholds('center').max)
             self.last_frame, img_data_center = self.odm.findObjects(self.last_frame,
                                                                     self.frame_type,
-                                                                    self.scm.getCalibrationThresholds('center').min,
-                                                                    self.scm.getCalibrationThresholds('center').max)
+                                                                    center_threshold)
         if self.scm.getDisplayColors()[1]:
+            side_threshold = DetectionThreshold(
+                    self.scm.getCalibrationThresholds('side').min,
+                    self.scm.getCalibrationThresholds('side').max)
             self.last_frame, img_data_side = self.odm.findObjects(self.last_frame,
                                                                   self.frame_type,
-                                                                  self.scm.getCalibrationThresholds('side').min,
-                                                                  self.scm.getCalibrationThresholds('side').max)
+                                                                  side_threshold)
 
         # Display calibration points
         if self.cal_data.is_valid and self.frame_type == 'main':

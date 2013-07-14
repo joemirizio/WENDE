@@ -13,7 +13,7 @@ import logging
 import pickle
 from math import sin, cos, pi
 
-from detection import DetectionThresholds
+from detection import DetectionThreshold
 
 # CONSTANTS
 
@@ -31,7 +31,7 @@ MIN_CAL_RADIUS = 8
 ZERO_ARRAY = np.zeros((3), np.uint8)
 ONE_ARRAY = np.ones((3), np.uint8)
 
-class CalibrationThresholds(object):
+class CalibrationThreshold(object):
     """ Holds calibration color minimum and maximum thresholds
     
     Attributes:
@@ -48,8 +48,8 @@ class CalibrationThresholds(object):
     
     def __init__(self, center_min=None, center_max=None, side_min=None, side_max=None):
         
-        self.center = DetectionThresholds(center_min, center_max)
-        self.side = DetectionThresholds(side_min, side_max)
+        self.center = DetectionThreshold(center_min, center_max)
+        self.side = DetectionThreshold(side_min, side_max)
         
     def setThresholds(self, which_color, detect_min, detect_max, side_min=None, side_max=None):
         
@@ -97,7 +97,7 @@ class SourceCalibrationModule(object):
         calcDistortionMaps()
     """
     
-    CAL_THRESHOLDS = CalibrationThresholds()
+    CAL_THRESHOLDS = CalibrationThreshold()
     DISPLAY_COLORS = False, False
     
     def __init__(self, image_processor):
@@ -125,9 +125,9 @@ class SourceCalibrationModule(object):
         # This is no longer needed, but must initialize to something
         if self.getCalibrationThresholds()[0].min == None:
             self.setCalibrationThresholds('all', 
-                                          [DetectionThresholds(center_thresh_min, 
-                                                             center_thresh_max),
-                                          DetectionThresholds(side_thresh_min,
+                                          [DetectionThreshold(center_thresh_min, 
+                                                              center_thresh_max),
+                                          DetectionThreshold(side_thresh_min,
                                                              side_thresh_max)])
         
         # Load pre-saved calibration data or create blank cal_data
@@ -184,11 +184,10 @@ class SourceCalibrationModule(object):
         cal_points = []
         for color in self.getCalibrationThresholds():
             # Get Contours
+            color_threshold = DetectionThreshold(color.min, color.max)
             _, contours = self.image_processor.odm.findObjects(frame, 
                                                                self.image_processor.frame_type, 
-                                                               color.min, 
-                                                               color.max)
-
+                                                               color_threshold)
             # Get center points
             for contour in contours:
                 center, radius = cv.minEnclosingCircle(contour)
@@ -224,13 +223,13 @@ class SourceCalibrationModule(object):
             objectPoints = np.array((self.center_points + self.left_points), np.float32)
             
         # Calculate extrinsic parameters
-        logging.debug("-------------------------------")
-        logging.debug("objectPoints: %s" % objectPoints)
-        logging.debug("imagePoint: %s" % imagePoints)
-        logging.debug("intrinsic: %s"
-                      % self.image_processor.cal_data.intrinsic)
-        logging.debug("distortion: %s"
-                      % self.image_processor.cal_data.distortion)
+#         logging.debug("-------------------------------")
+#         logging.debug("objectPoints: %s" % objectPoints)
+#         logging.debug("imagePoint: %s" % imagePoints)
+#         logging.debug("intrinsic: %s"
+#                       % self.image_processor.cal_data.intrinsic)
+#         logging.debug("distortion: %s"
+#                       % self.image_processor.cal_data.distortion)
         _, rvec, tvec = cv.solvePnP(objectPoints, imagePoints,
                                     self.image_processor.cal_data.intrinsic,
                                     self.image_processor.cal_data.distortion)

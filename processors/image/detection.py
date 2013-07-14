@@ -30,13 +30,14 @@ TARGET_THRESHOLD_MAX = [255, 236, 244]
 # DETECT_MAX = np.array([255, 236, 244], np.uint8)
 
 # Delta values for threshold building
-DELTA_HSV = np.array([10, 50, 75], np.int16)
+DELTA_HSV = np.array([12, 50, 60], np.int16)
+DELTA_MAX_RATIO = 0.25
 
 # Minimum dimensions of bounded contours
 CONTOUR_MIN_WIDTH = 5
 CONTOUR_MIN_HEIGHT = 5
 
-class DetectionThresholds(object):
+class DetectionThreshold(object):
     """ Storage container for minimum and maximum detection thresholds
     
     Attributes:
@@ -66,7 +67,7 @@ class DetectionThresholds(object):
 
 class ObjectDetectionModule(object):
     """Scans an image for potential targets and provides size/location
-	information about these targets.
+    information about these targets.
 
     Attributes:
         image_processor: An ImageProcessor object.
@@ -76,15 +77,15 @@ class ObjectDetectionModule(object):
         findObjects()
     """
     
-    TARGET_THRESHOLDS = DetectionThresholds(TARGET_THRESHOLD_MIN, TARGET_THRESHOLD_MAX)
+    TARGET_THRESHOLDS = DetectionThreshold(TARGET_THRESHOLD_MIN, TARGET_THRESHOLD_MAX)
     
     def __init__(self, image_processor):
         self.image_processor = image_processor
         self.config = image_processor.config
 
     def findObjects(self, frame, frame_type=FRAME_TYPES[0],
-                    detectMin=TARGET_THRESHOLDS.min, detectMax=TARGET_THRESHOLDS.max):
-	"""A frame is scanned for target objects by finding contours, which
+                    detection_threshold=TARGET_THRESHOLDS):
+        """A frame is scanned for target objects by finding contours, which
         are then drawn on the frame.
 
         Takes the provided image frame, applies a Gaussian blur, and
@@ -99,11 +100,7 @@ class ObjectDetectionModule(object):
             frame: An 8-bit image array of the frame to be processed.
             frame_type: An string from the FRAME_TYPES list that describes a
                 property of the current frame.
-            detectMin = An array serving as the lower threshold in the binary
-                filtering.
-            detectMin = An array serving as the upper threshold in the binary
-                filtering.
-
+            detection_threshold: The min and max threshold for binary filtering
         Returns:
             A two-element tuple whose first element is the original 8-bit
             image frame with contours and bounding boxes drawn. The second
@@ -112,19 +109,22 @@ class ObjectDetectionModule(object):
         blur_frame = cv.GaussianBlur(frame, (19, 19), 0)
         hsv_frame = cv.cvtColor(blur_frame, cv.COLOR_BGR2HSV)
         
+        detect_min = detection_threshold.min
+        detect_max = detection_threshold.max
+
         # Find pixels in defined HSV ranges
-        if detectMin[0] < detectMax[0]:
-            thresh_frame = cv.inRange(hsv_frame, detectMin, detectMax)
+        if detect_min[0] < detect_max[0]:
+            thresh_frame = cv.inRange(hsv_frame, detect_min, detect_max)
         
         else:
             # If the hue is wrapped, process separately from saturation, value (brightness)
             channel_hue = hsv_frame[:,:,0]
             thresh_hue = np.logical_not(cv.inRange(channel_hue, 
-                                                   np.array(detectMax[0]), 
-                                                   np.array(detectMin[0])))
+                                                   np.array(detect_max[0]), 
+                                                   np.array(detect_min[0])))
             thresh_sv = cv.inRange(hsv_frame[:,:,1:],
-                                   detectMin[1:],
-                                   detectMax[1:])
+                                   detect_min[1:],
+                                   detect_max[1:])
             # Logical combination of the two thresholds, cast into uint8 for findContours
             thresh_frame = np.logical_and(thresh_hue, thresh_sv).astype(np.uint8)
             
@@ -165,7 +165,7 @@ def buildDetectionThresholds(threshold_seed):
         color_seed -- list containing HSV value to build thresholds around
         
     Outputs:
-        detection_thresholds -- DetectionThresholds object
+        detection_thresholds -- DetectionThreshold object
             
     """
     
@@ -174,7 +174,7 @@ def buildDetectionThresholds(threshold_seed):
     
     # Allow hue value to wrap
     detect_min = color_input - DELTA_HSV
-    detect_max = color_input + DELTA_HSV
+    detect_max = color_input + np.hstack((DELTA_HSV[0], DELTA_HSV[1:] * DELTA_MAX_RATIO))
     
     # Wrap hsv
     if detect_min[0] < 0: detect_min[0] = (180 + detect_min[0])
@@ -185,6 +185,6 @@ def buildDetectionThresholds(threshold_seed):
         if detect_min[index] < 0: detect_min[index] = 0
         if detect_max[index] > 255: detect_max[index] = 255
         
-    detection_thresholds = DetectionThresholds(detect_min, detect_max)
+    detection_thresholds = DetectionThreshold(detect_min, detect_max)
         
     return detection_thresholds
