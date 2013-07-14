@@ -21,10 +21,10 @@ class TacticalDisplay(object):
         self.display = display
         self.data_proc = data_proc
         self.tgtTracks = {}
-        self.canvas = tk.Canvas(self.display, bg="dark slate gray",
+        self.canvas = tk.Canvas(self.display, bg="#353432",
                 width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING * 2, 
                 height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING, 
-                relief=tk.FLAT, borderwidth=0)
+                relief=tk.FLAT, borderwidth=0, highlightthickness=0)
         self.canvas.pack(padx=0, pady=0, fill=tk.BOTH, expand=1)
 
         self.drawBackground()

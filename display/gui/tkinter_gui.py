@@ -19,8 +19,8 @@ ALERT_DURATION = 5
 LOGGER_WIDTH = 49
 PAD_MENU = 85
 
-COLOR_LIGHT = 'light slate gray'
-COLOR_DARK = 'dark slate gray'
+COLOR_LIGHT = '#4E4D4A'
+COLOR_DARK = '#353432'
 
 class Tkinter_gui(object):
     def __init__(self, name, image_processors={}):
@@ -46,7 +46,7 @@ class Tkinter_gui(object):
         
         ### Bottom Frame
         self.bot_frame = BotFrame(self.frame, self, image_processors, 
-                                  bg=COLOR_DARK)
+                                  bg=COLOR_LIGHT)
         self.bot_frame.addViewports()
         
         # Grid Frames
@@ -111,7 +111,7 @@ class Tkinter_gui(object):
 class Viewport(object):
     def __init__(self, img_proc, parent, pos={'x':0, 'y':0}, size=[0, 0]):
         self.img_proc = img_proc
-        self.view = tk.Label(parent, cursor='tcross')
+        self.view = tk.Label(parent, cursor='tcross', borderwidth=0)
         self.pos = pos
         self.size = size
         self.cal_points = []
@@ -352,7 +352,7 @@ class TopFrame(tk.Frame):
     def createItems(self):
         
         # Main menu frame
-        self.menu_main = MenuMain(self, bg=self.bg)
+        self.menu_main = MenuMain(self, bg=self.bg, highlightthickness=0)
         self.menu_main.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.X, expand=1)
 
         # Tactical frame
@@ -360,7 +360,7 @@ class TopFrame(tk.Frame):
         self.tactical_frame.pack(side=tk.LEFT, padx=0, fill=tk.BOTH, expand=1)
         
         # Calibration menu frame
-        self.menu_cal = MenuCal(self, bg=self.bg)
+        self.menu_cal = MenuCal(self, bg=self.bg, highlightthickness=0)
         self.menu_cal.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.X, expand=1)
         
 class BotFrame(tk.Frame):
