@@ -35,24 +35,25 @@ class Tkinter_gui(object):
         #self.root.wm_state('zoomed')
         #self.root.overrideredirect(True)
         #self.root.attributes('-topmost', True)
+        self.root.resizable(0,0)
         self.root.focus_set()
 
         ### Main frame
-        self.frame = tk.Frame(self.root)
+        self.frame = tk.Frame(self.root, bg=COLOR_LIGHT)
         self.frame.grid(rowspan=3, sticky=(tk.N, tk.S))
         
         ### Top Frame
-        self.top_frame = TopFrame(self.frame, bg=COLOR_DARK)
+        self.top_frame = TopFrame(self.frame, bg=COLOR_DARK, padx=10, pady=10)
         
         ### Bottom Frame
         self.bot_frame = BotFrame(self.frame, self, image_processors, 
-                                  bg=COLOR_LIGHT)
+                                  bg=COLOR_LIGHT, padx=10, pady=0)
         self.bot_frame.addViewports()
         
         # Grid Frames
         self.top_frame.grid(row=0, column=0)
 #         self.mid_frame.grid(row=1, column=0)
-        self.bot_frame.grid(row=2, column=0)
+        self.bot_frame.grid(row=2, column=0, pady=(0, 10))
         
         
         self.root.bind("<Escape>", lambda e: e.widget.quit())
@@ -414,8 +415,9 @@ class BotFrame(tk.Frame):
             
         # Frame for alert info label
         frame = tk.Frame(self, padx=0, pady=0, bg=self.bg)
-        self.label_alert = tk.Label(frame, text="Alert Messages", font=("Verdana", 10, "bold"), 
-                                    width=LOGGER_WIDTH, bg=self.bg_light)
+        self.label_alert = tk.Label(frame, text="Alert Messages",
+                                    font=("Verdana", 21, "bold"), 
+                                    bg=self.bg_light, fg="#353432")
         self.label_alert.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
         frame.grid(row=0, column=1, sticky=(tk.W + tk.E))
         
