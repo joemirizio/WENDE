@@ -9,8 +9,10 @@ import display.gui
 from processors.image import image
 from processors.image import ImageProcessor
 from processors.data import DataProcessor
+#from processors.data import correlation
 from display.tactical import TacticalDisplay
 from display.gui.tkinter_gui import ColorDialog
+
 
 class App(object):
 
@@ -20,6 +22,7 @@ class App(object):
         # Setup processors
         self.data_processor = DataProcessor(self)
         self.image_processors = image.createImageProcessors(self)
+#        self.corr = correlation.CorrelationModule(self)
 
         # Setup GUI
         window_title = config.get('gui', 'window_title')
@@ -53,10 +56,13 @@ class App(object):
         self.ui.start(self.main)
 
     def main(self):
-        # Process through the image 
-        for img_proc in self.image_processors:
-            img_data = img_proc.process()
-            self.data_processor.process(img_data, img_proc)
+
+        # Image Processors
+        for image_processor in self.image_processors:
+            image_processor.process()
+    
+        # Data Processor
+        self.data_processor.process()
 
         #TODO Remove after testing
         for target in self.data_processor.targets:
@@ -64,7 +70,6 @@ class App(object):
 
         self.tactical.update()
         self.ui.update(self.main)
-
 
 if __name__ == "__main__":
     # Load configuration
@@ -81,6 +86,11 @@ if __name__ == "__main__":
     logging.basicConfig(
             level=getattr(logging, config.get('logger', 'log_level')),
             format=config.get('logger', 'log_format', raw=True))
+    if config.getboolean('logger', 'use_log_file'):
+        logger = logging.getLogger()
+        hdlr = logging.FileHandler(config.get('logger', 'log_file'))
+        logger.addHandler(hdlr)
 
     # Run application
     App(config).run()
+

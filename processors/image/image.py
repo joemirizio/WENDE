@@ -65,6 +65,8 @@ class ImageProcessor(object):
     """
     def __init__(self, tca, image_source, frame_type=0):
         self.last_frame = None
+        self.last_detected_positions = None
+        self.valid_targets = None
         self.__avg_frame = None
         self.frame_type = FRAME_TYPES[frame_type]
         self.cal_data = None
@@ -132,6 +134,8 @@ class ImageProcessor(object):
                 if num > 3 else (0, color_intensity, 0)
                 cv.circle(self.last_frame, point, 5, color, thickness=-1)
                 cv.circle(self.last_frame, point, 5, [0, 0, 0], thickness=2)
+
+        self.last_detected_positions = img_data
 
         return img_data
 

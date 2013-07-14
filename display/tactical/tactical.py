@@ -43,6 +43,11 @@ class TacticalDisplay(object):
         
         # Display targets
         for target in self.data_proc.targets:
+
+            # Skip invalid targets
+            #if not target.valid:
+                #continue
+
             self.displayTarget(target)
 
             # Display alerts
@@ -106,7 +111,11 @@ class TacticalDisplay(object):
                                                              width=2,
                                                              capstyle="round")
                 else:
-                    self.canvas.coords(tgtTrack.track, *track_points)
+                    try:
+                        self.canvas.coords(tgtTrack.track, *track_points)
+                    except:
+                        logging.error("Problem drawing track line")
+                        logging.error(track_points)
 
         # Draw target icon
         self.canvas.coords(tgtTrack.icon, *target_pos_points)

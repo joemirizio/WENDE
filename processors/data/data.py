@@ -6,6 +6,7 @@ import cv2
 from discrimination import TargetDisciminationModule
 from track import TargetTrackModule
 from target import Target
+from correlation import TargetCorrelationModule
 
 AREA_THRESHOLD = 50
 DETECT_THRESHOLD = 0.75
@@ -19,23 +20,40 @@ class DataProcessor(object):
         self.coverages = {}
         self.tca = tca
         self.config = tca.config
+        # Target correlation module
+        self.tcm = TargetCorrelationModule(self)
         # Target Discimination Module
         self.tdm = TargetDisciminationModule(self)
         # Target Track Module
         self.ttm = TargetTrackModule(self)
 
-    def process(self, data, img_proc):
-        # Only process if calibrated
-        if not img_proc.cal_data.is_valid:
-            return
+    def process(self):
+        filtered_positions = []
         
-        filtered_positions = self.tdm.discriminate(data, img_proc)
+        for image_processor in self.tca.image_processors:
+            # Only process if calibrated
+            if not image_processor.cal_data.is_valid:
+                continue
 
-        for position in filtered_positions:
-            self.ttm.processDetection(position)
+            # Discriminate positions
+            self.tdm.discriminate(image_processor.last_detected_positions,
+                                  image_processor)
+
+       
+#        [[[x1,y1],[x2,y2],[x3,y3]],...]
+
+        unique_positions = self.tcm.checkUnique(self.tca.image_processors)
+
+        logging.debug("-" * 20)
+        logging.debug("UNIQUE POSITIONS: %s" % unique_positions)
+
+        self.ttm.processDetections(unique_positions)
 
         # TODO Clean reference up
         self.targets = self.ttm.targets
+        # TODO remove
+        for target in self.ttm.targets:
+            logging.debug("TARGET: %s" % target)
 
     def clearTargetData(self):
         del self.ttm.targets[:]
@@ -71,6 +89,9 @@ def convertToGlobal(imageProc, coordinates):
 
     """
     
+    # Convert to numpy array
+    coordinates = np.array(coordinates)
+
     imgPoint = np.ones( (3, 1), np.float32 )
     imgPoint[0, 0] = coordinates[0]
     imgPoint[1, 0] = coordinates[1]
