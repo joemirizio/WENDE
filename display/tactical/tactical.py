@@ -52,13 +52,13 @@ class TacticalDisplay(object):
                 target.left_alert = False
             
             if distance((0, 0), target.pos) >= 10 and target.left_alert == False:
-                self.data_proc.tca.ui.displayAlert("Target has left the ALERT zone!!!")
-                self.data_proc.tca.ui.logAlert("Target has left the ALERT zone!!!")
+                self.data_proc.tca.ui.displayAlert("Target %i has left the ALERT zone!!!" % (target.id_value))
+                self.data_proc.tca.ui.logAlert("Target %i has left the ALERT zone!!!" % (target.id_value))
                 target.left_alert = True
                 target.left_safe = True
             elif distance((0, 0), target.pos) >= 5 and target.left_safe == False:
-                self.data_proc.tca.ui.displayAlert("Target has entered the ALERT zone!!!")
-                self.data_proc.tca.ui.logAlert("Target has entered the ALERT zone!!!")
+                self.data_proc.tca.ui.displayAlert("Target %i has entered the ALERT zone!!!" % (target.id_value))
+                self.data_proc.tca.ui.logAlert("Target %i has entered the ALERT zone!!!" % (target.id_value))
                 target.left_safe = True
 
     def displayTarget(self, target):
@@ -66,13 +66,10 @@ class TacticalDisplay(object):
         target_pos = self.remapPosition(target.pos)
         #logging.debug("Mapped pos: (%d, %d)" % (target_pos[0], target_pos[1]))
         target_pos_points = self.getBoundingBox(0.25, pos=target_pos)
-        #id_pos = [target_pos[0] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[0],
-        #          target_pos[1] + TacticalDisplay.PADDING + TacticalDisplay.LABEL_OFFSET[1]]
-        #id_value = "Child 1"
         label_pos = [
                 target_pos[0] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[0],
                 target_pos[1] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[1]]
-        label_text = "(%.2f, %.2f)" % (target.pos[0], target.pos[1])
+        label_text = "%i:(%.2f, %.2f)" % (target.id_value,target.pos[0], target.pos[1])
         
 
         # Display target and track
@@ -80,9 +77,7 @@ class TacticalDisplay(object):
             # Create target icon
             tgtTrack = TargetTrack(target)
             tgtTrack.icon = self.canvas.create_oval(target_pos_points, fill="#AA66CC", outline="black", width=3)
-            # Create target ID
-            #tgtTrack.id = tk.Label(self.canvas, text="Child #", bg="white", anchor='center')
-            # Create label
+             # Create label
             tgtTrack.label = tk.Label(self.canvas, text=label_text, bg='white', anchor='s')
             # Add label_toggle
             self.canvas.tag_bind(tgtTrack.icon, "<Button-1>", lambda e: tgtTrack.toggleLabelVisibility())
@@ -114,17 +109,14 @@ class TacticalDisplay(object):
         
         # Update target label
         tgtTrack.label.config(text=label_text)
-        #tgtTrack.id.config(text=id_value)
         
         # Toggle visibility
         if tgtTrack.display_label:
             tgtTrack.label.place(x=label_pos[0], y=label_pos[1])
-            #tgtTrack.id.place(x=id_pos[0], y=label_pos[1])
         else:
             tgtTrack.label.place_forget()
             
         tgtTrack.label_pos = label_pos
-        #tgtTrack.id_pos = id_pos
 
         # Draw prediction line and label
         if tgtTrack.target.predLineIntersect:
@@ -250,9 +242,6 @@ class TargetTrack(object):
         self.display_label = True
         self.icon_prediction = None
         self.label_prediction = None
-        #self.id = None
-        #self.id_pos = None
-        #self.display_id = True
     
     def removeDisplayObjects(self, canvas):
         canvas.delete(self.icon)

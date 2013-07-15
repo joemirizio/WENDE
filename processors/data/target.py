@@ -17,9 +17,12 @@ class Target(object):
     TIME_STEP = 0.1
     PREDICTION_RADIUS = 12
     TURN_THRESHOLD_DEGREES = 4
+    ID = 0
     
     def __init__(self, pos, config=None):
         self.pos = pos
+        self.id_value = Target.ID
+        Target.ID += 1
         self.kalman = None
         self.prediction = None
         self.missed_updates = 0
