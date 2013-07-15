@@ -44,7 +44,7 @@ class Tkinter_gui(object):
         
         ### Top Frame
         self.top_frame = TopFrame(self.frame, self, image_processors, 
-                                  bg=COLOR_DARK, padx=0, pady=5)
+                                  bg=COLOR_DARK, padx=0, pady=0)
         
         ### Bottom Frame
         self.bot_frame = BotFrame(self.frame, self, image_processors, 
