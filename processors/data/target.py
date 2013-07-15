@@ -6,7 +6,6 @@ from collections import deque
 
 from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 import prediction
-from processors.image.calibration import DISTANCES_NORMAL, DISTANCES_SMALL
 
 ORIGIN = [0, 0]
 
@@ -20,8 +19,9 @@ class Target(object):
     SAFE_RADIUS = 5
     TURN_THRESHOLD_DEGREES = 4
     
-    def __init__(self, pos, config=None):
+    def __init__(self, pos, config=None, ttm=None):
         self.pos = pos
+        self.ttm = ttm
         self.kalman = None
         self.prediction = None
         self.missed_updates = 0
@@ -48,12 +48,15 @@ class Target(object):
             Target.TIME_STEP = config.getfloat('track', 'time_step')
             Target.PREDICTION_RADIUS = config.getfloat('track', 'prediction_radius')
             Target.TURN_THRESHOLD_DEGREES = config.getfloat('track', 'turn_threshold')
-            if config.get('calibration', 'zone_size') == 'NORMAL':
-                Target.PREDICTION_RADIUS = DISTANCES_NORMAL[2]
-                Target.SAFE_RADIUS = DISTANCES_NORMAL[1]
-            elif config.get('calibration', 'zone_size') == 'SMALL':
-                Target.PREDICTION_RADIUS = DISTANCES_SMALL[2]
-                Target.SAFE_RADIUS = DISTANCES_SMALL[1]
+            zone_distances = self.ttm.data_processor.tca.image_processors[0].scm.getCalibrationDistances()
+            Target.PREDICTION_RADIUS = zone_distances[2]
+            Target.SAFE_RADIUS = zone_distances[1]
+#             if config.get('calibration', 'zone_size') == 'NORMAL':
+#                 Target.PREDICTION_RADIUS = DISTANCES_NORMAL[2]
+#                 Target.SAFE_RADIUS = DISTANCES_NORMAL[1]
+#             elif config.get('calibration', 'zone_size') == 'SMALL':
+#                 Target.PREDICTION_RADIUS = DISTANCES_SMALL[2]
+#                 Target.SAFE_RADIUS = DISTANCES_SMALL[1]
 
     def update(self, pos):
 
@@ -82,6 +85,10 @@ class Target(object):
 
         self.kal_pred = cv.KalmanPredict(self.kalman)
         self.prediction = [self.kal_pred[0, 0], self.kal_pred[1, 0]] 
+        
+        zone_distances = self.ttm.data_processor.tca.image_processors[0].scm.getCalibrationDistances()
+        Target.PREDICTION_RADIUS = zone_distances[2]
+        Target.SAFE_RADIUS = zone_distances[1]
 
         if self.valid:
             # Calculate prediction line when target is located in alert zone

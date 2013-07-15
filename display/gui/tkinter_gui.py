@@ -17,7 +17,7 @@ VIEWPORT_PADDING = 10
 ALERT_DURATION = 5
 
 LOGGER_WIDTH = 49
-PAD_MENU = 85
+PAD_MENU = 83
 
 COLOR_LIGHT = '#4E4D4A'
 COLOR_DARK = '#353432'
@@ -43,17 +43,18 @@ class Tkinter_gui(object):
         self.frame.grid(rowspan=3, sticky=(tk.N, tk.S))
         
         ### Top Frame
-        self.top_frame = TopFrame(self.frame, bg=COLOR_DARK, padx=10, pady=10)
+        self.top_frame = TopFrame(self.frame, self, image_processors, 
+                                  bg=COLOR_DARK, padx=0, pady=5)
         
         ### Bottom Frame
         self.bot_frame = BotFrame(self.frame, self, image_processors, 
-                                  bg=COLOR_LIGHT, padx=10, pady=0)
+                                  bg=COLOR_DARK, padx=0, pady=0)
         self.bot_frame.addViewports()
         
         # Grid Frames
         self.top_frame.grid(row=0, column=0)
 #         self.mid_frame.grid(row=1, column=0)
-        self.bot_frame.grid(row=2, column=0, pady=(0, 10))
+        self.bot_frame.grid(row=2, column=0, pady=(0, 5))
         
         
         self.root.bind("<Escape>", lambda e: e.widget.quit())
@@ -235,11 +236,11 @@ class Alert(object):
     def createItems(self):
         
         self.label_text = tk.StringVar()
-        font = tkFont.Font(family="Arial", size=12)
+        font = tkFont.Font(family="Verdana", size=12, weight='bold')
         
         # Alert label
         alert_label = tk.Label(self.root, font=font,
-                               textvariable=self.label_text, bg=COLOR_LIGHT)
+                               textvariable=self.label_text, bg=COLOR_LIGHT, pady=5)
         alert_label.grid(row=0, column=0, columnspan=2, sticky=(tk.W+tk.E))
 
         # Set scrollbar
@@ -340,8 +341,11 @@ class ColorDialog(tkSimpleDialog.Dialog):
         
 class TopFrame(tk.Frame):
     
-    def __init__(self, parent, **options):
+    def __init__(self, parent, ui, image_processors, **options):
         tk.Frame.__init__(self, parent, options)
+        self.parent = parent
+        self.ui = ui
+        self.image_processors = image_processors
         self.bg = self.cget('bg')
         
         self.menu_main = None
@@ -353,7 +357,7 @@ class TopFrame(tk.Frame):
     def createItems(self):
         
         # Main menu frame
-        self.menu_main = MenuMain(self, bg=self.bg, highlightthickness=0)
+        self.menu_main = MenuMain(self, self.ui, self.image_processors, bg=self.bg, highlightthickness=0)
         self.menu_main.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.X, expand=1)
 
         # Tactical frame
@@ -361,7 +365,7 @@ class TopFrame(tk.Frame):
         self.tactical_frame.pack(side=tk.LEFT, padx=0, fill=tk.BOTH, expand=1)
         
         # Calibration menu frame
-        self.menu_cal = MenuCal(self, bg=self.bg, highlightthickness=0)
+        self.menu_cal = MenuCal(self, self.ui, self.image_processors, bg=self.bg, highlightthickness=0)
         self.menu_cal.pack(side=tk.LEFT, padx=PAD_MENU, fill=tk.X, expand=1)
         
 class BotFrame(tk.Frame):
@@ -416,7 +420,7 @@ class BotFrame(tk.Frame):
         # Frame for alert info label
         frame = tk.Frame(self, padx=0, pady=0, bg=self.bg)
         self.label_alert = tk.Label(frame, text="Alert Messages",
-                                    font=("Verdana", 21, "bold"), 
+                                    font=("Verdana", 16, "bold"), 
                                     bg=self.bg_light, fg="#353432")
         self.label_alert.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
         frame.grid(row=0, column=1, sticky=(tk.W + tk.E))
@@ -440,64 +444,68 @@ class BotFrame(tk.Frame):
         
 class MenuCal(tk.Frame):
     
-    def __init__(self, parent, **options):
+    def __init__(self, parent, ui, image_processors, **options):
         
         tk.Frame.__init__(self, parent, options)
         self.parent = parent
+        self.ui = ui
+        self.image_processors = image_processors
         self.method = None
-        self.size = None
+        self.zone = None
         
         # Build Menu Interface
         self.createItems()
         
     def createItems(self):
         
-        # Calibrate Button
-        tk.Button(self, text="Calibrate\nSystem", font=("Verdana", 12, "bold"),
-                  pady=10, padx=2, bg='green', relief=tk.FLAT, 
-                  command=self.callbackCalibrate).pack(side=tk.TOP, pady=10)
-                  
-        # Simple separator (Horizontal)
-        separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
-        separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
-                  
-        # Calibration Method
-        tk.Label(self, text="Calibration\nMethod", font=("Verdana", 10, "bold"), bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
-        self.method = MultiRadio(self,
-                                    text=("Point", "Color"), value=("POINT", "COLOR"), 
-                                    callback=self.callbackCalibrate, 
-                                    side=tk.TOP, fill=tk.X).pack(fill=tk.X, side=tk.TOP)
-                                    
-        # Simple separator (Horizontal)
-        separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
-        separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
+#         # Calibrate Button
+#         tk.Button(self, text="Calibrate\nSystem", font=("Verdana", 12, "bold"),
+#                   pady=10, padx=2, bg='green', relief=tk.FLAT, 
+#                   command=self.callbackCalibrate).pack(side=tk.TOP, pady=10)
+#                   
+#         # Simple separator (Horizontal)
+#         separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
+#         separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
+#                   
+#         # Calibration Method
+#         tk.Label(self, text="Calibration\nMethod", font=("Verdana", 10, "bold"), bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
+#         self.method = MultiRadio(self,
+#                                     text=("Point", "Color"), value=("POINT", "COLOR"), 
+#                                     callback=self.callbackCalibrate, 
+#                                     side=tk.TOP, fill=tk.X).pack(fill=tk.X, side=tk.TOP)
+#                                     
+#         # Simple separator (Horizontal)
+#         separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
+#         separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
         
         # Zone Type
         tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold"), bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
-        self.size = MultiRadio(self,
+        self.zone = MultiRadio(self,
                                     text=("Normal", "Small"), value=("NORMAL", "SMALL"),
                                     callback=self.callbackSetZone,
-                                    side=tk.TOP, fill=tk.X).pack(fill=tk.X, side=tk.TOP)
+                                    side=tk.TOP, fill=tk.X)
+        self.zone.pack(fill=tk.X, side=tk.TOP)
                        
-    def callbackCalibrate(self):
-        if self.method.variable == "POINT":
-            pass
-        else:
-            pass
+#     def callbackCalibrate(self):
+#         if self.method.variable == "POINT":
+#             pass
+#         else:
+#             pass
 
     def callbackSetZone(self):
-        if self.zone.variable == "NORMAL":
-            pass
-        else:
-            pass
-        
+        # Set zone distances
+        for img_proc in self.image_processors:
+            img_proc.scm.setCalibrationDistances(self.zone.variable.get())
+            
+        logging.debug('setting zone distances %s' % self.zone.variable.get())
         
 class MenuMain(tk.Frame):
     
-    def __init__(self, parent, **options):
+    def __init__(self, parent, ui, image_processors, **options):
         
         tk.Frame.__init__(self, parent, options)
         self.parent = parent
+        self.ui = ui
         self.power = False
         self.text_power = tk.StringVar()
         self.button_power = None

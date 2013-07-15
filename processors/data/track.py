@@ -18,9 +18,10 @@ class TargetTrackModule(object):
     UNKNOWN_GATE = 1.5
     CONSTANTS_SET = False
     
-    def __init__(self, dataProcessor):
+    def __init__(self, data_processor):
         self.targets = []
-        self.config = dataProcessor.config
+        self.data_processor = data_processor
+        self.config = data_processor.config
         if (TargetTrackModule.CONSTANTS_SET is False and
             self.config is not None):
             TargetTrackModule.CONSTANTS_SET = True
@@ -66,7 +67,7 @@ class TargetTrackModule(object):
         for pos in unmatchedList:
             logging.debug("New Target:")
             logging.debug(pos)
-            self.targets.append(Target(pos, self.config))
+            self.targets.append(Target(pos, self.config, self))
 
     def associateTrack(self, pos, target):
         # TODO reimplement

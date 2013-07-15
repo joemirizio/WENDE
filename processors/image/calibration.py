@@ -99,6 +99,7 @@ class SourceCalibrationModule(object):
     
     CAL_THRESHOLDS = CalibrationThreshold()
     DISPLAY_COLORS = False, False
+    ZONE_DISTANCES = []
     
     def __init__(self, image_processor):
         self.image_processor = image_processor
@@ -117,9 +118,6 @@ class SourceCalibrationModule(object):
         side_thresh_max = np.array(self.config.get
                                    ('calibration', 'side_color_max').
                                    split(','), np.uint8)
-        
-#         self.colors = [[center_thresh_min, center_thresh_max],
-#                        [side_thresh_min, side_thresh_max]]
 
         # Initialize calibration colors to those in config file
         # This is no longer needed, but must initialize to something
@@ -139,9 +137,9 @@ class SourceCalibrationModule(object):
             
         # Set calibration target distances
         if self.config.get('calibration', 'zone_size') == 'NORMAL':
-            self.setCalibrationDistances(DISTANCES_NORMAL)
+            self.setCalibrationDistances('NORMAL')
         elif self.config.get('calibration', 'zone_size') == 'SMALL':
-            self.setCalibrationDistances(DISTANCES_SMALL)
+            self.setCalibrationDistances('SMALL')
 
     def calibrate(self, cal_points=None):
         """Calibrates the image processor
@@ -366,13 +364,19 @@ class SourceCalibrationModule(object):
         
         return SourceCalibrationModule.DISPLAY_COLORS
     
-    def setCalibrationDistances(self, zone_distances=(5, 10, 12)):
+    def setCalibrationDistances(self, zone_type='NORMAL'):
         """ Sets Distances for safe, alert, and prediction zone boundaries
         
         Arguments:
             zone_size -- Three element iterable containing boundary lengths
             
         """
+        if zone_type == 'NORMAL':
+            zone_distances = DISTANCES_NORMAL
+        else:
+            zone_distances = DISTANCES_SMALL
+            
+        SourceCalibrationModule.ZONE_DISTANCES = zone_distances
         
         # Calibration point position calculations
         DISTANCES = [distance * SCALE for distance in zone_distances]
@@ -383,6 +387,11 @@ class SourceCalibrationModule(object):
         self.center_points = [[distance * coordinate for coordinate in CENTER_POINTS]
                          for distance in DISTANCES]
         self.left_points = [[-1 * x, y, z] for x, y, z in self.right_points]
+        
+    def getCalibrationDistances(self):
+        """ Returns calibration distances in 3 element tuple """
+        
+        return SourceCalibrationModule.ZONE_DISTANCES
 
 class CalibrationData(object):
     """Saves or loads calibration data to/from file.

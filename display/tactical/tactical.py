@@ -49,19 +49,21 @@ class TacticalDisplay(object):
                 #continue
 
             self.displayTarget(target)
+            
+            zone_distances = self.data_proc.tca.image_processors[0].scm.getCalibrationDistances()
 
             # Display alerts
-            if distance((0, 0), target.pos) < 4.8:
+            if distance((0, 0), target.pos) < zone_distances[0] - 0.2:
                 target.left_safe = False
-            if distance((0, 0), target.pos) < 9.8:
+            if distance((0, 0), target.pos) < zone_distances[1] - 0.2:
                 target.left_alert = False
             
-            if distance((0, 0), target.pos) >= 10 and target.left_alert == False:
+            if distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False:
                 self.data_proc.tca.ui.displayAlert("Target has left the ALERT zone!!!")
                 self.data_proc.tca.ui.logAlert("Target has left the ALERT zone!!!")
                 target.left_alert = True
                 target.left_safe = True
-            elif distance((0, 0), target.pos) >= 5 and target.left_safe == False:
+            elif distance((0, 0), target.pos) >= zone_distances[0] and target.left_safe == False:
                 self.data_proc.tca.ui.displayAlert("Target has entered the ALERT zone!!!")
                 self.data_proc.tca.ui.logAlert("Target has entered the ALERT zone!!!")
                 target.left_safe = True
