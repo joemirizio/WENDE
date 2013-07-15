@@ -18,9 +18,12 @@ class Target(object):
     PREDICTION_RADIUS = 12
     SAFE_RADIUS = 5
     TURN_THRESHOLD_DEGREES = 4
+    ID = 0
     
     def __init__(self, pos, config=None, ttm=None):
         self.pos = pos
+        self.id_value = Target.ID
+        Target.ID += 1
         self.ttm = ttm
         self.kalman = None
         self.prediction = None
@@ -51,12 +54,6 @@ class Target(object):
             zone_distances = self.ttm.data_processor.tca.image_processors[0].scm.getCalibrationDistances()
             Target.PREDICTION_RADIUS = zone_distances[2]
             Target.SAFE_RADIUS = zone_distances[1]
-#             if config.get('calibration', 'zone_size') == 'NORMAL':
-#                 Target.PREDICTION_RADIUS = DISTANCES_NORMAL[2]
-#                 Target.SAFE_RADIUS = DISTANCES_NORMAL[1]
-#             elif config.get('calibration', 'zone_size') == 'SMALL':
-#                 Target.PREDICTION_RADIUS = DISTANCES_SMALL[2]
-#                 Target.SAFE_RADIUS = DISTANCES_SMALL[1]
 
     def update(self, pos):
 
@@ -179,7 +176,7 @@ def VerifyValidity(pos):
 
 #This function computes the distance between two points
 def distance(p1, p2):
-    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)   
+    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
 def angle_diff(a, b):
     # given two cartesian points on a circle
