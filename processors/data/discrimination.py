@@ -28,11 +28,11 @@ class TargetDisciminationModule(object):
                 pos = convertToGlobal(image_processor, center)
                 position_in_demo_area = (math.fabs(pos[0]) * math.tan(0.5236) <
                                          math.fabs(pos[1]))
-                if distance(pos, ORIGIN) <= 12 and position_in_demo_area:
+                if distance(pos, ORIGIN) <= 12.5 and position_in_demo_area:
                     # Calculate expected target contour area based on distance from camera
                     expected_contour = 1903 * math.pow(distance(pos, ORIGIN), -0.861) 
                     upper_area = 1.8 * expected_contour
-                    lower_area = 0.5 * expected_contour
+                    lower_area = 0.4 * expected_contour
                     # Add to target list if size conditions satisfied
                     if area > lower_area and area < upper_area:
                         valid_targets.append(pos)
