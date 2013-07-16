@@ -61,26 +61,28 @@ class TacticalDisplay(object):
             if distance((0, 0), target.pos) < zone_distances[2] - 0.2:
                 target.hit_predict = False
             
-#             if distance((0, 0), target.pos) >= (zone_distances[2] - 0.2) and target.hit_predict == False:
-#                 alert_message = "Target %i \nCrossed the prediction line at: (%.2f, %.2f)" % (target.pos[0],target.pos[1])
-#                 self.data_proc.tca.ui.logAlert(alert_message)
-#                 self.data_proc.tca.ui.displayAlert(alert_message)
-#                 target.hit_predict = True
-#                 target.left_alert = True
-#                 target.left_safe = True
+            if distance((0, 0), target.pos) >= zone_distances[2] and target.hit_predict == False:
+                alert_message = "Target %i \n\tCrossed prediction line \n\tPosition: (%.2f, %.2f)" % (target.id_value,
+                                                                                                      target.pos[0],
+                                                                                                      target.pos[1])
+                self.data_proc.tca.ui.logAlert(alert_message)
+                self.data_proc.tca.ui.displayAlert(alert_message)
+                target.hit_predict = True
+                target.left_alert = True
+                target.left_safe = True
             if distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False and target.predLineIntersect:
-                alert_message = "Target %i \nLeft the alert zone. \nPrediction: (%.2f, %.2f)" % (
-                     target.id_value, 
-                     #' ' * 9,
-                     target.predLineIntersect[0],
-                     target.predLineIntersect[1])
+                alert_message = "Target %i \n\tLeft Alert zone \n\tPrediction: (%.2f, %.2f)" % (
+                                                                                                 target.id_value,
+                                                                                                 target.predLineIntersect[0],
+                                                                                                 target.predLineIntersect[1])
                 self.data_proc.tca.ui.logAlert(alert_message)
                 self.data_proc.tca.ui.displayAlert(alert_message)
                 target.left_alert = True
                 target.left_safe = True
             elif distance((0, 0), target.pos) >= zone_distances[0] and target.left_safe == False:
-                self.data_proc.tca.ui.displayAlert("Target %i\n Entered the alert zone." % (target.id_value))
-                self.data_proc.tca.ui.logAlert("Target %i\n Entered the alert zone." % (target.id_value))
+                alert_message = "Target %i \n\tEntered Alert zone" % (target.id_value)
+                self.data_proc.tca.ui.logAlert(alert_message)
+                self.data_proc.tca.ui.displayAlert(alert_message)
                 target.left_safe = True
 
     def displayTarget(self, target):

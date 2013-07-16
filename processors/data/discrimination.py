@@ -31,7 +31,7 @@ class TargetDisciminationModule(object):
                                          math.fabs(pos[1]))
                 
                 # Limit the TCA to the zone boundary (with padding)
-                max_zone_distance = SourceCalibrationModule.ZONE_DISTANCES[-1]
+                max_zone_distance = SourceCalibrationModule.ZONE_DISTANCES[-1] + 0.25
                 if distance(pos, ORIGIN) <= max_zone_distance and position_in_demo_area:
                     # Calculate expected target contour area based on distance from camera
                     expected_contour = 1903 * math.pow(distance(pos, ORIGIN), -0.861) 
