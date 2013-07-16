@@ -22,6 +22,7 @@ class TacticalDisplay(object):
         self.display = display
         self.data_proc = data_proc
         self.tgtTracks = {}
+        self.running_dog_test_active = False
         self.canvas = tk.Canvas(self.display, bg="#353432",
                 width=TacticalDisplay.WIDTH + TacticalDisplay.PADDING * 2, 
                 height=TacticalDisplay.HEIGHT + TacticalDisplay.PADDING, 
@@ -45,6 +46,9 @@ class TacticalDisplay(object):
         
         # Display targets
         for target in self.data_proc.targets:
+            if self.running_dog_test_active and not target.valid:
+                continue
+
             self.displayTarget(target)
             
             zone_distances = self.data_proc.tca.image_processors[0].scm.getCalibrationDistances()
@@ -250,6 +254,9 @@ class TacticalDisplay(object):
         for target in remove_list:
             del self.tgtTracks[target]
             self.data_proc.targets.remove(target)
+    
+    def toggleRunningDogTest(self):
+        self.running_dog_test_active = not self.running_dog_test_active
 
 class TargetTrack(object):
     def __init__(self, target):
