@@ -59,10 +59,10 @@ class TacticalDisplay(object):
             if distance((0, 0), target.pos) < zone_distances[1] - 0.2:
                 target.left_alert = False
             
-            if distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False:
-                alert_message = "Target %i left the alert zone.\n%sPrediction: (%.2f, %.2f)" % (
+            if distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False and target.predLineIntersect:
+                alert_message = "Target %i \nLeft the alert zone. \nPrediction: (%.2f, %.2f)" % (
                      target.id_value, 
-                     ' ' * 9,
+                     #' ' * 9,
                      target.predLineIntersect[0],
                      target.predLineIntersect[1])
                 self.data_proc.tca.ui.logAlert(alert_message)
@@ -70,8 +70,8 @@ class TacticalDisplay(object):
                 target.left_alert = True
                 target.left_safe = True
             elif distance((0, 0), target.pos) >= zone_distances[0] and target.left_safe == False:
-                self.data_proc.tca.ui.displayAlert("Target %i entered the alert zone." % (target.id_value))
-                self.data_proc.tca.ui.logAlert("Target %i entered the alert zone." % (target.id_value))
+                self.data_proc.tca.ui.displayAlert("Target %i\n Entered the alert zone." % (target.id_value))
+                self.data_proc.tca.ui.logAlert("Target %i\n Entered the alert zone." % (target.id_value))
                 target.left_safe = True
 
     def displayTarget(self, target):
@@ -82,7 +82,7 @@ class TacticalDisplay(object):
         label_pos = [
                 target_pos[0] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[0],
                 target_pos[1] + TacticalDisplay.PADDING - TacticalDisplay.LABEL_OFFSET[1]]
-        label_text = "%i:(%.2f, %.2f)" % (target.id_value,target.pos[0], target.pos[1])
+        label_text = "%i:(%.2f, %.2f)" % (target.id_value, target.pos[0], target.pos[1])
         
 
         # Display target and track

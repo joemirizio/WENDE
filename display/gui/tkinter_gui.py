@@ -250,7 +250,7 @@ class Alert(object):
         scrollbar.grid(row=1, column=1, sticky=tk.NS)
         
         # Alert logging window
-        self.alert_log = tk.Text(self.root, state='disabled', width=LOGGER_WIDTH+2, height=14, bg='white',
+        self.alert_log = tk.Text(self.root, state='disabled', width=LOGGER_WIDTH+2, height=12, bg='white',
                                  wrap='word', relief=tk.FLAT, yscrollcommand=scrollbar.set)
         self.alert_log.grid(row=1, column=0, sticky=(tk.N+tk.S))
         
@@ -262,7 +262,7 @@ class Alert(object):
             self.clear()
 
     def displayAlert(self, alert_text):
-        ts = datetime.datetime.now().strftime("%H:%M:%S\n")
+        ts = datetime.datetime.now().strftime("%H:%M:%S ")
         self.label_text.set(ts + alert_text)
         self.expire_time = (datetime.datetime.now() +
             datetime.timedelta(seconds=ALERT_DURATION))

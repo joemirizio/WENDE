@@ -73,9 +73,8 @@ class Target(object):
             Target.SAFE_RADIUS = zone_distances[0]
         self.prediction_positions = deque([pos], maxlen=Target.NUM_PREDICTION_VALS)
         
-        if self.valid:
-            self.id_value = Target.ID
-            Target.ID += 1
+        self.id_value = Target.ID
+        Target.ID += 1
 
     def update(self, pos):
         """
