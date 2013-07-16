@@ -41,8 +41,7 @@ class Target(object):
     
     def __init__(self, pos, config=None, ttm=None):
         self.pos = pos
-        self.id_value = Target.ID
-        Target.ID += 1
+        self.id_value = None
         self.ttm = ttm
         self.kalman = None
         self.prediction = None
@@ -71,8 +70,12 @@ class Target(object):
             Target.NUM_PREDICTION_VALS = config.getfloat('track','prediction_history_count')
             zone_distances = self.ttm.data_processor.tca.image_processors[0].scm.getCalibrationDistances()
             Target.PREDICTION_RADIUS = zone_distances[2]
-            Target.SAFE_RADIUS = zone_distances[1]
+            Target.SAFE_RADIUS = zone_distances[0]
         self.prediction_positions = deque([pos], maxlen=Target.NUM_PREDICTION_VALS)
+        
+        if self.valid:
+            self.id_value = Target.ID
+            Target.ID += 1
 
     def update(self, pos):
         """
@@ -119,18 +122,18 @@ class Target(object):
         
         zone_distances = self.ttm.data_processor.tca.image_processors[0].scm.getCalibrationDistances()
         Target.PREDICTION_RADIUS = zone_distances[2]
-        Target.SAFE_RADIUS = zone_distances[1]
+        Target.SAFE_RADIUS = zone_distances[0]
 
         if self.valid:
             # Calculate prediction line when target is located in alert zone
-            if distance(self.pos, ORIGIN) > 5 and distance(self.pos, ORIGIN) < 10:
+            if distance(self.pos, ORIGIN) > zone_distances[0] and distance(self.pos, ORIGIN) < zone_distances[1]:
                 self.predLineIntersect = prediction.predict(self.prediction_positions,
                                    Target.PREDICTION_RADIUS, Target.NUM_PREDICTION_VALS)
                 if not self.predLineIntersectInitial and self.predLineIntersect:
                     self.predLineIntersectInitial = self.predLineIntersect[:]
                
         # check for turn
-        if (len(self.prediction_positions) > 10
+        if (len(self.prediction_positions) > zone_distances[1]
             and magnitude(self.max_velocity) > 0.0
             and math.fabs(angle_diff(self.max_velocity, velocity)) > Target.TURN_THRESHOLD_DEGREES):
             self.max_velocity = None
@@ -240,7 +243,7 @@ def VerifyValidity(pos):
     """
     
     from processors.data import distance
-
+    
     return distance(pos, ORIGIN) < Target.SAFE_RADIUS
 
 def angle_diff(a, b):
