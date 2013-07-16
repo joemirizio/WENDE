@@ -271,15 +271,15 @@ class Alert(object):
         ts = datetime.datetime.now().strftime("%H:%M:%S ")
         self.label_text.set(ts + alert_text)
         
-        numlines = self.alert_log.index('start - 1 line').split('.')[0]
+        numlines = self.alert_log.index('end - 1 line').split('.')[0]
         self.alert_log['state'] = 'normal'
         
         if numlines == 10:
             self.alert_log.delete(1.0, 2.0)
-        if self.alert_log.index('start-1c')!='1.0':
-            self.alert_log.insert('start', '\n')
+        if self.alert_log.index('end-1c')!='1.0':
+            self.alert_log.insert('end', '\n')
         
-        self.alert_log.insert('start', self.label_text.get())
+        self.alert_log.insert('end', self.label_text.get())
         self.alert_log['state'] = 'disabled'
 
     def clear(self):
