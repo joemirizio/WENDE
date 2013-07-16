@@ -214,14 +214,14 @@ class TacticalDisplay(object):
                                            extent=sweep_angle, fill="#99CC00",
                                            outline="black", width=4,
                                            tags='zone')
-
-        #self.canvas.create_text([80,330], text="Uncalibrated System")
             
     def clearTargetData(self):
+        from processors.data.target import Target
         for tgtTrack in self.tgtTracks.itervalues():
             tgtTrack.removeDisplayObjects(self.canvas)
         self.tgtTracks = {}
         self.data_proc.clearTargetData()
+        Target.ID = 0
         
     def findExpiredTargets(self):
         """ Finds targets which have exceeded the maximum time between updates 

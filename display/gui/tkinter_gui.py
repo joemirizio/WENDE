@@ -558,7 +558,7 @@ class MenuMain(tk.Frame):
             self.button_power.config(bg='green')
             
     def callbackClear(self):
-        pass
+        self.ui.tca.tactical.clearTargetData()
     
 class InfoBar(tk.Frame):
     
