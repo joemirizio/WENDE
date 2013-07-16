@@ -70,7 +70,21 @@ class TargetTrackModule(object):
             self.targets.append(Target(pos, self.config, self))
 
     def associateTrack(self, pos, target):
-        # TODO reimplement
+        """
+        Compare a position to known targets and try to 
+        associate it to one of them.
+        
+        Args:
+            pos - two element list representing the X and Y
+                of a position
+            targets - list of known targets represented as
+                Target objects
+                
+        Returns:
+            boolean indicating whether the given position
+            was associated with any of the known targets
+        """
+        
         if target.updatedThisCycle:
             logging.debug( "already associated")
             return False
@@ -110,7 +124,7 @@ if __name__ == '__main__':
         x2 = -x1
         y2 = -x2+7
         if distance([x1,y1],[x2,y2]) < .6:
-           unmatchedList = [[x1,y1]]
+            unmatchedList = [[x1,y1]]
         else:
             unmatchedList = [[x1,y1],[x2,y2]]
         print"-----------------------------------------------New Targets----------------"

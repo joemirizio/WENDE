@@ -15,6 +15,13 @@ POS_THRESHOLD = 0.05
 
 
 class DataProcessor(object):
+    """
+    Top level class for processing position data. Handles prediction,
+    correlation, and track.
+    
+    Args: None
+    """
+    
     def __init__(self, tca):
         self.targets = []
         self.coverages = {}
@@ -28,6 +35,12 @@ class DataProcessor(object):
         self.ttm = TargetTrackModule(self)
 
     def process(self):
+        """
+        Process the next set of calibrated data from the discrimination module.
+        
+        Args: None
+        """
+        
         filtered_positions = []
         
         for image_processor in self.tca.image_processors:
@@ -56,6 +69,13 @@ class DataProcessor(object):
             logging.debug("TARGET: %s" % target)
 
     def clearTargetData(self):
+        """
+        Clear all track data from the Target
+        track module.
+        
+        Args: None
+        """
+        
         del self.ttm.targets[:]
         del self.targets[:]
 
