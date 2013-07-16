@@ -17,10 +17,10 @@ class TargetCorrelationModule(object):
     object. This is done by comparing their relative proximity.
 
     Attributes:
-    image_processor: An ImageProcessor object.
+        image_processor: An ImageProcessor object.
 
     Methods:
-    checkUnique()
+        checkUnique()
     """
     def __init__(self, image_processor):
         self.image_processor = image_processor
