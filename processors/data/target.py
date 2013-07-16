@@ -59,6 +59,7 @@ class Target(object):
         self.max_velocity = None
         self.left_safe = None
         self.left_alert = None
+        self.hit_predict = None
         if Target.CONSTANTS_SET is False and config is not None:
             logging.debug('Setting track constants')
             Target.CONSTANTS_SET = True
