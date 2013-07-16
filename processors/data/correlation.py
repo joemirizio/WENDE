@@ -37,7 +37,7 @@ class TargetCorrelationModule(object):
         identified as unique across all image processors.
 
         Args:
-            A list of image processor objects.
+            image_processors: A list of ImageProcessor objects.
 
         Returns:
             A list of 2-D coordinates.
