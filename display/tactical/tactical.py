@@ -60,15 +60,18 @@ class TacticalDisplay(object):
                 target.left_alert = False
             
             if distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False:
-                self.data_proc.tca.ui.displayAlert("Target %i left the alert zone. Prediction: %s" % 
-                    (target.id_value,target.predLineIntersect))
-                self.data_proc.tca.ui.logAlert("Target %i left the alert zone. Prediction: %s" %
-                    (target.id_value,target.predLineIntersect))
+                alert_message = "Target %i left the alert zone.\n%sPrediction: (%.2f, %.2f)" % (
+                     target.id_value, 
+                     ' ' * 9,
+                     target.predLineIntersect[0],
+                     target.predLineIntersect[1])
+                self.data_proc.tca.ui.logAlert(alert_message)
+                self.data_proc.tca.ui.displayAlert(alert_message)
                 target.left_alert = True
                 target.left_safe = True
             elif distance((0, 0), target.pos) >= zone_distances[0] and target.left_safe == False:
-                self.data_proc.tca.ui.displayAlert("Target %i has entered the alert zone." % (target.id_value))
-                self.data_proc.tca.ui.logAlert("Target %i has entered the alert zone." % (target.id_value))
+                self.data_proc.tca.ui.displayAlert("Target %i entered the alert zone." % (target.id_value))
+                self.data_proc.tca.ui.logAlert("Target %i entered the alert zone." % (target.id_value))
                 target.left_safe = True
 
     def displayTarget(self, target):
@@ -216,6 +219,8 @@ class TacticalDisplay(object):
                                            extent=sweep_angle, fill="#99CC00",
                                            outline="black", width=4,
                                            tags='zone')
+        # Move to the bottom of the display stack
+        self.canvas.tag_lower('zone')
             
     def clearTargetData(self):
         from processors.data.target import Target

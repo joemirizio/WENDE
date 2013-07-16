@@ -49,7 +49,7 @@ class Tkinter_gui(object):
         
         ### Bottom Frame
         self.bot_frame = BotFrame(self.frame, self, self.tca.image_processors, 
-                                  bg=COLOR_DARK, padx=0, pady=0)
+                                  bg=COLOR_LIGHT, padx=0, pady=0)
         self.bot_frame.addViewports()
         
         # Grid Frames
@@ -237,12 +237,13 @@ class Alert(object):
     def createItems(self):
         
         self.label_text = tk.StringVar()
-        font = tkFont.Font(family="Verdana", size=12, weight='bold')
+        font = tkFont.Font(family="Verdana", size=16, weight='bold')
         
         # Alert label
-        alert_label = tk.Label(self.root, font=font,
-                               textvariable=self.label_text, bg=COLOR_LIGHT, pady=5)
-        alert_label.grid(row=0, column=0, columnspan=2, sticky=(tk.W+tk.E))
+        alert_label = tk.Label(self.root, font=font, fg='white',
+                               textvariable=self.label_text, bg=COLOR_LIGHT,
+                                 pady=5)
+        alert_label.grid(row=0, column=0, columnspan=3, sticky=(tk.N+tk.W+tk.E))
 
         # Set scrollbar
         scrollbar = Scrollbar(self.root)
@@ -429,9 +430,9 @@ class BotFrame(tk.Frame):
     def createAlerts(self):
         
         # Create alerts and alert frame
-        self.alert_frame = tk.Frame(self, bg=self.bg)
+        self.alert_frame = tk.Frame(self, bg=COLOR_LIGHT)
         self.ui.alert = Alert(self.alert_frame)
-        self.alert_frame.grid(row=1, column=1)
+        self.alert_frame.grid(row=1, column=1, sticky=(tk.S))
         
     def update(self):
         

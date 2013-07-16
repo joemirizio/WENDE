@@ -164,6 +164,10 @@ class Target(object):
         self.prediction_positions.clear()
         del self.prediction[:]
 
+    def clearProcessedThisCycle(self):
+        if self.updatedThisCycle:
+            self.updatedThisCycle = False
+
     def __repr__(self):
         return "Target{(%f, %f)}" % (self.pos[0], self.pos[1])
     
