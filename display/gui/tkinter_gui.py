@@ -485,6 +485,7 @@ class MenuCal(tk.Frame):
                                     text=("Normal", "Small"), value=("NORMAL", "SMALL"),
                                     callback=self.callbackSetZone,
                                     side=tk.TOP, fill=tk.X)
+        self.zone.variable.set("NORMAL")
         self.zone.pack(fill=tk.X, side=tk.TOP)
                        
 #     def callbackCalibrate(self):
