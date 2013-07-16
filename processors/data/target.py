@@ -6,6 +6,7 @@ from collections import deque
 
 from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 import prediction
+from data import distance
 
 ORIGIN = [0, 0]
 
@@ -18,6 +19,7 @@ class Target(object):
     PREDICTION_RADIUS = 12
     SAFE_RADIUS = 5
     TURN_THRESHOLD_DEGREES = 4
+    NUM_PREDICTION_VALS = 20
     ID = 0
     
     def __init__(self, pos, config=None, ttm=None):
@@ -30,7 +32,6 @@ class Target(object):
         self.missed_updates = 0
         #self.detected_positions = [pos]
         self.filtered_positions = deque([pos], maxlen=MAXLEN_DEQUE)
-        self.prediction_positions = deque([pos], maxlen=prediction.NUM_PREDICTION_VALS)
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.valid = VerifyValidity(pos)
@@ -51,9 +52,11 @@ class Target(object):
             Target.TIME_STEP = config.getfloat('track', 'time_step')
             Target.PREDICTION_RADIUS = config.getfloat('track', 'prediction_radius')
             Target.TURN_THRESHOLD_DEGREES = config.getfloat('track', 'turn_threshold')
+            Target.NUM_PREDICTION_VALS = config.getfloat('track','prediction_history_count')
             zone_distances = self.ttm.data_processor.tca.image_processors[0].scm.getCalibrationDistances()
             Target.PREDICTION_RADIUS = zone_distances[2]
             Target.SAFE_RADIUS = zone_distances[1]
+        self.prediction_positions = deque([pos], maxlen=NUM_PREDICTION_VALS)
 
     def update(self, pos):
 
@@ -90,7 +93,7 @@ class Target(object):
         if self.valid:
             # Calculate prediction line when target is located in alert zone
             if distance(self.pos, ORIGIN) > 5 and distance(self.pos, ORIGIN) < 10:
-                self.predLineIntersect = prediction.predict(self.prediction_positions, Target.PREDICTION_RADIUS)
+                self.predLineIntersect = prediction.predict(self.prediction_positions, Target.PREDICTION_RADIUS, NUM_PREDICTION_VALS)
                 if not self.predLineIntersectInitial and self.predLineIntersect:
                     self.predLineIntersectInitial = self.predLineIntersect[:]
                
@@ -173,10 +176,6 @@ class Target(object):
 # This function is called during init to determine if a track is a running dog
 def VerifyValidity(pos):
     return distance(pos, ORIGIN) < Target.SAFE_RADIUS
-
-#This function computes the distance between two points
-def distance(p1, p2):
-    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
 def angle_diff(a, b):
     # given two cartesian points on a circle

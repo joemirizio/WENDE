@@ -17,12 +17,10 @@ import itertools
 #       Radius of the prediction line from the origin.
 #       Should be in same units as x and y (i.e. meters)
 
-NUM_PREDICTION_VALS = 20
-
-def predict(positions, pred_line_r):
+def predict(positions, pred_line_r, num_prediction_vals):
 
     # Prevent prediction when insufficient data is provided
-    if len(positions) < NUM_PREDICTION_VALS:
+    if len(positions) < num_prediction_vals:
         return None
 
     # Restrict to the maximum number of prediction values
