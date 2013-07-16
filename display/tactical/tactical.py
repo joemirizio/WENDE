@@ -58,8 +58,17 @@ class TacticalDisplay(object):
                 target.left_safe = False
             if distance((0, 0), target.pos) < zone_distances[1] - 0.2:
                 target.left_alert = False
+            if distance((0, 0), target.pos) < zone_distances[2] - 0.2:
+                target.hit_predict = False
             
-            if distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False:
+            if distance((0, 0), target.pos) >= zone_distances[2] and target.hit_predict == False:
+                alert_message = "Target %i has crossed the prediction line at: (%.2f, %.2f)" % (target.pos[0],target.pos[1])
+                self.data_proc.tca.ui.logAlert(alert_message)
+                self.data_proc.tca.ui.displayAlert(alert_message)
+                target.hit_predict = True
+                target.left_alert = True
+                target.left_safe = True
+            elif distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False:
                 alert_message = "Target %i left the alert zone.\n%sPrediction: (%.2f, %.2f)" % (
                      target.id_value, 
                      ' ' * 9,
