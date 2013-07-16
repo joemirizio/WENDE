@@ -60,13 +60,15 @@ class TacticalDisplay(object):
                 target.left_alert = False
             
             if distance((0, 0), target.pos) >= zone_distances[1] and target.left_alert == False:
-                self.data_proc.tca.ui.displayAlert("Target %i has left the ALERT zone!!!" % (target.id_value))
-                self.data_proc.tca.ui.logAlert("Target %i has left the ALERT zone!!!" % (target.id_value))
+                self.data_proc.tca.ui.displayAlert("Target %i left the alert zone. Prediction: %s" % 
+                    (target.id_value,target.predLineIntersect))
+                self.data_proc.tca.ui.logAlert("Target %i left the alert zone. Prediction: %s" %
+                    (target.id_value,target.predLineIntersect))
                 target.left_alert = True
                 target.left_safe = True
             elif distance((0, 0), target.pos) >= zone_distances[0] and target.left_safe == False:
-                self.data_proc.tca.ui.displayAlert("Target %i has entered the ALERT zone!!!" % (target.id_value))
-                self.data_proc.tca.ui.logAlert("Target %i has entered the ALERT zone!!!" % (target.id_value))
+                self.data_proc.tca.ui.displayAlert("Target %i has entered the alert zone." % (target.id_value))
+                self.data_proc.tca.ui.logAlert("Target %i has entered the alert zone." % (target.id_value))
                 target.left_safe = True
 
     def displayTarget(self, target):
@@ -257,6 +259,7 @@ class TacticalDisplay(object):
     
     def toggleRunningDogTest(self):
         self.running_dog_test_active = not self.running_dog_test_active
+        self.data_proc.tca.ui.logAlert("Running dog test %s" % ("on" if self.running_dog_test_active else "off"))
 
 class TargetTrack(object):
     def __init__(self, target):
