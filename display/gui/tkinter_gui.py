@@ -515,7 +515,6 @@ class MenuMain(tk.Frame):
         tk.Frame.__init__(self, parent, options)
         self.parent = parent
         self.ui = ui
-        self.power = False
         self.text_power = tk.StringVar()
         self.button_power = None
         self.button_clear = None
@@ -548,11 +547,11 @@ class MenuMain(tk.Frame):
         
         # Start system
         # ......
-        self.power = not self.power
+        self.ui.tca.data_processor.toggleActive()
         
         # Change button text and color
         
-        if self.power:
+        if self.ui.tca.data_processor.is_active:
             self.text_power.set("Stop\nSystem")
             self.button_power.config(bg='red')
         else:

@@ -27,6 +27,7 @@ class DataProcessor(object):
         self.coverages = {}
         self.tca = tca
         self.config = tca.config
+        self.is_active = True
         # Target correlation module
         self.tcm = TargetCorrelationModule(self)
         # Target Discimination Module
@@ -41,6 +42,10 @@ class DataProcessor(object):
         Args: None
         """
         
+        # Only process if active
+        if not self.is_active:
+            return
+
         filtered_positions = []
         
         for image_processor in self.tca.image_processors:
@@ -78,6 +83,9 @@ class DataProcessor(object):
         
         del self.ttm.targets[:]
         del self.targets[:]
+
+    def toggleActive(self):
+        self.is_active = not self.is_active
 
 # TODO Possible move 
 def distance(p1, p2):
