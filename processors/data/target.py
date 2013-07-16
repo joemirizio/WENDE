@@ -10,6 +10,24 @@ import prediction
 ORIGIN = [0, 0]
 
 class Target(object):
+    """
+    Represents a single tracked object (i.e. a child).
+    Keeps track of filter and position information.
+    
+    Args:
+        None
+        
+    Important Attributes:
+        kalman - instance of filter tied to this target
+        filtered_positions - list of positions after they've
+            been processed by the kalman filter. Used for 
+            prediction
+        max_velocity - recorded maximum velocity since last
+            turn; used to compare angle against to detect turns
+        last_update - used to expire old track data
+        predLineIntersect - current prediction for x and y value
+            of prediction line intersection point
+    """     
     
     CONSTANTS_SET = False
     PROCESS_NOISE = 1
@@ -29,7 +47,6 @@ class Target(object):
         self.kalman = None
         self.prediction = None
         self.missed_updates = 0
-        #self.detected_positions = [pos]
         self.filtered_positions = deque([pos], maxlen=MAXLEN_DEQUE)
         self.kal_meas = cv.CreateMat(2, 1, cv.CV_32FC1)
         self.kal_pred = cv.CreateMat(2, 1, cv.CV_32FC1)
@@ -58,6 +75,20 @@ class Target(object):
         self.prediction_positions = deque([pos], maxlen=Target.NUM_PREDICTION_VALS)
 
     def update(self, pos):
+        """
+        Update this target object with a position that it
+        is known to be associated with. Association occurs
+        before calling this.
+        
+        Args:
+            pos - two element list containing the X and Y value
+                of a position known to be associated with this
+                target
+                
+        Returns:
+            None
+        """
+        
         from data import distance
 
         self.pos = pos[0:2]
@@ -122,20 +153,36 @@ class Target(object):
         self.updatedThisCycle = True
 
     def clearTargetData(self):
+        """
+        Clear position lists associated with this target
+        
+        Args:
+            None
+        """
         #del self.detected_positions[:]
         self.filtered_positions.clear()
         self.prediction_positions.clear()
         del self.prediction[:]
-    
-    def clearProcessedThisCycle(self):
-        if self.updatedThisCycle:
-            self.updatedThisCycle = False
 
     def __repr__(self):
         return "Target{(%f, %f)}" % (self.pos[0], self.pos[1])
     
     #This function takes in the target position and returns a kalman filter
     def makeKalman(self, pos, x_dot_init=0, y_dot_init=0):
+        """
+        Create new kalman filter based on single position and
+        optionally a known velocity
+        
+        Args:
+            pos - two element list containing X and Y coordinates
+                of targets initial position
+            x_dot_init (optional) - X coordinate of initial velocity
+            y_dot_init (optional) - y coordinate of initial velocity
+            
+        Returns:
+            instance of cv2 kalman filter
+        """
+        
         logging.debug('Creating new kalman instance')
         kalman = cv.CreateKalman(dynam_params=4, measure_params=2)
     
@@ -176,13 +223,36 @@ class Target(object):
 
 # This function is called during init to determine if a track is a running dog
 def VerifyValidity(pos):
+    """
+    Check if a given position is within the radius of the safe zone
+    
+    Args:
+        pos - two element list containing X and Y coordinates of 
+            position of interest
+            
+    Returns:
+        Boolean indicating whether the position is within
+        the safe zone radius
+    """
+    
     from processors.data import distance
 
     return distance(pos, ORIGIN) < Target.SAFE_RADIUS
 
 def angle_diff(a, b):
-    # given two cartesian points on a circle
-    # return the angular difference in degrees
+    """
+    Takes two cartesian points on a circle and
+    returns the angular difference in degrees
+    
+    Args:
+        a, b - two element lists containing X and 
+            Y coordinates of points on a circle with 
+            center 0,0
+    
+    Returns:
+        Angular difference between the two points in degrees
+    """
+    
     radius_a = math.sqrt(a[0]**2 + a[1]**2)
     radius_b = math.sqrt(b[0]**2 + b[1]**2)
     ang_a = (180.0 / math.pi) * math.acos(a[0] / radius_a)
@@ -191,6 +261,18 @@ def angle_diff(a, b):
     return ang_b - ang_a
     
 def magnitude(vector):
+    """
+    Returns the magnitude of a two dimensional vector
+    represented as a two element list.
+    
+    Args:
+        vector - two element list representing coordinates
+            of a vector
+            
+    Returns:
+        Magnitude of the vector
+    """
+    
     if vector is None or len(vector) is not 2:
         return None
     return math.sqrt(vector[0]**2 + vector[1]**2)

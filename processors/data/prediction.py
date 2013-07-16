@@ -18,6 +18,22 @@ import itertools
 #       Should be in same units as x and y (i.e. meters)
 
 def predict(positions, pred_line_r, num_prediction_vals):
+    """
+    Predict intersection point with track and prediction line
+    given previous detection coordinates and radius of the
+    detection line.
+    
+    Args:
+        positions - List of two dimensional target positions
+            to predict from
+        pred_line_r - Radius of the prediction line
+        num_prediction_vals - minimum number of values to 
+            return a valid prediction
+            
+    Returns:
+        Two element list containing the X and Y coordinate of the
+            predicted crossing point of the prediction line
+    """
 
     # Prevent prediction when insufficient data is provided
     if len(positions) < num_prediction_vals:
