@@ -23,11 +23,12 @@ COLOR_LIGHT = '#4E4D4A'
 COLOR_DARK = '#353432'
 
 class Tkinter_gui(object):
-    def __init__(self, name, image_processors={}):
+    def __init__(self, name, tca):
         self.root = tk.Tk()
         self.root.title(name)
         self.viewports = {}
         self.key_events = {}
+        self.tca = tca
 
         # Fullscreen
         #w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
@@ -43,11 +44,11 @@ class Tkinter_gui(object):
         self.frame.grid(rowspan=3, sticky=(tk.N, tk.S))
         
         ### Top Frame
-        self.top_frame = TopFrame(self.frame, self, image_processors, 
+        self.top_frame = TopFrame(self.frame, self, self.tca.image_processors, 
                                   bg=COLOR_DARK, padx=0, pady=0)
         
         ### Bottom Frame
-        self.bot_frame = BotFrame(self.frame, self, image_processors, 
+        self.bot_frame = BotFrame(self.frame, self, self.tca.image_processors, 
                                   bg=COLOR_DARK, padx=0, pady=0)
         self.bot_frame.addViewports()
         
@@ -493,9 +494,15 @@ class MenuCal(tk.Frame):
 #             pass
 
     def callbackSetZone(self):
+        from processors.image.calibration import SourceCalibrationModule
+
         # Set zone distances
         for img_proc in self.image_processors:
             img_proc.scm.setCalibrationDistances(self.zone.variable.get())
+
+        # Redraw tactical background
+        # TODO Remove static reference
+        self.ui.tca.tactical.drawBackground(SourceCalibrationModule.ZONE_DISTANCES)
             
         logging.debug('setting zone distances %s' % self.zone.variable.get())
         

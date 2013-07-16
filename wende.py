@@ -27,7 +27,7 @@ class App(object):
         # Setup GUI
         window_title = config.get('gui', 'window_title')
         if config.get('gui', 'gui_type') == "TKINTER":
-            self.ui = display.gui.Tkinter_gui(window_title, self.image_processors)
+            self.ui = display.gui.Tkinter_gui(window_title, self)
         else:
             #TODO Fully implement HighGUI
             logging.warning('HighGUI implementation is incomplete.')

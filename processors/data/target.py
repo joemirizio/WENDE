@@ -6,7 +6,6 @@ from collections import deque
 
 from display.tactical.tactical import PERSIST_TIME, MAXLEN_DEQUE
 import prediction
-from data import distance
 
 ORIGIN = [0, 0]
 
@@ -56,9 +55,10 @@ class Target(object):
             zone_distances = self.ttm.data_processor.tca.image_processors[0].scm.getCalibrationDistances()
             Target.PREDICTION_RADIUS = zone_distances[2]
             Target.SAFE_RADIUS = zone_distances[1]
-        self.prediction_positions = deque([pos], maxlen=NUM_PREDICTION_VALS)
+        self.prediction_positions = deque([pos], maxlen=Target.NUM_PREDICTION_VALS)
 
     def update(self, pos):
+        from data import distance
 
         self.pos = pos[0:2]
         #self.detected_positions.append(self.pos)
@@ -93,7 +93,8 @@ class Target(object):
         if self.valid:
             # Calculate prediction line when target is located in alert zone
             if distance(self.pos, ORIGIN) > 5 and distance(self.pos, ORIGIN) < 10:
-                self.predLineIntersect = prediction.predict(self.prediction_positions, Target.PREDICTION_RADIUS, NUM_PREDICTION_VALS)
+                self.predLineIntersect = prediction.predict(self.prediction_positions,
+                                   Target.PREDICTION_RADIUS, Target.NUM_PREDICTION_VALS)
                 if not self.predLineIntersectInitial and self.predLineIntersect:
                     self.predLineIntersectInitial = self.predLineIntersect[:]
                
@@ -175,6 +176,8 @@ class Target(object):
 
 # This function is called during init to determine if a track is a running dog
 def VerifyValidity(pos):
+    from processors.data import distance
+
     return distance(pos, ORIGIN) < Target.SAFE_RADIUS
 
 def angle_diff(a, b):

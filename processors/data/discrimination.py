@@ -17,6 +17,7 @@ class TargetDisciminationModule(object):
     def discriminate(self, contour_data, image_processor):
         from data import distance
         from data import convertToGlobal
+        from processors.image.calibration import SourceCalibrationModule
 
         valid_targets = []
         for contour in contour_data:
@@ -28,7 +29,10 @@ class TargetDisciminationModule(object):
                 pos = convertToGlobal(image_processor, center)
                 position_in_demo_area = (math.fabs(pos[0]) * math.tan(0.5236) <
                                          math.fabs(pos[1]))
-                if distance(pos, ORIGIN) <= 12.5 and position_in_demo_area:
+                
+                # Limit the TCA to the zone boundary (with padding)
+                max_zone_distance = SourceCalibrationModule.ZONE_DISTANCES[-1] + 0.5
+                if distance(pos, ORIGIN) <= max_zone_distance and position_in_demo_area:
                     # Calculate expected target contour area based on distance from camera
                     expected_contour = 1903 * math.pow(distance(pos, ORIGIN), -0.861) 
                     upper_area = 1.8 * expected_contour

@@ -18,6 +18,7 @@ class TacticalDisplay(object):
     LABEL_OFFSET = [0, 35]
 
     def __init__(self, display, data_proc):
+        from processors.image.calibration import SourceCalibrationModule
         self.display = display
         self.data_proc = data_proc
         self.tgtTracks = {}
@@ -27,7 +28,8 @@ class TacticalDisplay(object):
                 relief=tk.FLAT, borderwidth=0, highlightthickness=0)
         self.canvas.pack(padx=0, pady=0, fill=tk.BOTH, expand=1)
 
-        self.drawBackground()
+        # TODO Remove static reference
+        self.drawBackground(SourceCalibrationModule.ZONE_DISTANCES)
 
         # Log position
         self.canvas.bind("<Button-1>", lambda e: logging.debug("Canvas (%d, %d)" % (e.x, e.y)))
@@ -184,18 +186,30 @@ class TacticalDisplay(object):
 
         return points
 
-    def drawBackground(self):
+    def drawBackground(self, distances):
         start_angle = 30
         sweep_angle = 120
 
-        pred_points = self.getBoundingBox(12.0)
-        alrt_points = self.getBoundingBox(10.0)
-        safe_points = self.getBoundingBox(5.0)
+        for zone in self.canvas.find_withtag('zone'):
+            self.canvas.delete(zone)
+
+        pred_points = self.getBoundingBox(distances[2])
+        alrt_points = self.getBoundingBox(distances[1])
+        safe_points = self.getBoundingBox(distances[0])
 
         # Currently set so the point of wedge at 250
-        pred_zone = self.canvas.create_arc(pred_points, start=start_angle, extent=sweep_angle, fill="#33B5E5", outline="black", width=4)
-        alrt_zone = self.canvas.create_arc(alrt_points, start=start_angle, extent=sweep_angle, fill="#FF4444", outline="black", width=4)
-        safe_zone = self.canvas.create_arc(safe_points, start=start_angle, extent=sweep_angle, fill="#99CC00", outline="black", width=4)
+        pred_zone = self.canvas.create_arc(pred_points, start=start_angle,
+                                           extent=sweep_angle, fill="#33B5E5",
+                                           outline="black", width=4,
+                                           tags='zone')
+        alrt_zone = self.canvas.create_arc(alrt_points, start=start_angle,
+                                           extent=sweep_angle, fill="#FF4444",
+                                           outline="black", width=4,
+                                           tags='zone')
+        safe_zone = self.canvas.create_arc(safe_points, start=start_angle,
+                                           extent=sweep_angle, fill="#99CC00",
+                                           outline="black", width=4,
+                                           tags='zone')
 
         #self.canvas.create_text([80,330], text="Uncalibrated System")
             
