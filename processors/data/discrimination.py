@@ -10,9 +10,16 @@ MAX_AREA_THRESHOLD = 7500
 ORIGIN = [0,0]
 
 class TargetDisciminationModule(object):
+   
+    CONSTANTS_SET = False
+    TARGET_CENTER_OFFSET_OPTION = "NONE"
 
     def __init__(self, data_processor):
         self.data_processor = data_processor
+
+        if not TargetDisciminationModule.CONSTANTS_SET and self.data_processor.config is not None:
+            TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION = \
+                self.data_processor.config.get('discrimination','offset_configuration')
                                                       
     def discriminate(self, contour_data, image_processor):
         from data import distance
@@ -26,6 +33,13 @@ class TargetDisciminationModule(object):
             if area > MIN_AREA_THRESHOLD and area < MAX_AREA_THRESHOLD:
                 # Check to see if object is within the demo area boundaries 
                 center, radius = cv2.minEnclosingCircle(contour)
+
+                # Offset the value we use in the system based on config input
+                if TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION == "BOTTOM":                
+                    center = np.array([center[0], center[1] - radius])
+                elif TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION == "TOP":
+                    center = np.array([center[0], center[1] + radius])
+
                 pos = convertToGlobal(image_processor, center)
                 position_in_demo_area = (math.fabs(pos[0]) * math.tan(0.5236) <
                                          math.fabs(pos[1]))
