@@ -523,7 +523,7 @@ class MenuMain(tk.Frame):
         self.button_power = None
         self.button_clear = None
         
-        self.text_power.set("Start\nSystem")
+        self.text_power.set("Stop\nSystem")
         
         # Build Menu Interface
         self.createItems()
@@ -533,7 +533,7 @@ class MenuMain(tk.Frame):
         # Power Button
         self.button_power = tk.Button(self, textvariable=self.text_power,
                                       font=("Verdana", 14, "bold"),
-                  pady=10, padx=2, bg='green', relief=tk.FLAT, 
+                  pady=10, padx=2, bg='red', relief=tk.FLAT, 
                   command=self.callbackPower)
         self.button_power.pack(side=tk.TOP, pady=10)
                   
