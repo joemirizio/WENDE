@@ -36,9 +36,9 @@ class TargetDisciminationModule(object):
 
                 # Offset the value we use in the system based on config input
                 if TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION == "BOTTOM":                
-                    center = np.array([center[0], center[1] - radius])
-                elif TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION == "TOP":
                     center = np.array([center[0], center[1] + radius])
+                elif TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION == "TOP":
+                    center = np.array([center[0], center[1] - radius])
 
                 pos = convertToGlobal(image_processor, center)
                 position_in_demo_area = (math.fabs(pos[0]) * math.tan(0.5236) <
