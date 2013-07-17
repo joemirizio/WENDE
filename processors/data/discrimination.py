@@ -34,15 +34,17 @@ class TargetDisciminationModule(object):
                 # Check to see if object is within the demo area boundaries 
                 center, radius = cv2.minEnclosingCircle(contour)
 
-                # Offset the value we use in the system based on config input
-                if TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION == "BOTTOM":                
+               # Offset the value we use in the system based on config input
+                if (TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION
+                        == "BOTTOM"):
                     center = np.array([center[0], center[1] + radius])
-                elif TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION == "TOP":
+                elif (TargetDisciminationModule.TARGET_CENTER_OFFSET_OPTION
+                        == "TOP"):
                     center = np.array([center[0], center[1] - radius])
 
                 pos = convertToGlobal(image_processor, center)
-                position_in_demo_area = (math.fabs(pos[0]) * math.tan(0.5236) <
-                                         math.fabs(pos[1]))
+                position_in_demo_area = (math.fabs(pos[0]) * math.tan(0.5236)
+                                         < math.fabs(pos[1]))
                 
                 # Limit the TCA to the zone boundary (with padding)
                 max_zone_distance = SourceCalibrationModule.ZONE_DISTANCES[-1] + 0.25
