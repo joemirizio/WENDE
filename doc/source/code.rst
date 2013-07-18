@@ -8,6 +8,8 @@ Image Processor
 
 Image Source Interface
 ----------------------
+.. automodule:: processors.image.image_source
+    :members:
 Camera
 ++++++
 .. automodule:: processors.image.image_sources.camera

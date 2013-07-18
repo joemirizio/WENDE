@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 5
 
    code
+   config
 
 
 Indices and tables
