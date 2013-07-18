@@ -114,7 +114,7 @@ class TacticalDisplay(object):
                 target.hit_predict = False
 
             if (distance((0, 0), target.pos) >= zone_distances[2] and
-                    target.hit_predict is False):
+                    not target.hit_predict):
                 alert_message = "Target %i \n\tCrossed prediction   \
                     line \n\tPosition: (%.2f, %.2f)" % (target.id_value,
                                                         target.pos[0],
@@ -125,7 +125,7 @@ class TacticalDisplay(object):
                 target.left_alert = True
                 target.left_safe = True
             if (distance((0, 0), target.pos) >= zone_distances[1] and
-                    target.left_alert if False and target.predLineIntersect):
+                    not target.left_alert and target.predLineIntersect):
                 alert_message = "Target %i \n\tLeft Alert zone \n\tPrediction: \
                     (%.2f, %.2f)" % (target.id_value,
                                      target.predLineIntersect[0],
@@ -135,7 +135,7 @@ class TacticalDisplay(object):
                 target.left_alert = True
                 target.left_safe = True
             elif (distance((0, 0), target.pos) >= zone_distances[0] and
-                    target.left_safe is False):
+                    not target.left_safe):
                 alert_message = "Target %i \n\tEntered Alert zone" % (
                     target.id_value)
                 self.data_proc.tca.ui.logAlert(alert_message)

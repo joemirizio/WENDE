@@ -124,8 +124,10 @@ class ImageProcessor(object):
             for num, cal_point in enumerate(self.cal_data.image_points, 1):
                 point = (cal_point[0], cal_point[1])
                 color_intensity = ((num - 1) % 3) / 3.0 * 200 + 55
-                color = (0, 0, color_intensity)
-                if num > 3 else (0, color_intensity, 0)
+                if num > 3:
+                    color = (0, 0, color_intensity)
+                else: 
+                    color = (0, color_intensity, 0)
                 cv.circle(self.last_frame, point, 5, color, thickness=-1)
                 cv.circle(self.last_frame, point, 5, [0, 0, 0], thickness=2)
 
