@@ -4,7 +4,7 @@ Tkinter to create the graphical user interface. These components are divided
 into two primary areas: the top frame and bottom frame. The top frame contains
 the main menu, the tactical display, and the zone size selector. Viewports,
 calibration status indicators, and the alert message box appear in the lower
-frame.  
+frame.
 
 Classes:
     Tkinter_gui
@@ -46,7 +46,9 @@ COLOR_DARK = '#353432'
 
 
 class Tkinter_gui(object):
-    """Generates and displays the Graphical User Interface for the Tactical Computer Application. 
+
+    """Generates and displays the Graphical User Interface for the Tactical
+    Computer Application.
 
     Attributes:
         root: A root window object.
@@ -55,7 +57,7 @@ class Tkinter_gui(object):
         tca: Tactical Computer Application.
         frame: A Tkinter frame.
         top_frame: A TopFrame object.
-        bot_frame: A BotFrame object. 
+        bot_frame: A BotFrame object.
 
     Methods:
         callbackShell()
@@ -67,6 +69,7 @@ class Tkinter_gui(object):
         displayAlert()
         logAlert()
     """
+
     def __init__(self, name, tca):
         self.root = tk.Tk()
         self.root.title(name)
@@ -107,38 +110,39 @@ class Tkinter_gui(object):
         pass
 
     def addKeyEvent(self, key, event):
-        """Handles simultaneous key press events.        
+        """Handles simultaneous key press events.
 
         Args:
             key: A key-press event.
-            event: An event. 
+            event: An event.
         """
         if key in self.key_events:
             raise Exception("Callback already registered to %s" % key)
         self.key_events[key] = event
 
     def keyPress(self, event):
-        """Handles a key press event.        
+        """Handles a key press event.
 
         Args:
-            event: An event. 
+            event: An event.
         """
         for key, callback in self.key_events.iteritems():
             if event.char == key:
                 callback()
 
     def start(self, init_func):
-        """Initiates running the main window loop. A provided initial function will be run first.        
+        """Initiates running the main window loop. A provided initial function
+        will be run first.
 
         Args:
-            init_func: A string specifying the initial function to run. 
+            init_func: A string specifying the initial function to run.
         """
         self.root.bind("<Key>", self.keyPress)
         self.root.after(0, init_func)
         self.root.mainloop()
 
     def update(self, update_func):
-        """Updates viewports, alerts, labels, and other specified GUI elements.       
+        """Updates viewports, alerts, labels, and other specified GUI elements.
 
         Args:
             update_func: A string specifying the update function to run.
@@ -155,13 +159,13 @@ class Tkinter_gui(object):
         self.root.after(0, update_func)
 
     def addView(self, img_proc, parent, pos={'x': 0, 'y': 0}, size=(0, 0)):
-        """Adds a new viewport to the GUI. 
-        
+        """Adds a new viewport to the GUI.
+
         Args:
             img_proc: An ImageProcessor object.
             parent: A parent widget.
             pos: A 2-D position coordinate.
-            size: A x,y list of the viewport window resolution. 
+            size: A x,y list of the viewport window resolution.
         """
         name = img_proc.isi.name
         self.viewports[name] = Viewport(img_proc, parent, pos, size)
@@ -179,24 +183,25 @@ class Tkinter_gui(object):
                                                 e.y]))
 
     def displayAlert(self, label_text):
-        """Displays an alert message.       
+        """Displays an alert message.
 
         Args:
-            label_text: A string containing the alert message text. 
+            label_text: A string containing the alert message text.
         """
         self.alert.displayAlert(label_text)
 
     def logAlert(self, label_text):
-        """Adds an alert message to the alert log.       
+        """Adds an alert message to the alert log.
 
         Args:
-            label_text: A string containing the alert message text. 
+            label_text: A string containing the alert message text.
         """
         self.alert.logAlert(label_text)
 
 
 class Viewport(object):
-    """The viewport object displays frames from the image sources in the GUI. 
+
+    """The viewport object displays frames from the image sources in the GUI.
 
     Attributes:
         img_proc: An ImageProcessor object.
@@ -204,13 +209,14 @@ class Viewport(object):
         pos: A 2-D position coordinate.
         size: A x,y list of the viewport window resolution.
         cal_points: A list of 2-D calibration coordinates.
-        cal_thresholds: A list of DetectionThreshold objects. 
+        cal_thresholds: A list of DetectionThreshold objects.
 
     Methods:
         addCalibrationPoint()
         addCalibrationColor()
         update()
     """
+
     def __init__(self, img_proc, parent, pos={'x': 0, 'y': 0}, size=[0, 0]):
         self.img_proc = img_proc
         self.view = tk.Label(parent, cursor='tcross', borderwidth=0)
@@ -224,8 +230,9 @@ class Viewport(object):
             self.view.grid(column=self.pos[0], row=self.pos[1])
 
     def addCalibrationPoint(self, point):
-        """Adds the provided point to the list of calibration points and initiates calibration if all points received. 
-        
+        """Adds the provided point to the list of calibration points and
+        initiates calibration if all points received.
+
         Args:
             point: x and y coordinate of clicked point
         """
@@ -256,8 +263,9 @@ class Viewport(object):
             self.img_proc.scm.calibrate(self.cal_points)
 
     def addCalibrationColor(self, point):
-        """Collects the color from clicked points and uses it to find calibration points
-        
+        """Collects the color from clicked points and uses it to find
+        calibration points.
+
         Args:
             point: x and y coordinate of clicked point
         """
@@ -309,7 +317,8 @@ class Viewport(object):
             self.cal_thresholds = []
 
     def update(self):
-        """Updates viewports to display most recent frame and calibration circles.       
+        """Updates viewports to display most recent frame and calibration
+        circles.
 
         Args:
             None
@@ -337,12 +346,14 @@ class Viewport(object):
 
 
 class Alert(object):
+
     """A system alert object.
 
     Attributes:
         root: A root window object.
         expire_time: Date and time when an alert will expire.
-        label_text: A string variable containing the alert message text and timestamp.
+        label_text: A string variable containing the alert message text and
+            timestamp.
         alert_log: A Tkinter text object containing recent alert messages.
         scrollbar: A Scrollbar object.
 
@@ -353,6 +364,7 @@ class Alert(object):
         logAlert()
         clear()
     """
+
     def __init__(self, root):
 
         self.root = root
@@ -365,7 +377,7 @@ class Alert(object):
         self.createItems()
 
     def createItems(self):
-        """Creates an alert label and an alert logging window.       
+        """Creates an alert label and an alert logging window.
 
         Args:
             None
@@ -385,27 +397,28 @@ class Alert(object):
         self.scrollbar.grid(row=1, column=1, sticky=tk.NS)
 
         # Alert logging window
-        self.alert_log = tk.Text(
-            self.root, state='disabled', width=LOGGER_WIDTH + 2, height=12, bg='white',
-            wrap='word', relief=tk.FLAT, yscrollcommand=self.scrollbar.set)
+        self.alert_log = tk.Text(self.root, state='disabled',
+                                 width=LOGGER_WIDTH + 2, height=12,
+                                 bg='white', wrap='word', relief=tk.FLAT,
+                                 yscrollcommand=self.scrollbar.set)
         self.alert_log.grid(row=1, column=0, sticky=(tk.N + tk.S))
 
         self.scrollbar.config(command=self.alert_log.yview)
 
     def update(self):
-        """Initiates an alert erase if the alert time has expired.       
+        """Initiates an alert erase if the alert time has expired.
 
         Args:
-            alert_text: A string containing the alert message text. 
+            alert_text: A string containing the alert message text.
         """
         if self.expire_time and datetime.datetime.now() > self.expire_time:
             self.clear()
 
     def displayAlert(self, alert_text):
-        """Displays an alert message.       
+        """Displays an alert message.
 
         Args:
-            alert_text: A string containing the alert message text. 
+            alert_text: A string containing the alert message text.
         """
         import re
         ts = datetime.datetime.now().strftime("%H:%M:%S ")
@@ -415,7 +428,7 @@ class Alert(object):
                             datetime.timedelta(seconds=ALERT_DURATION))
 
     def logAlert(self, alert_text):
-        """Adds an alert to the alert log list.       
+        """Adds an alert to the alert log list.
 
         Args:
             alert_text: A string containing the alert message text.
@@ -438,7 +451,7 @@ class Alert(object):
         self.alert_log['state'] = 'disabled'
 
     def clear(self):
-        """Clears an alert message.       
+        """Clears an alert message.
 
         Args:
             None
@@ -506,7 +519,9 @@ class ColorDialog(tkSimpleDialog.Dialog):
 
 
 class TopFrame(tk.Frame):
-    """The upper GUI window frame that contains main menu, tactical, and area size selector frames.
+
+    """The upper GUI window frame that contains main menu, tactical, and area
+    size selector frames.
 
     Attributes:
         parent: A parent widget.
@@ -514,13 +529,15 @@ class TopFrame(tk.Frame):
         image_processors: A list of ImageProcessor objects.
         bg: A string naming the background color.
         menu_main: A MenuMain frame.
-        tactical_frame: A Tkinter frame in which the tactical data will be displayed.
-        menu_cal: A MenuCal frame. 
+        tactical_frame: A Tkinter frame in which the tactical data will be
+            displayed.
+        menu_cal: A MenuCal frame.
 
     Methods:
         createItems()
         callbackSetZone()
     """
+
     def __init__(self, parent, ui, image_processors, **options):
         tk.Frame.__init__(self, parent, options)
         self.parent = parent
@@ -535,7 +552,7 @@ class TopFrame(tk.Frame):
         self.createItems()
 
     def createItems(self):
-        """Creates the main menu, tactical, and area size selector frames.       
+        """Creates the main menu, tactical, and area size selector frames.
 
         Args:
             None
@@ -556,7 +573,9 @@ class TopFrame(tk.Frame):
 
 
 class BotFrame(tk.Frame):
-    """The bottom GUI window frame that contains alert info label, calibration status, and image source viewports.
+
+    """The bottom GUI window frame that contains alert info label, calibration
+    status, and image source viewports.
 
     Attributes:
         parent: A parent widget.
@@ -564,15 +583,18 @@ class BotFrame(tk.Frame):
         image_processors: A list of ImageProcessor objects.
         bg_light: The background color value.
         bg: A string naming the background color.
-        string_caltext: A string list indicating the status of calibration for each image processor.
+        string_caltext: A string list indicating the status of calibration for
+            each image processor.
         label_caltext: A list of calibration status label objects.
-        label_calcolor: A list of label objects for the calibration status color indicator.
+        label_calcolor: A list of label objects for the calibration status
+            color indicator.
         label_alert: A label object for the Alert Messages header.
 
     Methods:
         createItems()
         callbackSetZone()
     """
+
     def __init__(self, parent, ui, image_processors, **options):
 
         tk.Frame.__init__(self, parent, options)
@@ -590,7 +612,7 @@ class BotFrame(tk.Frame):
         self.createAlerts()
 
     def addViewports(self):
-        """Add image source viewports to the GUI.       
+        """Add image source viewports to the GUI.
 
         Args:
             None
@@ -602,11 +624,12 @@ class BotFrame(tk.Frame):
             pos[0] = pos[0] - 2
 
     def createCalLabels(self):
-        """Create frame for alert info label, calibration status, and viewports.       
+        """Create frame for alert info label, calibration status, and
+        viewports.
 
         Args:
             None
-        """ 
+        """
                 # Frame for viewport info labels
         pos = 2
         for feed in xrange(len(self.image_processors)):
@@ -616,10 +639,10 @@ class BotFrame(tk.Frame):
             string_caltext = tk.StringVar()
             self.string_caltext.append(string_caltext)
 
-            label = tk.Label(
-                frame, textvariable=string_caltext, font=(
-                    "Verdana", 10, "bold"),
-                borderwidth=0, width=LOGGER_WIDTH / 2, bg=self.bg_light, padx=0, pady=0)
+            label = tk.Label(frame, textvariable=string_caltext,
+                             font=("Verdana", 10, "bold"), borderwidth=0,
+                             width=LOGGER_WIDTH / 2, bg=self.bg_light, padx=0,
+                             pady=0)
             label.pack(side=tk.LEFT, fill=tk.BOTH, expand=1, padx=0, pady=0)
             self.label_caltext.append(label)
 
@@ -641,7 +664,7 @@ class BotFrame(tk.Frame):
         frame.grid(row=0, column=1, sticky=(tk.W + tk.E))
 
     def createAlerts(self):
-        """Create alerts and alert frame.       
+        """Create alerts and alert frame.
 
         Args:
             None
@@ -651,7 +674,7 @@ class BotFrame(tk.Frame):
         self.alert_frame.grid(row=1, column=1, sticky=(tk.S))
 
     def update(self):
-        """Updates the GUI bottom frame with the current calibration status.       
+        """Updates the GUI bottom frame with the current calibration status.
 
         Args:
             None
@@ -666,6 +689,7 @@ class BotFrame(tk.Frame):
 
 
 class MenuCal(tk.Frame):
+
     """A demonstration area size selector frame.
 
     Attributes:
@@ -678,6 +702,7 @@ class MenuCal(tk.Frame):
         createItems()
         callbackSetZone()
     """
+
     def __init__(self, parent, ui, image_processors, **options):
 
         tk.Frame.__init__(self, parent, options)
@@ -691,7 +716,7 @@ class MenuCal(tk.Frame):
         self.createItems()
 
     def createItems(self):
-        """Creates the demonstration area size radio selector.        
+        """Creates the demonstration area size radio selector.
 
         Args:
             None
@@ -706,11 +731,15 @@ class MenuCal(tk.Frame):
 #         separator.pack(side=tk.TOP, pady=10, padx=5, fill=tk.X)
 #
 # Calibration Method
-#         tk.Label(self, text="Calibration\nMethod", font=("Verdana", 10, "bold"), bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
+#         tk.Label(self, text="Calibration\nMethod",
+#                  font=("Verdana", 10, "bold"),
+#                  bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
 #         self.method = MultiRadio(self,
-#                                     text=("Point", "Color"), value=("POINT", "COLOR"),
-#                                     callback=self.callbackCalibrate,
-#                                     side=tk.TOP, fill=tk.X).pack(fill=tk.X, side=tk.TOP)
+#                                  text=("Point", "Color"),
+#                                  value=("POINT", "COLOR"),
+#                                  callback=self.callbackCalibrate,
+#                                  side=tk.TOP, fill=tk.X).pack(fill=tk.X,
+#                                                               side=tk.TOP)
 #
 # Simple separator (Horizontal)
 #         separator = tk.Frame(self, width=2, height=2, bd=1, relief=tk.FLAT)
@@ -720,7 +749,8 @@ class MenuCal(tk.Frame):
         tk.Label(self, text="Zone Type", font=("Verdana", 10, "bold"),
                  bg=COLOR_LIGHT).pack(side=tk.TOP, fill=tk.X)
         self.zone = MultiRadio(self,
-                               text=("Normal", "Small"), value=("NORMAL", "SMALL"),
+                               text=("Normal", "Small"),
+                               value=("NORMAL", "SMALL"),
                                callback=self.callbackSetZone,
                                side=tk.TOP, fill=tk.X)
         self.zone.variable.set("NORMAL")
@@ -733,7 +763,8 @@ class MenuCal(tk.Frame):
 #             pass
 
     def callbackSetZone(self):
-        """Callback for the demo area size selector. Initiates calibration and tactical display background scaling.        
+        """Callback for the demo area size selector. Initiates calibration and
+        tactical display background scaling.
 
         Args:
             None
@@ -753,6 +784,7 @@ class MenuCal(tk.Frame):
 
 
 class MenuMain(tk.Frame):
+
     """A main menu frame containing the system power and clear targets buttons.
 
     Attributes:
@@ -767,6 +799,7 @@ class MenuMain(tk.Frame):
         callbackPower()
         callbackClear()
     """
+
     def __init__(self, parent, ui, image_processors, **options):
 
         tk.Frame.__init__(self, parent, options)
@@ -782,7 +815,7 @@ class MenuMain(tk.Frame):
         self.createItems()
 
     def createItems(self):
-        """Creates the system start/stop and clear targets buttons.       
+        """Creates the system start/stop and clear targets buttons.
 
         Args:
             None
@@ -806,7 +839,7 @@ class MenuMain(tk.Frame):
         self.button_clear.pack(side=tk.TOP, pady=10)
 
     def callbackPower(self):
-        """Callback for the TCA system start/stop button.       
+        """Callback for the TCA system start/stop button.
 
         Args:
             None
@@ -825,7 +858,7 @@ class MenuMain(tk.Frame):
             self.button_power.config(bg='green')
 
     def callbackClear(self):
-        """Erases all target data from the tactical display.       
+        """Erases all target data from the tactical display.
 
         Args:
             None
@@ -834,20 +867,24 @@ class MenuMain(tk.Frame):
 
 
 class InfoBar(tk.Frame):
+
     """An infobar frame.
 
     Attributes:
         parent: A parent widget.
         image_processors: A list of ImageProcessor objects.
-        string_caltext: A string list indicating the status of calibration for each image processor.
+        string_caltext: A string list indicating the status of calibration for
+            each image processor.
         label_caltext: A list of calibration status label objects.
-        label_calcolor: A list of label objects for the calibration status color indicator.
+        label_calcolor: A list of label objects for the calibration status
+            color indicator.
         label_alert: A label object for the Alert Messages header.
 
     Methods:
         createItems()
         update()
     """
+
     def __init__(self, parent, image_processors, **options):
 
         tk.Frame.__init__(self, parent, options)
@@ -862,7 +899,7 @@ class InfoBar(tk.Frame):
         self.createItems()
 
     def createItems(self):
-        """Creates the GUI infobar.       
+        """Creates the GUI infobar.
 
         Args:
             None
@@ -876,10 +913,10 @@ class InfoBar(tk.Frame):
             string_caltext = tk.StringVar()
             self.string_caltext.append(string_caltext)
 
-            label = tk.Label(
-                frame, textvariable=string_caltext, font=(
-                    "Verdana", 10, "bold"),
-                borderwidth=0, width=LOGGER_WIDTH / 2, bg=self.cget('bg'), padx=0, pady=0)
+            label = tk.Label(frame, textvariable=string_caltext,
+                             font=("Verdana", 10, "bold"), borderwidth=0,
+                             width=LOGGER_WIDTH / 2, bg=self.cget('bg'),
+                             padx=0, pady=0)
             label.pack(side=tk.LEFT, fill=tk.BOTH, expand=1, padx=0, pady=0)
             self.label_caltext.append(label)
 
@@ -901,7 +938,7 @@ class InfoBar(tk.Frame):
         frame.grid(row=0, column=1, sticky=(tk.W + tk.E))
 
     def update(self):
-        """Updates the GUI infobar with the current calibration status.       
+        """Updates the GUI infobar with the current calibration status.
 
         Args:
             None
@@ -918,6 +955,7 @@ class InfoBar(tk.Frame):
 
 
 class MultiRadio(tk.Frame):
+
     """A radio button frame for the demonstration area size selector.
 
     Attributes:
@@ -926,11 +964,13 @@ class MultiRadio(tk.Frame):
         value: String value assigned to each radio button selection.
         callback: The callbackSetZone object.
         side: A variable that specifies the orientation of radio selections.
-        fill: Integer that specifies the pixel separation between radio selections.
+        fill: Integer that specifies the pixel separation between radio
+            selections.
 
     Methods:
         createRadio()
     """
+
     def __init__(self, parent, text, value, callback, side=tk.TOP, fill=tk.NONE):
 
         tk.Frame.__init__(self, parent, borderwidth=0, relief=tk.FLAT)
@@ -945,7 +985,7 @@ class MultiRadio(tk.Frame):
         self.createRadio()
 
     def createRadio(self):
-        """Creates a radio button.       
+        """Creates a radio button.
 
         Args:
             None
@@ -954,4 +994,5 @@ class MultiRadio(tk.Frame):
         for txt, val, in zip(self.text, self.value):
             tk.Radiobutton(self, text=txt, font=("Verdana", 10),
                            variable=self.variable, value=val, indicatoron=0,
-                           command=self.callback, padx=0, pady=0).pack(side=self.side, fill=self.fill)
+                           command=self.callback, padx=0,
+                           pady=0).pack(side=self.side, fill=self.fill)
