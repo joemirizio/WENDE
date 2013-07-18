@@ -37,6 +37,9 @@ nosetests.xml
 # Mac files
 *.DS_Store
 
+# Documentation
+doc/build
+
 # Log files
 *.log
 
